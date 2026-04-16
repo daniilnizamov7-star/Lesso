@@ -910,29 +910,45 @@ async function saveLesson() {
   const title = document.getElementById('li-title').value.trim();
   const date = document.getElementById('li-date').value;
   if (!title || !date) { showToast('Заполни название и дату'); return; }
+
+  const { data: { user } } = await sb.auth.getUser();
+  const teacher_id = user?.id || null;
+
   const payload = {
-    title, date,
+    title, date, teacher_id,
     zoom_link: document.getElementById('li-zoom').value.trim() || null,
     homework: document.getElementById('li-hw').value.trim() || null,
     notes: document.getElementById('li-notes').value.trim() || null,
     grade: document.getElementById('li-grade').value ? parseInt(document.getElementById('li-grade').value) : null
   };
+
+  let error;
   if (editLessonId) {
-    await sb.from('lessons').update(payload).eq('id', editLessonId);
+    const res = await sb.from('lessons').update(payload).eq('id', editLessonId);
+    error = res.error;
   } else {
-    await sb.from('lessons').insert({ ...payload, status: 'planned' });
+    const res = await sb.from('lessons').insert({ ...payload, status: 'planned' });
+    error = res.error;
   }
+
+  if (error) {
+    showToast('Ошибка: ' + error.message);
+    console.error('saveLesson error:', error);
+    return;
+  }
+
   closeModal('lessonModal');
   showToast('Урок сохранён ✓');
-  renderTeacherLessons(document.getElementById('appContent'));
+  tShowScreen('lessons', 1);
 }
 
 async function deleteLesson() {
   if (!editLessonId) return;
-  await sb.from('lessons').delete().eq('id', editLessonId);
+  const { error } = await sb.from('lessons').delete().eq('id', editLessonId);
+  if (error) { showToast('Ошибка удаления: ' + error.message); return; }
   closeModal('lessonModal');
   showToast('Урок удалён');
-  renderTeacherLessons(document.getElementById('appContent'));
+  tShowScreen('lessons', 1);
 }
 
 async function togglePaid(btn) {
@@ -973,11 +989,12 @@ async function saveWord() {
   const word = document.getElementById('wi-en').value.trim();
   const translation = document.getElementById('wi-ru').value.trim();
   if (!word || !translation) { showToast('Заполни слово и перевод'); return; }
-  await sb.from('words').insert({
+  const { error } = await sb.from('words').insert({
     word, translation,
     topic: document.getElementById('wi-topic').value.trim() || 'Разное',
     level: wLevel, next_review: new Date().toISOString()
   });
+  if (error) { showToast('Ошибка: ' + error.message); console.error('saveWord:', error); return; }
   closeModal('wordModal');
   showToast('Слово добавлено ✓');
   await loadTWords('all');
