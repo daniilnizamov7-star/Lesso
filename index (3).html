@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Lesso">
+  <link rel="manifest" href="manifest.json">
+  <title>Lesso — Войти</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8f9fc;
+      --white: #ffffff;
+      --border: #e8eaf0;
+      --border2: #d1d5e0;
+      --text: #0f1520;
+      --text2: #5a6478;
+      --text3: #9aa0b0;
+      --accent: #2563eb;
+      --accent-light: #eff4ff;
+      --accent-dark: #1d4ed8;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --orange: #ea580c;
+      --orange-light: #fff7ed;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+      --shadow-lg: 0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      height: 100%; background: var(--bg);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text); overflow-x: hidden;
+    }
+
+    /* ── Login Page ── */
+    .login-page {
+      min-height: 100dvh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .logo {
+      font-family: 'Fraunces', serif; font-size: 42px; font-weight: 900;
+      color: var(--accent); letter-spacing: -1px; margin-bottom: 4px;
+    }
+    .logo-sub { font-size: 14px; color: var(--text3); margin-bottom: 40px; font-weight: 500; }
+
+    .role-cards { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 360px; }
+    .role-card {
+      background: var(--white); border: 1.5px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      display: flex; align-items: center; gap: 16px;
+      cursor: pointer; transition: all 0.18s; box-shadow: var(--shadow);
+      text-align: left;
+    }
+    .role-card:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+    .role-card:active { transform: scale(0.98); }
+    .role-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; flex-shrink: 0;
+    }
+    .role-icon.teacher { background: #eff4ff; }
+    .role-icon.parent { background: #f0fdf4; }
+    .role-icon.student { background: #fff7ed; }
+    .role-name { font-weight: 700; font-size: 16px; margin-bottom: 2px; }
+    .role-desc { font-size: 13px; color: var(--text2); }
+    .role-arrow { margin-left: auto; color: var(--text3); flex-shrink: 0; }
+
+    /* ── Auth Form ── */
+    .auth-page {
+      min-height: 100dvh; display: flex; flex-direction: column;
+      padding: 24px; max-width: 400px; margin: 0 auto; justify-content: center;
+    }
+    .auth-back {
+      display: flex; align-items: center; gap: 8px; color: var(--text2);
+      font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 32px;
+      background: none; border: none; padding: 0;
+    }
+    .auth-back:hover { color: var(--accent); }
+    .auth-title { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 900; margin-bottom: 6px; }
+    .auth-sub { font-size: 14px; color: var(--text2); margin-bottom: 32px; line-height: 1.5; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 8px; display: block; }
+    .form-input {
+      width: 100%; background: var(--white); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); padding: 13px 16px; color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 500;
+      outline: none; transition: border-color 0.15s; box-shadow: var(--shadow);
+      -webkit-appearance: none;
+    }
+    .form-input:focus { border-color: var(--accent); }
+    .form-input::placeholder { color: var(--text3); font-weight: 400; }
+
+    /* PIN для ученика */
+    .pin-wrap { display: flex; gap: 12px; justify-content: center; margin: 8px 0; }
+    .pin-digit {
+      width: 64px; height: 72px; border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); background: var(--white);
+      font-size: 28px; font-weight: 800; text-align: center;
+      color: var(--accent); box-shadow: var(--shadow); outline: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      transition: border-color 0.15s;
+    }
+    .pin-digit:focus { border-color: var(--accent); }
+
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px 20px; border-radius: var(--radius-sm);
+      border: none; cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700; font-size: 15px; transition: all 0.15s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(37,99,235,0.3); }
+    .btn-primary:hover { background: var(--accent-dark); }
+    .btn-secondary { background: var(--white); color: var(--text); border: 1.5px solid var(--border); }
+
+    .auth-toggle { text-align: center; margin-top: 16px; font-size: 14px; color: var(--text2); }
+    .auth-toggle a { color: var(--accent); font-weight: 700; cursor: pointer; text-decoration: none; }
+
+    .error-msg {
+      background: #fef2f2; border: 1px solid #fecaca; color: #dc2626;
+      padding: 12px 16px; border-radius: var(--radius-sm); font-size: 14px;
+      font-weight: 600; margin-bottom: 16px; display: none;
+    }
+    .error-msg.show { display: block; }
+
+    /* ── App Shell (после входа) ── */
+    #appShell { display: none; }
+    .app-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 0 20px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 0 var(--border);
+    }
+    .app-logo { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 900; color: var(--accent); }
+    .app-user {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 14px; font-weight: 600; color: var(--text2);
+    }
+    .avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 800; color: #fff;
+      background: var(--accent);
+    }
+    .logout-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text3); padding: 6px; border-radius: 8px;
+      transition: color 0.15s;
+    }
+    .logout-btn:hover { color: var(--text); }
+
+    .app-content { padding-top: 60px; min-height: 100dvh; }
+
+    /* ── Loading ── */
+    .loading {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100dvh; gap: 16px;
+    }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { font-size: 14px; color: var(--text2); font-weight: 600; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(10px);
+      background: var(--text); color: #fff; border-radius: 20px;
+      padding: 10px 20px; font-size: 14px; font-weight: 600;
+      opacity: 0; pointer-events: none; transition: all 0.25s; white-space: nowrap; z-index: 999;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Общие компоненты ── */
+    .page { padding: 20px 16px 100px; max-width: 480px; margin: 0 auto; animation: fadeUp 0.25s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .section-title {
+      font-family: 'Fraunces', serif; font-size: 22px; font-weight: 900;
+      margin-bottom: 4px; color: var(--text);
+    }
+    .section-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+
+    .card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+      box-shadow: var(--shadow);
+    }
+    .card-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--text3); margin-bottom: 10px;
+    }
+
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .stat-box {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow);
+    }
+    .stat-val { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 900; line-height: 1; }
+    .stat-lbl { font-size: 12px; color: var(--text2); font-weight: 600; margin-top: 4px; }
+    .stat-box.blue .stat-val { color: var(--accent); }
+    .stat-box.green .stat-val { color: var(--green); }
+    .stat-box.orange .stat-val { color: var(--orange); }
+
+    /* Nav */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+      background: var(--white); border-top: 1px solid var(--border);
+      display: flex; padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 10px 4px; border: none; background: none; cursor: pointer;
+      color: var(--text3); font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 10px; font-weight: 700; transition: color 0.15s;
+    }
+    .nav-item.active { color: var(--accent); }
+    .nav-item svg { width: 22px; height: 22px; }
+
+    .fab {
+      position: fixed; right: 20px; bottom: 74px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--accent); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(37,99,235,0.35); transition: transform 0.15s;
+      z-index: 99;
+    }
+    .fab:active { transform: scale(0.93); }
+    .fab svg { width: 22px; height: 22px; color: #fff; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(15,21,32,0.5);
+      z-index: 200; display: flex; align-items: flex-end; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+      backdrop-filter: blur(2px);
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--white); border-radius: 24px 24px 0 0;
+      padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
+      width: 100%; max-width: 480px; max-height: 92dvh; overflow-y: auto;
+      transform: translateY(100%); transition: transform 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    .modal-overlay.open .modal { transform: none; }
+    .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+    .modal-title { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 900; margin-bottom: 20px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 12px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 7px; display: block; }
+    .form-select {
+      width: 100%; background: var(--white); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); padding: 13px 16px; color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 500;
+      outline: none; -webkit-appearance: none; box-shadow: var(--shadow);
+    }
+    .form-textarea {
+      width: 100%; background: var(--white); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); padding: 13px 16px; color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; font-weight: 500;
+      outline: none; resize: none; min-height: 80px; box-shadow: var(--shadow);
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+    .btn-row { display: flex; gap: 10px; margin-top: 8px; }
+
+    /* Badges */
+    .badge {
+      display: inline-flex; align-items: center; padding: 3px 10px;
+      border-radius: 20px; font-size: 12px; font-weight: 700;
+    }
+    .badge-blue { background: var(--accent-light); color: var(--accent); }
+    .badge-green { background: var(--green-light); color: var(--green); }
+    .badge-orange { background: var(--orange-light); color: var(--orange); }
+    .badge-gray { background: var(--bg); color: var(--text2); }
+
+    /* Lesson card */
+    .lesson-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px; margin-bottom: 10px;
+      box-shadow: var(--shadow); cursor: pointer; transition: all 0.15s;
+    }
+    .lesson-card:hover { border-color: var(--accent); box-shadow: var(--shadow-lg); }
+    .lesson-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+    .lesson-title { font-weight: 700; font-size: 15px; }
+    .lesson-meta { font-size: 13px; color: var(--text2); margin-top: 2px; }
+    .lesson-footer { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+    /* Word item */
+    .word-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px;
+      box-shadow: var(--shadow); cursor: pointer; transition: border-color 0.15s;
+    }
+    .word-item:hover { border-color: var(--accent); }
+    .level-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .lv-0 { background: #cbd5e1; }
+    .lv-1 { background: #f87171; }
+    .lv-2 { background: #fb923c; }
+    .lv-3 { background: #4ade80; }
+    .word-en { font-weight: 700; font-size: 15px; }
+    .word-ru { font-size: 13px; color: var(--text2); }
+    .word-chip { margin-left: auto; font-size: 11px; color: var(--text3); background: var(--bg); padding: 3px 8px; border-radius: 8px; flex-shrink: 0; }
+
+    /* Flashcard */
+    .fc-wrap { perspective: 1000px; margin: 16px 0; }
+    .fc {
+      position: relative; width: 100%; height: 200px;
+      transform-style: preserve-3d; transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+      cursor: pointer;
+    }
+    .fc.flipped { transform: rotateY(180deg); }
+    .fc-face {
+      position: absolute; inset: 0; backface-visibility: hidden;
+      border-radius: var(--radius); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+      border: 1.5px solid var(--border); box-shadow: var(--shadow-lg);
+    }
+    .fc-front { background: var(--white); }
+    .fc-back { background: var(--accent-light); border-color: #bfdbfe; transform: rotateY(180deg); }
+    .fc-word { font-family: 'Fraunces', serif; font-size: 34px; font-weight: 900; text-align: center; padding: 0 20px; }
+    .fc-hint { font-size: 13px; color: var(--text3); font-weight: 600; }
+    .fc-chip { font-size: 12px; color: var(--accent); background: var(--accent-light); padding: 4px 12px; border-radius: 20px; font-weight: 700; }
+    .fc-btns { display: flex; gap: 10px; }
+    .btn-know { background: var(--green-light); color: var(--green); border: 1.5px solid #bbf7d0; font-weight: 700; padding: 12px 20px; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; flex: 1; transition: all 0.15s; }
+    .btn-dontknow { background: #fef2f2; color: #dc2626; border: 1.5px solid #fecaca; font-weight: 700; padding: 12px 20px; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; flex: 1; transition: all 0.15s; }
+
+    /* Progress bar */
+    .pbar-wrap { background: var(--bg); border-radius: 20px; height: 8px; overflow: hidden; margin-top: 6px; }
+    .pbar { height: 100%; border-radius: 20px; background: var(--accent); transition: width 0.6s; }
+
+    /* Chat */
+    .chat-wrap { display: flex; flex-direction: column; gap: 10px; padding: 16px 0; }
+    .msg { max-width: 80%; }
+    .msg.mine { align-self: flex-end; }
+    .msg.theirs { align-self: flex-start; }
+    .msg-bubble {
+      padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5;
+      font-weight: 500;
+    }
+    .msg.mine .msg-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+    .msg.theirs .msg-bubble { background: var(--white); border: 1px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; box-shadow: var(--shadow); }
+    .msg-meta { font-size: 11px; color: var(--text3); margin-top: 3px; font-weight: 600; }
+    .msg.mine .msg-meta { text-align: right; }
+    .chat-input-wrap {
+      position: sticky; bottom: 0; background: var(--bg);
+      padding: 12px 0 calc(12px + env(safe-area-inset-bottom));
+      display: flex; gap: 10px;
+    }
+    .chat-input {
+      flex: 1; background: var(--white); border: 1.5px solid var(--border);
+      border-radius: 24px; padding: 12px 16px; font-size: 14px; font-weight: 500;
+      font-family: 'Plus Jakarta Sans', sans-serif; outline: none; color: var(--text);
+      box-shadow: var(--shadow);
+    }
+    .chat-send {
+      width: 44px; height: 44px; border-radius: 50%; background: var(--accent);
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; box-shadow: 0 2px 8px rgba(37,99,235,0.3);
+    }
+    .chat-send svg { width: 18px; height: 18px; color: #fff; }
+
+    /* Pay indicator */
+    .pay-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--border); margin-top: 10px; }
+    .pay-label { font-size: 13px; color: var(--text2); font-weight: 600; }
+    .pay-toggle {
+      width: 44px; height: 24px; border-radius: 12px; background: var(--border);
+      border: none; cursor: pointer; position: relative; transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .pay-toggle.on { background: var(--green); }
+    .pay-toggle::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 20px; height: 20px; border-radius: 50%; background: #fff;
+      transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .pay-toggle.on::after { transform: translateX(20px); }
+
+    /* Empty */
+    .empty { text-align: center; padding: 48px 20px; color: var(--text2); }
+    .empty-icon { font-size: 44px; margin-bottom: 12px; }
+    .empty p { font-size: 14px; line-height: 1.6; }
+
+    /* Grade badge */
+    .grade { font-family: 'Fraunces', serif; font-weight: 900; font-size: 18px; padding: 2px 10px; border-radius: 10px; }
+    .grade-5 { background: var(--green-light); color: var(--green); }
+    .grade-4 { background: var(--accent-light); color: var(--accent); }
+    .grade-3 { background: var(--orange-light); color: var(--orange); }
+    .grade-2 { background: #fef2f2; color: #dc2626; }
+
+    /* Level selector */
+    .level-row { display: flex; gap: 8px; }
+    .level-opt {
+      flex: 1; padding: 10px 6px; border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border); background: var(--white);
+      color: var(--text2); font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; transition: all 0.15s;
+    }
+    .level-opt.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+    /* Filter chips */
+    .filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; }
+    .fchip {
+      flex-shrink: 0; padding: 6px 14px; border-radius: 20px;
+      border: 1.5px solid var(--border); background: var(--white);
+      color: var(--text2); font-size: 13px; font-weight: 700; cursor: pointer;
+      font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s; box-shadow: var(--shadow);
+    }
+    .fchip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* Screen transitions */
+    .screen { display: none; }
+    .screen.active { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginPage">
+  <div class="login-page">
+    <div class="logo">Lesso</div>
+    <div class="logo-sub">Платформа для обучения</div>
+
+    <div class="role-cards">
+      <button class="role-card" onclick="showAuth('teacher')">
+        <div class="role-icon teacher">👨‍🏫</div>
+        <div>
+          <div class="role-name">Учитель</div>
+          <div class="role-desc">Управление уроками и учениками</div>
+        </div>
+        <svg class="role-arrow" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <button class="role-card" onclick="showAuth('parent')">
+        <div class="role-icon parent">👨‍👩‍👦</div>
+        <div>
+          <div class="role-name">Родитель</div>
+          <div class="role-desc">Контроль прогресса и занятий</div>
+        </div>
+        <svg class="role-arrow" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <button class="role-card" onclick="showStudentPin()">
+        <div class="role-icon student">🧒</div>
+        <div>
+          <div class="role-name">Ученик</div>
+          <div class="role-desc">Уроки, слова и карточки</div>
+        </div>
+        <svg class="role-arrow" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AUTH FORM (Teacher / Parent) ══ -->
+<div id="authPage" style="display:none">
+  <div class="auth-page">
+    <button class="auth-back" onclick="showLogin()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      Назад
+    </button>
+    <div class="auth-title" id="authTitle">Войти</div>
+    <div class="auth-sub" id="authSub">Введите email и пароль</div>
+    <div class="error-msg" id="authError"></div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" id="authEmail" placeholder="example@mail.ru" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Пароль</label>
+      <input class="form-input" type="password" id="authPassword" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" onclick="doAuth()" id="authBtn">Войти</button>
+    <div class="auth-toggle">
+      Нет аккаунта? <a onclick="toggleAuthMode()">Зарегистрироваться</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STUDENT PIN ══ -->
+<div id="pinPage" style="display:none">
+  <div class="auth-page">
+    <button class="auth-back" onclick="showLogin()">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      Назад
+    </button>
+    <div class="auth-title">Привет! 👋</div>
+    <div class="auth-sub">Введи свой PIN-код из 4 цифр</div>
+    <div class="error-msg" id="pinError"></div>
+    <div class="pin-wrap">
+      <input class="pin-digit" type="number" maxlength="1" id="p0" oninput="pinInput(this,0)">
+      <input class="pin-digit" type="number" maxlength="1" id="p1" oninput="pinInput(this,1)">
+      <input class="pin-digit" type="number" maxlength="1" id="p2" oninput="pinInput(this,2)">
+      <input class="pin-digit" type="number" maxlength="1" id="p3" oninput="pinInput(this,3)">
+    </div>
+    <div style="height:16px"></div>
+    <button class="btn btn-primary" onclick="doPin()">Войти</button>
+  </div>
+</div>
+
+<!-- ══ LOADING ══ -->
+<div id="loadingPage" style="display:none">
+  <div class="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Загрузка...</div>
+  </div>
+</div>
+
+<!-- ══ APP SHELL ══ -->
+<div id="appShell">
+  <header class="app-header">
+    <div class="app-logo">Lesso</div>
+    <div class="app-user">
+      <div class="avatar" id="userAvatar">?</div>
+      <span id="userName"></span>
+      <button class="logout-btn" onclick="doLogout()" title="Выйти">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="app-content" id="appContent"></div>
+
+  <nav class="bottom-nav" id="bottomNav"></nav>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══ SUPABASE ══ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ════════════════════════════════════════════
+//  CONFIG
+// ════════════════════════════════════════════
+const SUPA_URL = 'https://yiqipulgofoschkccaxr.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// Временный PIN для Вадима (потом можно менять в настройках)
+const STUDENT_PIN = '1234';
+const STUDENT_NAME = 'Вадим';
+
+let currentRole = null;
+let currentUser = null;
+let authMode = 'login'; // login | register
+
+// ════════════════════════════════════════════
+//  AUTH ROUTING
+// ════════════════════════════════════════════
+function show(id) {
+  ['loginPage','authPage','pinPage','loadingPage','appShell'].forEach(p => {
+    document.getElementById(p).style.display = 'none';
+  });
+  document.getElementById(id).style.display = 'block';
+}
+
+function showLogin() { show('loginPage'); }
+
+function showAuth(role) {
+  currentRole = role;
+  const titles = { teacher: 'Кабинет учителя', parent: 'Кабинет родителя' };
+  document.getElementById('authTitle').textContent = titles[role];
+  document.getElementById('authSub').textContent = 'Введите email и пароль';
+  document.getElementById('authBtn').textContent = 'Войти';
+  authMode = 'login';
+  show('authPage');
+}
+
+function showStudentPin() {
+  currentRole = 'student';
+  show('pinPage');
+  document.getElementById('p0').focus();
+}
+
+function toggleAuthMode() {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  document.getElementById('authBtn').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
+  const link = document.querySelector('.auth-toggle a');
+  link.textContent = authMode === 'login' ? 'Зарегистрироваться' : 'Уже есть аккаунт';
+}
+
+// ════════════════════════════════════════════
+//  PIN INPUT
+// ════════════════════════════════════════════
+function pinInput(el, idx) {
+  const val = el.value.toString().slice(-1);
+  el.value = val;
+  if (val && idx < 3) document.getElementById('p' + (idx + 1)).focus();
+  if (idx === 3 && val) doPin();
+}
+
+async function doPin() {
+  const pin = [0,1,2,3].map(i => document.getElementById('p' + i).value).join('');
+  if (pin.length < 4) { showPinError('Введи все 4 цифры'); return; }
+  if (pin === STUDENT_PIN) {
+    currentRole = 'student';
+    currentUser = { name: STUDENT_NAME, role: 'student' };
+    launchApp();
+  } else {
+    showPinError('Неверный PIN-код');
+    [0,1,2,3].forEach(i => document.getElementById('p' + i).value = '');
+    document.getElementById('p0').focus();
+  }
+}
+
+function showPinError(msg) {
+  const el = document.getElementById('pinError');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ════════════════════════════════════════════
+//  EMAIL AUTH
+// ════════════════════════════════════════════
+async function doAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  const errEl = document.getElementById('authError');
+  errEl.classList.remove('show');
+
+  if (!email || !pass) { errEl.textContent = 'Заполните все поля'; errEl.classList.add('show'); return; }
+
+  document.getElementById('authBtn').textContent = '...';
+  show('loadingPage');
+
+  let result;
+  if (authMode === 'register') {
+    result = await sb.auth.signUp({ email, password: pass });
+    if (!result.error && result.data.user) {
+      await sb.from('profiles').upsert({
+        id: result.data.user.id,
+        role: currentRole,
+        name: email.split('@')[0]
+      });
+    }
+  } else {
+    result = await sb.auth.signInWithPassword({ email, password: pass });
+  }
+
+  if (result.error) {
+    show('authPage');
+    errEl.textContent = result.error.message === 'Invalid login credentials'
+      ? 'Неверный email или пароль' : result.error.message;
+    errEl.classList.add('show');
+    document.getElementById('authBtn').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
+    return;
+  }
+
+  const uid = result.data.user.id;
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', uid).single();
+  if (profile) {
+    currentUser = profile;
+    currentRole = profile.role;
+  } else {
+    currentUser = { id: uid, name: email.split('@')[0], role: currentRole };
+  }
+  launchApp();
+}
+
+async function doLogout() {
+  if (currentRole !== 'student') await sb.auth.signOut();
+  currentUser = null; currentRole = null;
+  showLogin();
+}
+
+// ════════════════════════════════════════════
+//  APP LAUNCH
+// ════════════════════════════════════════════
+function launchApp() {
+  const name = currentUser?.name || STUDENT_NAME;
+  document.getElementById('userName').textContent = name;
+  document.getElementById('userAvatar').textContent = name[0].toUpperCase();
+  show('appShell');
+  document.getElementById('appShell').style.display = 'flex';
+  document.getElementById('appShell').style.flexDirection = 'column';
+
+  if (currentRole === 'teacher') buildTeacherApp();
+  else if (currentRole === 'parent') buildParentApp();
+  else buildStudentApp();
+}
+
+// ════════════════════════════════════════════
+//  ───────── TEACHER APP ─────────
+// ════════════════════════════════════════════
+function buildTeacherApp() {
+  document.getElementById('bottomNav').innerHTML = `
+    <button class="nav-item active" id="tn0" onclick="tShowScreen('home',0)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.55 5.45 21 6 21H9M19 10L21 12M19 10V20C19 20.55 18.55 21 18 21H15M9 21C9 21 9 15 12 15C15 15 15 21 15 21M9 21H15"/></svg>
+      Главная
+    </button>
+    <button class="nav-item" id="tn1" onclick="tShowScreen('lessons',1)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Уроки
+    </button>
+    <button class="nav-item" id="tn2" onclick="tShowScreen('words',2)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.25278V19.2528M12 6.25278C10.8321 5.47686 9.24649 5 7.5 5C5.75351 5 4.16789 5.47686 3 6.25278V19.2528C4.16789 18.4769 5.75351 18 7.5 18C9.24649 18 10.8321 18.4769 12 19.2528M12 6.25278C13.1679 5.47686 14.7535 5 16.5 5C18.2465 5 19.8321 5.47686 21 6.25278V19.2528C19.8321 18.4769 18.2465 18 16.5 18C14.7535 18 13.1679 18.4769 12 19.2528"/></svg>
+      Слова
+    </button>
+    <button class="nav-item" id="tn3" onclick="tShowScreen('progress',3)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 20h18M7 20V10M11 20V4M15 20V14M19 20V8"/></svg>
+      Прогресс
+    </button>
+  `;
+
+  tShowScreen('home', 0);
+}
+
+let tScreens = {};
+function tShowScreen(name, idx) {
+  document.querySelectorAll('.nav-item').forEach((b,i) => b.classList.toggle('active', i === idx));
+  const fab = document.getElementById('fab');
+  if (fab) fab.style.display = (name === 'home' || name === 'progress') ? 'none' : 'flex';
+
+  const content = document.getElementById('appContent');
+  if (name === 'home') renderTeacherHome(content);
+  else if (name === 'lessons') renderTeacherLessons(content);
+  else if (name === 'words') renderTeacherWords(content);
+  else if (name === 'progress') renderTeacherProgress(content);
+}
+
+async function renderTeacherHome(el) {
+  el.innerHTML = `<div class="page"><div class="section-title">Добро пожаловать 👋</div><div class="section-sub">Панель управления</div><div class="stat-row"><div class="stat-box blue"><div class="stat-val" id="th-lessons">—</div><div class="stat-lbl">Уроков проведено</div></div><div class="stat-box green"><div class="stat-val" id="th-words">—</div><div class="stat-lbl">Слов добавлено</div></div></div><div class="card"><div class="card-label">Последние уроки</div><div id="th-recent">Загрузка...</div></div></div>`;
+
+  const [{ count: lCount }, { count: wCount }, { data: recent }] = await Promise.all([
+    sb.from('lessons').select('*', { count: 'exact', head: true }),
+    sb.from('words').select('*', { count: 'exact', head: true }),
+    sb.from('lessons').select('*').order('date', { ascending: false }).limit(3)
+  ]);
+
+  document.getElementById('th-lessons').textContent = lCount || 0;
+  document.getElementById('th-words').textContent = wCount || 0;
+
+  const recentEl = document.getElementById('th-recent');
+  if (!recent?.length) { recentEl.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Уроков пока нет</p></div>'; return; }
+  recentEl.innerHTML = recent.map(l => `
+    <div class="lesson-card" onclick="openLesson('${l.id}')">
+      <div class="lesson-card-top">
+        <div><div class="lesson-title">${l.title}</div><div class="lesson-meta">${formatDate(l.date)}</div></div>
+        ${l.grade ? `<div class="grade grade-${l.grade}">${l.grade}</div>` : '<span class="badge badge-gray">Запланирован</span>'}
+      </div>
+    </div>`).join('');
+}
+
+async function renderTeacherLessons(el) {
+  el.innerHTML = `
+    <div class="page">
+      <div class="section-title">Уроки</div>
+      <div class="section-sub">История и планирование</div>
+      <div id="t-lessons-list">Загрузка...</div>
+      <div style="height:80px"></div>
+    </div>
+    <button class="fab" id="fab" onclick="openAddLesson()">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </button>`;
+
+  const { data } = await sb.from('lessons').select('*').order('date', { ascending: false });
+  const list = document.getElementById('t-lessons-list');
+  if (!data?.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Уроков пока нет.<br>Нажми + чтобы добавить.</p></div>';
+    return;
+  }
+  list.innerHTML = data.map(l => `
+    <div class="lesson-card" onclick="openLesson('${l.id}')">
+      <div class="lesson-card-top">
+        <div>
+          <div class="lesson-title">${l.title}</div>
+          <div class="lesson-meta">${formatDate(l.date)}${l.zoom_link ? ' · 🎥 Zoom' : ''}</div>
+        </div>
+        ${l.grade ? `<div class="grade grade-${l.grade}">${l.grade}</div>` : ''}
+      </div>
+      <div class="lesson-footer">
+        ${l.homework ? `<span class="badge badge-orange">📝 ДЗ</span>` : ''}
+        ${l.status === 'active' ? `<span class="badge badge-blue">🔴 Идёт урок</span>` : ''}
+        ${l.paid ? `<span class="badge badge-green">✓ Оплачен</span>` : `<span class="badge badge-gray">Не оплачен</span>`}
+      </div>
+    </div>`).join('');
+}
+
+async function renderTeacherWords(el) {
+  el.innerHTML = `
+    <div class="page">
+      <div class="section-title">Словарь</div>
+      <div class="section-sub">Слова Вадима</div>
+      <div class="filter-row">
+        <button class="fchip active" data-f="all" onclick="filterTWords(this)">Все</button>
+        <button class="fchip" data-f="0" onclick="filterTWords(this)">Новые</button>
+        <button class="fchip" data-f="1" onclick="filterTWords(this)">Учит</button>
+        <button class="fchip" data-f="2" onclick="filterTWords(this)">Почти</button>
+        <button class="fchip" data-f="3" onclick="filterTWords(this)">Знает ✓</button>
+      </div>
+      <div id="t-words-list">Загрузка...</div>
+      <div style="height:80px"></div>
+    </div>
+    <button class="fab" id="fab" onclick="openAddWord()">
+      <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </button>`;
+  await loadTWords('all');
+}
+
+let allTWords = [];
+async function loadTWords(filter) {
+  const { data } = await sb.from('words').select('*').order('created_at', { ascending: false });
+  allTWords = data || [];
+  renderTWordsList(filter);
+}
+
+function filterTWords(btn) {
+  document.querySelectorAll('.fchip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderTWordsList(btn.dataset.f);
+}
+
+function renderTWordsList(filter) {
+  const list = document.getElementById('t-words-list');
+  if (!list) return;
+  const filtered = filter === 'all' ? allTWords : allTWords.filter(w => w.level == filter);
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><p>Нет слов</p></div>';
+    return;
+  }
+  list.innerHTML = filtered.map(w => `
+    <div class="word-item">
+      <div class="level-dot lv-${w.level}"></div>
+      <div><div class="word-en">${w.word}</div><div class="word-ru">${w.translation}</div></div>
+      <div class="word-chip">${w.topic}</div>
+    </div>`).join('');
+}
+
+async function renderTeacherProgress(el) {
+  const { data: words } = await sb.from('words').select('level');
+  const { data: lessons } = await sb.from('lessons').select('grade, paid');
+  const levels = [0,0,0,0];
+  (words||[]).forEach(w => levels[w.level]++);
+  const total = words?.length || 0;
+  const grades = (lessons||[]).filter(l => l.grade).map(l => l.grade);
+  const avg = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
+  const unpaid = (lessons||[]).filter(l => !l.paid).length;
+
+  el.innerHTML = `
+    <div class="page">
+      <div class="section-title">Прогресс</div>
+      <div class="section-sub">Статистика Вадима</div>
+      <div class="stat-row">
+        <div class="stat-box blue"><div class="stat-val">${total}</div><div class="stat-lbl">Всего слов</div></div>
+        <div class="stat-box green"><div class="stat-val">${avg}</div><div class="stat-lbl">Средняя оценка</div></div>
+      </div>
+      ${unpaid > 0 ? `<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Неоплаченных уроков: ${unpaid}</div></div>` : ''}
+      <div class="card">
+        <div class="card-label">Уровни слов</div>
+        ${['Новые','Учит','Почти','Знает'].map((l,i) => `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div class="level-dot lv-${i}" style="width:10px;height:10px"></div>
+            <div style="font-size:13px;font-weight:600;min-width:70px">${l}</div>
+            <div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:${total?Math.round(levels[i]/total*100):0}%;background:${['#cbd5e1','#f87171','#fb923c','#4ade80'][i]}"></div></div>
+            <div style="font-size:13px;color:var(--text2);font-weight:700;min-width:24px">${levels[i]}</div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ── Lesson Modal ──
+let editLessonId = null;
+function openAddLesson() {
+  editLessonId = null;
+  document.getElementById('li-title').value = '';
+  document.getElementById('li-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('li-zoom').value = '';
+  document.getElementById('li-hw').value = '';
+  document.getElementById('li-notes').value = '';
+  document.getElementById('li-grade').value = '';
+  openModal('lessonModal');
+}
+
+async function openLesson(id) {
+  const { data: l } = await sb.from('lessons').select('*').eq('id', id).single();
+  if (!l) return;
+  editLessonId = id;
+  document.getElementById('li-title').value = l.title;
+  document.getElementById('li-date').value = l.date;
+  document.getElementById('li-zoom').value = l.zoom_link || '';
+  document.getElementById('li-hw').value = l.homework || '';
+  document.getElementById('li-notes').value = l.notes || '';
+  document.getElementById('li-grade').value = l.grade || '';
+
+  const payBtn = document.getElementById('lessonPayBtn');
+  payBtn.classList.toggle('on', l.paid);
+  payBtn.dataset.id = id;
+  payBtn.dataset.paid = l.paid ? '1' : '0';
+  document.getElementById('lessonDeleteBtn').style.display = 'block';
+
+  const statusBtn = document.getElementById('lessonStatusBtn');
+  statusBtn.textContent = l.status === 'active' ? '🔴 Урок идёт — завершить' : l.status === 'done' ? '✓ Урок завершён' : '▶ Начать урок';
+  statusBtn.dataset.status = l.status;
+  statusBtn.dataset.id = id;
+
+  openModal('lessonModal');
+}
+
+async function saveLesson() {
+  const title = document.getElementById('li-title').value.trim();
+  const date = document.getElementById('li-date').value;
+  if (!title || !date) { showToast('Заполни название и дату'); return; }
+  const payload = {
+    title, date,
+    zoom_link: document.getElementById('li-zoom').value.trim() || null,
+    homework: document.getElementById('li-hw').value.trim() || null,
+    notes: document.getElementById('li-notes').value.trim() || null,
+    grade: document.getElementById('li-grade').value ? parseInt(document.getElementById('li-grade').value) : null
+  };
+  if (editLessonId) {
+    await sb.from('lessons').update(payload).eq('id', editLessonId);
+  } else {
+    await sb.from('lessons').insert({ ...payload, status: 'planned' });
+  }
+  closeModal('lessonModal');
+  showToast('Урок сохранён ✓');
+  renderTeacherLessons(document.getElementById('appContent'));
+}
+
+async function deleteLesson() {
+  if (!editLessonId) return;
+  await sb.from('lessons').delete().eq('id', editLessonId);
+  closeModal('lessonModal');
+  showToast('Урок удалён');
+  renderTeacherLessons(document.getElementById('appContent'));
+}
+
+async function togglePaid(btn) {
+  const paid = btn.dataset.paid === '0';
+  await sb.from('lessons').update({ paid }).eq('id', btn.dataset.id);
+  btn.dataset.paid = paid ? '1' : '0';
+  btn.classList.toggle('on', paid);
+  showToast(paid ? 'Отмечен как оплаченный ✓' : 'Отметка снята');
+}
+
+async function toggleLessonStatus(btn) {
+  const status = btn.dataset.status;
+  let newStatus = status === 'planned' ? 'active' : status === 'active' ? 'done' : 'done';
+  const update = { status: newStatus };
+  if (newStatus === 'active') update.started_at = new Date().toISOString();
+  if (newStatus === 'done') update.ended_at = new Date().toISOString();
+  await sb.from('lessons').update(update).eq('id', btn.dataset.id);
+  btn.textContent = newStatus === 'active' ? '🔴 Урок идёт — завершить' : '✓ Урок завершён';
+  btn.dataset.status = newStatus;
+  showToast(newStatus === 'active' ? 'Урок начат!' : 'Урок завершён!');
+}
+
+// ── Word Modal ──
+let wLevel = 0;
+function openAddWord() {
+  document.getElementById('wi-en').value = '';
+  document.getElementById('wi-ru').value = '';
+  document.getElementById('wi-topic').value = '';
+  wLevel = 0;
+  document.querySelectorAll('.level-opt').forEach(b => b.classList.toggle('active', b.dataset.lv == 0));
+  openModal('wordModal');
+}
+function selectWLevel(btn) {
+  wLevel = parseInt(btn.dataset.lv);
+  document.querySelectorAll('.level-opt').forEach(b => b.classList.toggle('active', b.dataset.lv == wLevel));
+}
+async function saveWord() {
+  const word = document.getElementById('wi-en').value.trim();
+  const translation = document.getElementById('wi-ru').value.trim();
+  if (!word || !translation) { showToast('Заполни слово и перевод'); return; }
+  await sb.from('words').insert({
+    word, translation,
+    topic: document.getElementById('wi-topic').value.trim() || 'Разное',
+    level: wLevel, next_review: new Date().toISOString()
+  });
+  closeModal('wordModal');
+  showToast('Слово добавлено ✓');
+  await loadTWords('all');
+}
+
+// ════════════════════════════════════════════
+//  ───────── STUDENT APP ─────────
+// ════════════════════════════════════════════
+function buildStudentApp() {
+  document.getElementById('bottomNav').innerHTML = `
+    <button class="nav-item active" id="sn0" onclick="sShowScreen('home',0)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.55 5.45 21 6 21H9M19 10L21 12M19 10V20C19 20.55 18.55 21 18 21H15M9 21C9 21 9 15 12 15C15 15 15 21 15 21M9 21H15"/></svg>
+      Главная
+    </button>
+    <button class="nav-item" id="sn1" onclick="sShowScreen('lessons',1)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Уроки
+    </button>
+    <button class="nav-item" id="sn2" onclick="sShowScreen('cards',2)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="3"/><path d="M16 2H8M12 2v4"/></svg>
+      Карточки
+    </button>
+    <button class="nav-item" id="sn3" onclick="sShowScreen('words',3)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.25278V19.2528M12 6.25278C10.8321 5.47686 9.24649 5 7.5 5C5.75351 5 4.16789 5.47686 3 6.25278V19.2528C4.16789 18.4769 5.75351 18 7.5 18C9.24649 18 10.8321 18.4769 12 19.2528M12 6.25278C13.1679 5.47686 14.7535 5 16.5 5C18.2465 5 19.8321 5.47686 21 6.25278V19.2528C19.8321 18.4769 18.2465 18 16.5 18C14.7535 18 13.1679 18.4769 12 19.2528"/></svg>
+      Слова
+    </button>
+  `;
+  sShowScreen('home', 0);
+}
+
+function sShowScreen(name, idx) {
+  document.querySelectorAll('.nav-item').forEach((b,i) => b.classList.toggle('active', i === idx));
+  const content = document.getElementById('appContent');
+  if (name === 'home') renderStudentHome(content);
+  else if (name === 'lessons') renderStudentLessons(content);
+  else if (name === 'cards') renderStudentCards(content);
+  else if (name === 'words') renderStudentWords(content);
+}
+
+async function renderStudentHome(el) {
+  const { data: lessons } = await sb.from('lessons').select('*').order('date', { ascending: false }).limit(5);
+  const { data: words } = await sb.from('words').select('level');
+  const known = (words||[]).filter(w => w.level === 3).length;
+  const toReview = (words||[]).filter(w => w.level < 3).length;
+  const lastLesson = lessons?.[0];
+
+  el.innerHTML = `
+    <div class="page">
+      <div class="section-title">Привет, Вадим! 👋</div>
+      <div class="section-sub">${toReview > 0 ? `Сегодня ${toReview} слов для повторения` : 'Все слова повторены! 🎉'}</div>
+      <div class="stat-row">
+        <div class="stat-box blue"><div class="stat-val">${words?.length||0}</div><div class="stat-lbl">Всего слов</div></div>
+        <div class="stat-box green"><div class="stat-val">${known}</div><div class="stat-lbl">Знаю хорошо</div></div>
+      </div>
+      ${lastLesson?.homework ? `
+        <div class="card" style="border-color:#fbbf24;background:#fffbeb">
+          <div class="card-label">📝 Домашнее задание</div>
+          <div style="font-weight:600;font-size:14px;color:var(--text)">${lastLesson.homework}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:6px">${formatDate(lastLesson.date)}</div>
+        </div>` : ''}
+      ${toReview > 0 ? `
+        <div class="card" style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-weight:700">Повторить слова</div><div style="font-size:13px;color:var(--text2)">${toReview} карточек ждут</div></div>
+          <button class="btn btn-primary" style="width:auto;padding:10px 18px" onclick="sShowScreen('cards',2)">Начать →</button>
+        </div>` : ''}
+    </div>`;
+}
+
+async function renderStudentLessons(el) {
+  const { data } = await sb.from('lessons').select('*').order('date', { ascending: false });
+  el.innerHTML = `<div class="page"><div class="section-title">Мои уроки</div><div class="section-sub">История занятий</div><div id="s-lessons"></div><div style="height:80px"></div></div>`;
+  const list = document.getElementById('s-lessons');
+  if (!data?.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Уроков пока нет</p></div>'; return; }
+  list.innerHTML = data.map(l => `
+    <div class="lesson-card">
+      <div class="lesson-card-top">
+        <div><div class="lesson-title">${l.title}</div><div class="lesson-meta">${formatDate(l.date)}</div></div>
+        ${l.grade ? `<div class="grade grade-${l.grade}">${l.grade}</div>` : ''}
+      </div>
+      ${l.homework ? `<div style="margin-top:8px;font-size:13px;color:var(--orange);font-weight:600">📝 ${l.homework}</div>` : ''}
+      ${l.zoom_link ? `<div class="lesson-footer"><a href="${l.zoom_link}" target="_blank" class="badge badge-blue">🎥 Войти в Zoom</a></div>` : ''}
+    </div>`).join('');
+}
+
+let reviewQueue = [], reviewIdx = 0, cardFlipped = false;
+async function renderStudentCards(el) {
+  const { data } = await sb.from('words').select('*');
+  const now = new Date();
+  reviewQueue = (data||[]).filter(w => w.level < 3 || new Date(w.next_review) <= now);
+  if (!reviewQueue.length) reviewQueue = data || [];
+  reviewQueue = reviewQueue.sort(() => Math.random() - 0.5).slice(0, 20);
+  reviewIdx = 0;
+  el.innerHTML = `<div class="page"><div class="section-title">Карточки</div><div id="s-cards-area"></div></div>`;
+  renderCard();
+}
+
+function renderCard() {
+  const area = document.getElementById('s-cards-area');
+  if (!area) return;
+  if (!reviewQueue.length) {
+    area.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><p>Слов пока нет.<br>Учитель добавит их!</p></div>';
+    return;
+  }
+  if (reviewIdx >= reviewQueue.length) {
+    area.innerHTML = `<div class="empty"><div class="empty-icon">🏆</div><p>Все карточки пройдены!<br>Молодец, Вадим!</p><br><button class="btn btn-primary" style="max-width:200px;margin:0 auto" onclick="sShowScreen('cards',2)">Ещё раз</button></div>`;
+    return;
+  }
+  const w = reviewQueue[reviewIdx];
+  const dots = reviewQueue.slice(0, Math.min(10, reviewQueue.length)).map((_,i) =>
+    `<div style="width:8px;height:8px;border-radius:50%;background:${i<reviewIdx?'var(--green)':i===reviewIdx?'var(--accent)':'var(--border)'}"></div>`
+  ).join('');
+
+  cardFlipped = false;
+  area.innerHTML = `
+    <div style="display:flex;gap:6px;align-items:center;justify-content:center;margin-bottom:12px">${dots}<span style="font-size:13px;color:var(--text2);font-weight:600;margin-left:4px">${reviewIdx+1}/${reviewQueue.length}</span></div>
+    <div class="fc-wrap">
+      <div class="fc" id="fc" onclick="flipCard()">
+        <div class="fc-face fc-front">
+          <div class="fc-chip">${w.topic}</div>
+          <div class="fc-word">${w.word}</div>
+          <div class="fc-hint">Нажми — увидишь перевод</div>
+        </div>
+        <div class="fc-face fc-back">
+          <div class="fc-word" style="color:var(--accent)">${w.translation}</div>
+          <div class="fc-hint">${w.word}</div>
+        </div>
+      </div>
+    </div>
+    <div id="fc-btns" style="display:none;margin-top:12px">
+      <div class="fc-btns">
+        <button class="btn-dontknow" onclick="markCard(false)">Не знаю 😕</button>
+        <button class="btn-know" onclick="markCard(true)">Знаю! ✓</button>
+      </div>
+    </div>
+    <p style="text-align:center;color:var(--text3);font-size:12px;margin-top:14px;font-weight:600">Нажми на карточку</p>`;
+}
+
+function flipCard() {
+  const fc = document.getElementById('fc');
+  if (!fc) return;
+  cardFlipped = !cardFlipped;
+  fc.classList.toggle('flipped', cardFlipped);
+  document.getElementById('fc-btns').style.display = cardFlipped ? 'block' : 'none';
+}
+
+async function markCard(knew) {
+  const w = reviewQueue[reviewIdx];
+  const newLevel = knew ? Math.min(3, w.level + 1) : Math.max(0, w.level - 1);
+  const days = [1,3,7,14][newLevel] || 14;
+  const d = new Date(); d.setDate(d.getDate() + days);
+  await sb.from('words').update({ level: newLevel, next_review: d.toISOString() }).eq('id', w.id);
+  reviewIdx++;
+  renderCard();
+}
+
+async function renderStudentWords(el) {
+  const { data } = await sb.from('words').select('*').order('level', { ascending: false });
+  el.innerHTML = `<div class="page"><div class="section-title">Мои слова</div><div class="section-sub">${data?.length||0} слов в словаре</div><div id="s-words"></div><div style="height:80px"></div></div>`;
+  const list = document.getElementById('s-words');
+  if (!data?.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">📖</div><p>Слов пока нет</p></div>'; return; }
+  list.innerHTML = data.map(w => `
+    <div class="word-item">
+      <div class="level-dot lv-${w.level}"></div>
+      <div><div class="word-en">${w.word}</div><div class="word-ru">${w.translation}</div></div>
+      <div class="word-chip">${w.topic}</div>
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════
+//  ───────── PARENT APP ─────────
+// ════════════════════════════════════════════
+function buildParentApp() {
+  document.getElementById('bottomNav').innerHTML = `
+    <button class="nav-item active" id="pn0" onclick="pShowScreen('home',0)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.55 5.45 21 6 21H9M19 10L21 12M19 10V20C19 20.55 18.55 21 18 21H15M9 21C9 21 9 15 12 15C15 15 15 21 15 21M9 21H15"/></svg>
+      Главная
+    </button>
+    <button class="nav-item" id="pn1" onclick="pShowScreen('lessons',1)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Уроки
+    </button>
+    <button class="nav-item" id="pn2" onclick="pShowScreen('progress',2)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 20h18M7 20V10M11 20V4M15 20V14M19 20V8"/></svg>
+      Прогресс
+    </button>
+  `;
+  pShowScreen('home', 0);
+}
+
+function pShowScreen(name, idx) {
+  document.querySelectorAll('.nav-item').forEach((b,i) => b.classList.toggle('active', i === idx));
+  const content = document.getElementById('appContent');
+  if (name === 'home') renderParentHome(content);
+  else if (name === 'lessons') renderParentLessons(content);
+  else if (name === 'progress') renderParentProgress(content);
+}
+
+async function renderParentHome(el) {
+  const [{ data: lessons }, { data: words }] = await Promise.all([
+    sb.from('lessons').select('*').order('date', { ascending: false }),
+    sb.from('words').select('level')
+  ]);
+  const lastLesson = lessons?.[0];
+  const known = (words||[]).filter(w => w.level === 3).length;
+  const grades = (lessons||[]).filter(l => l.grade).map(l => l.grade);
+  const avg = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
+  const unpaid = (lessons||[]).filter(l => !l.paid).length;
+
+  el.innerHTML = `
+    <div class="page">
+      <div class="section-title">Прогресс Вадима 📊</div>
+      <div class="section-sub">Обзор обучения</div>
+      <div class="stat-row">
+        <div class="stat-box blue"><div class="stat-val">${lessons?.length||0}</div><div class="stat-lbl">Уроков</div></div>
+        <div class="stat-box green"><div class="stat-val">${avg}</div><div class="stat-lbl">Средняя оценка</div></div>
+        <div class="stat-box orange"><div class="stat-val">${words?.length||0}</div><div class="stat-lbl">Слов</div></div>
+        <div class="stat-box blue"><div class="stat-val">${known}</div><div class="stat-lbl">Знает хорошо</div></div>
+      </div>
+      ${unpaid > 0 ? `<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Не оплачено уроков: ${unpaid}</div></div>` : ''}
+      ${lastLesson?.homework ? `
+        <div class="card" style="border-color:#fb923c;background:#fff7ed">
+          <div class="card-label">📝 Текущее домашнее задание</div>
+          <div style="font-weight:600;font-size:15px">${lastLesson.homework}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:6px">Урок: ${formatDate(lastLesson.date)}</div>
+        </div>` : ''}
+    </div>`;
+}
+
+async function renderParentLessons(el) {
+  const { data } = await sb.from('lessons').select('*').order('date', { ascending: false });
+  el.innerHTML = `<div class="page"><div class="section-title">История уроков</div><div class="section-sub">Все занятия Вадима</div><div id="p-lessons"></div><div style="height:80px"></div></div>`;
+  const list = document.getElementById('p-lessons');
+  if (!data?.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Уроков пока нет</p></div>'; return; }
+  list.innerHTML = data.map(l => `
+    <div class="lesson-card">
+      <div class="lesson-card-top">
+        <div><div class="lesson-title">${l.title}</div><div class="lesson-meta">${formatDate(l.date)}</div></div>
+        ${l.grade ? `<div class="grade grade-${l.grade}">${l.grade}</div>` : '<span class="badge badge-gray">Запланирован</span>'}
+      </div>
+      <div class="lesson-footer">
+        ${l.paid ? '<span class="badge badge-green">✓ Оплачен</span>' : '<span class="badge badge-gray">Не оплачен</span>'}
+        ${l.homework ? `<span class="badge badge-orange">📝 ДЗ</span>` : ''}
+      </div>
+      ${l.homework ? `<div style="margin-top:8px;font-size:13px;color:var(--text2)">${l.homework}</div>` : ''}
+    </div>`).join('');
+}
+
+async function renderParentProgress(el) {
+  const { data: words } = await sb.from('words').select('level,topic');
+  const levels = [0,0,0,0];
+  const topicMap = {};
+  (words||[]).forEach(w => {
+    levels[w.level]++;
+    if (!topicMap[w.topic]) topicMap[w.topic] = { total: 0, known: 0 };
+    topicMap[w.topic].total++;
+    if (w.level === 3) topicMap[w.topic].known++;
+  });
+  const total = words?.length || 1;
+
+  el.innerHTML = `
+    <div class="page">
+      <div class="section-title">Прогресс по словам</div>
+      <div class="section-sub">Детальная статистика</div>
+      <div class="card">
+        <div class="card-label">Уровни знания</div>
+        ${['Новые','Учит','Почти знает','Знает'].map((l,i) => `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div class="level-dot lv-${i}"></div>
+            <div style="font-size:13px;font-weight:600;min-width:100px">${l}</div>
+            <div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:${Math.round(levels[i]/total*100)}%;background:${['#cbd5e1','#f87171','#fb923c','#4ade80'][i]}"></div></div>
+            <div style="font-size:13px;color:var(--text2);font-weight:700">${levels[i]}</div>
+          </div>`).join('')}
+      </div>
+      <div class="card">
+        <div class="card-label">По темам</div>
+        ${Object.entries(topicMap).map(([t,v]) => `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div style="font-size:13px;font-weight:600;min-width:100px">${t}</div>
+            <div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:${Math.round(v.known/v.total*100)}%"></div></div>
+            <div style="font-size:12px;color:var(--text2);font-weight:700">${v.known}/${v.total}</div>
+          </div>`).join('') || '<p style="font-size:14px;color:var(--text2)">Нет данных</p>'}
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════════
+//  MODALS
+// ════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); });
+});
+
+// ════════════════════════════════════════════
+//  UTILS
+// ════════════════════════════════════════════
+function formatDate(d) {
+  return new Date(d).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ════════════════════════════════════════════
+//  AUTO LOGIN CHECK
+// ════════════════════════════════════════════
+(async () => {
+  show('loadingPage');
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+    if (profile) {
+      currentUser = profile;
+      currentRole = profile.role;
+      launchApp();
+      return;
+    }
+  }
+  showLogin();
+})();
+</script>
+
+<!-- ══ LESSON MODAL ══ -->
+<div class="modal-overlay" id="lessonModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Урок</div>
+    <div class="form-group">
+      <label class="form-label">Тема урока</label>
+      <input class="form-input" id="li-title" placeholder="Числа 1-20, Past Simple...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Дата</label>
+      <input class="form-input" type="date" id="li-date">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ссылка Zoom (необязательно)</label>
+      <input class="form-input" type="url" id="li-zoom" placeholder="https://zoom.us/j/...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Домашнее задание</label>
+      <textarea class="form-textarea" id="li-hw" placeholder="Выучить слова, написать предложения..."></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Оценка</label>
+      <select class="form-select" id="li-grade">
+        <option value="">— не ставить —</option>
+        <option value="5">5 — Отлично</option>
+        <option value="4">4 — Хорошо</option>
+        <option value="3">3 — Удовлетворительно</option>
+        <option value="2">2 — Плохо</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Заметки учителя</label>
+      <textarea class="form-textarea" id="li-notes" placeholder="Что далось сложно, что хорошо..."></textarea>
+    </div>
+
+    <div class="pay-row">
+      <div class="pay-label">Урок оплачен</div>
+      <button class="pay-toggle" id="lessonPayBtn" onclick="togglePaid(this)"></button>
+    </div>
+
+    <button class="btn btn-secondary" id="lessonStatusBtn" data-status="planned" style="margin-top:12px;margin-bottom:4px" onclick="toggleLessonStatus(this)">▶ Начать урок</button>
+
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-secondary" onclick="closeModal('lessonModal')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveLesson()">Сохранить</button>
+    </div>
+    <button class="btn" id="lessonDeleteBtn" style="display:none;margin-top:8px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca" onclick="deleteLesson()">Удалить урок</button>
+  </div>
+</div>
+
+<!-- ══ WORD MODAL ══ -->
+<div class="modal-overlay" id="wordModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Новое слово</div>
+    <div class="form-group">
+      <label class="form-label">Английское слово</label>
+      <input class="form-input" id="wi-en" placeholder="apple">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Перевод</label>
+      <input class="form-input" id="wi-ru" placeholder="яблоко">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Тема</label>
+      <input class="form-input" id="wi-topic" placeholder="Еда, Животные, Цвета...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Уровень знания</label>
+      <div class="level-row">
+        <button class="level-opt active" data-lv="0" onclick="selectWLevel(this)">Новое</button>
+        <button class="level-opt" data-lv="1" onclick="selectWLevel(this)">Учит</button>
+        <button class="level-opt" data-lv="2" onclick="selectWLevel(this)">Почти</button>
+        <button class="level-opt" data-lv="3" onclick="selectWLevel(this)">Знает ✓</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeModal('wordModal')">Отмена</button>
+      <button class="btn btn-primary" onclick="saveWord()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
