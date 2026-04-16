@@ -602,6 +602,12 @@ async function doPin() {
   const pin = [0,1,2,3].map(i => document.getElementById('p' + i).value).join('');
   if (pin.length < 4) { showPinError('Введи все 4 цифры'); return; }
   if (pin === STUDENT_PIN) {
+    show('loadingPage');
+    // Анонимный вход чтобы RLS пропускал запросы
+    const { data, error } = await sb.auth.signInAnonymously();
+    if (error && error.message !== 'Anonymous sign-ins are disabled') {
+      console.warn('anon sign in:', error.message);
+    }
     currentRole = 'student';
     currentUser = { name: STUDENT_NAME, role: 'student' };
     launchApp();
