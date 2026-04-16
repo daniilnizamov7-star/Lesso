@@ -211,6 +211,7 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-title" id="m-lesson-title">Урок</div>
+    <div class="form-group"><label class="form-label">Ученик</label><select class="form-select" id="li-student"></select></div>
     <div class="form-group"><label class="form-label">Тема урока</label><input class="form-input" id="li-title" placeholder="Past Simple, числа 1-20..."></div>
     <div class="form-group"><label class="form-label">Дата</label><input class="form-input" type="date" id="li-date"></div>
     <div class="form-group"><label class="form-label">Ссылка Zoom</label><input class="form-input" type="url" id="li-zoom" placeholder="https://zoom.us/j/..."></div>
@@ -649,10 +650,35 @@ async function tLessons(el) {
 }
 
 let allWords = [];
+let wordTargetStudentId = null;
+let wordStudents = [];
 async function tWords(el) {
-  el.innerHTML = `<div class="page"><div class="sec-title">Словарь</div><div class="sec-sub">Слова учеников</div><div class="frow"><button class="fchip active" data-f="all" onclick="filterWords(this)">Все</button><button class="fchip" data-f="0" onclick="filterWords(this)">Новые</button><button class="fchip" data-f="1" onclick="filterWords(this)">Учат</button><button class="fchip" data-f="2" onclick="filterWords(this)">Почти</button><button class="fchip" data-f="3" onclick="filterWords(this)">Знают ✓</button></div><div id="t-words">Загрузка...</div><div style="height:80px"></div></div>`;
+  const { data: studs } = await sb.from('students').select('id,name').eq('teacher_id',me.id);
+  wordStudents = studs||[];
+  wordTargetStudentId = wordStudents[0]?.id || null;
+
+  el.innerHTML = `<div class="page"><div class="sec-title">Словарь</div><div class="sec-sub">Слова по ученикам</div>
+    <div class="frow" id="student-tabs">
+      ${wordStudents.map(s=>`<button class="fchip${s.id===wordTargetStudentId?' active':''}" data-sid="${s.id}" onclick="switchWordStudent(this)">${s.name}</button>`).join('')}
+    </div>
+    <div class="frow"><button class="fchip active" data-f="all" onclick="filterWords(this)">Все</button><button class="fchip" data-f="0" onclick="filterWords(this)">Новые</button><button class="fchip" data-f="1" onclick="filterWords(this)">Учат</button><button class="fchip" data-f="2" onclick="filterWords(this)">Почти</button><button class="fchip" data-f="3" onclick="filterWords(this)">Знают ✓</button></div>
+    <div id="t-words">Загрузка...</div><div style="height:80px"></div></div>`;
   addFab(() => openAddWord());
-  const { data } = await sb.from('words').select('*').order('created_at',{ascending:false});
+  await loadWordsByStudent(wordTargetStudentId);
+}
+
+async function switchWordStudent(btn) {
+  document.querySelectorAll('#student-tabs .fchip').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  wordTargetStudentId = btn.dataset.sid;
+  await loadWordsByStudent(wordTargetStudentId);
+}
+
+async function loadWordsByStudent(studentId) {
+  let q = sb.from('words').select('*').order('created_at',{ascending:false});
+  if (studentId) q = q.eq('student_record_id', studentId);
+  else q = q.is('student_record_id', null);
+  const { data } = await q;
   allWords = data||[];
   renderWordList('all');
 }
@@ -743,7 +769,17 @@ async function openAddLesson() {
   const sb2 = document.getElementById('li-status-btn');
   sb2.textContent='▶ Начать урок'; sb2.dataset.status='planned'; sb2.dataset.lid='';
   document.getElementById('li-delete-btn').style.display='none';
+  await populateStudentSelect(null);
   openModal('m-lesson');
+}
+
+async function populateStudentSelect(selectedId) {
+  const { data: studs } = await sb.from('students').select('id,name').eq('teacher_id',me.id);
+  const sel = document.getElementById('li-student');
+  if (!sel) return;
+  sel.innerHTML = (studs||[]).map(s =>
+    `<option value="${s.id}" ${s.id===selectedId?'selected':''}>${s.name}</option>`
+  ).join('') || '<option value="">Нет учеников</option>';
 }
 
 async function openLesson(id) {
@@ -763,6 +799,7 @@ async function openLesson(id) {
   sb2.textContent = l.status==='active'?'🔴 Урок идёт — завершить':l.status==='done'?'✓ Урок завершён':'▶ Начать урок';
   sb2.dataset.status=l.status; sb2.dataset.lid=id;
   document.getElementById('li-delete-btn').style.display='block';
+  await populateStudentSelect(l.student_id);
   openModal('m-lesson');
 }
 
@@ -770,8 +807,10 @@ async function saveLesson() {
   const title = document.getElementById('li-title').value.trim();
   const date = document.getElementById('li-date').value;
   if (!title||!date) { toast('Заполни название и дату'); return; }
+  const stuSel = document.getElementById('li-student');
   const payload = {
     title, date, teacher_id: me.id,
+    student_id: stuSel?.value || null,
     zoom_link: document.getElementById('li-zoom').value.trim()||null,
     homework: document.getElementById('li-hw').value.trim()||null,
     notes: document.getElementById('li-notes').value.trim()||null,
@@ -853,6 +892,20 @@ async function saveStudent() {
   const pin = document.getElementById('si-pin').value.trim();
   if (!name) { toast('Введи имя ученика'); return; }
   if (!pin || pin.length !== 4 || isNaN(pin)) { toast('PIN должен быть 4 цифры'); return; }
+
+  // Проверка лимита (только при добавлении нового)
+  if (!editStudentId) {
+    const [{ count: current }, { data: profile }] = await Promise.all([
+      sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
+      sb.from('profiles').select('students_limit').eq('id',me.id).single()
+    ]);
+    const limit = profile?.students_limit ?? 1;
+    if (current >= limit) {
+      toast(`Лимит ${limit} уч. достигнут. Пишите: +7 991 174-51-13`);
+      return;
+    }
+  }
+
   // Проверка уникальности PIN у этого учителя
   const { data: existing } = await sb.from('students')
     .select('id').eq('teacher_id',me.id).eq('pin',pin)
@@ -903,7 +956,8 @@ async function saveWord() {
   const {error}=await sb.from('words').insert({
     word, translation,
     topic: document.getElementById('wi-topic').value.trim()||'Разное',
-    level: wLevel, next_review: new Date().toISOString()
+    level: wLevel, next_review: new Date().toISOString(),
+    student_record_id: wordTargetStudentId || null
   });
   if (error) { toast('Ошибка: '+error.message); return; }
   closeModal('m-word');
@@ -977,7 +1031,7 @@ function sScreen(name, idx) {
 
 async function sHome(el) {
   const [{data:lessons},{data:words}]=await Promise.all([
-    sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).order('date',{ascending:false}).limit(5),
+    sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(5),
     sb.from('words').select('level')
   ]);
   const known=(words||[]).filter(w=>w.level===3).length;
@@ -1003,7 +1057,7 @@ async function sHome(el) {
 }
 
 async function sLessons(el) {
-  const {data}=await sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).order('date',{ascending:false});
+  const {data}=await sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false});
   el.innerHTML=`<div class="page"><div class="sec-title">Мои уроки</div><div class="sec-sub">История занятий</div><div id="s-lessons"></div><div style="height:80px"></div></div>`;
   const list=document.getElementById('s-lessons');
   if (!data?.length) { list.innerHTML='<div class="empty"><div class="empty-icon">📅</div><p>Уроков пока нет</p></div>'; return; }
@@ -1023,7 +1077,7 @@ async function sLessons(el) {
 
 let reviewQ=[], reviewIdx=0, cardFlipped=false;
 async function sCards(el) {
-  const {data}=await sb.from('words').select('*');
+  const {data}=await sb.from('words').select('*').eq('student_record_id',me.student_id);
   const now=new Date();
   reviewQ=(data||[]).filter(w=>w.level<3||new Date(w.next_review)<=now);
   if (!reviewQ.length) reviewQ=data||[];
@@ -1083,7 +1137,7 @@ async function markCard(knew) {
 }
 
 async function sWordsList(el) {
-  const {data}=await sb.from('words').select('*').order('level',{ascending:false});
+  const {data}=await sb.from('words').select('*').eq('student_record_id',me.student_id).order('level',{ascending:false});
   el.innerHTML=`<div class="page"><div class="sec-title">Мои слова</div><div class="sec-sub">${data?.length||0} слов в словаре</div><div id="s-words"></div><div style="height:80px"></div></div>`;
   const list=document.getElementById('s-words');
   if (!data?.length) { list.innerHTML='<div class="empty"><div class="empty-icon">📖</div><p>Слов пока нет</p></div>'; return; }
