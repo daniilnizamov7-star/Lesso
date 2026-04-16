@@ -884,6 +884,18 @@ function openAddLesson() {
   document.getElementById('li-hw').value = '';
   document.getElementById('li-notes').value = '';
   document.getElementById('li-grade').value = '';
+  // Сброс кнопки оплаты
+  const payBtn = document.getElementById('lessonPayBtn');
+  payBtn.classList.remove('on');
+  payBtn.dataset.id = '';
+  payBtn.dataset.paid = '0';
+  // Сброс кнопки статуса
+  const statusBtn = document.getElementById('lessonStatusBtn');
+  statusBtn.textContent = '▶ Начать урок';
+  statusBtn.dataset.status = 'planned';
+  statusBtn.dataset.id = '';
+  // Скрыть кнопку удаления
+  document.getElementById('lessonDeleteBtn').style.display = 'none';
   openModal('lessonModal');
 }
 
@@ -967,14 +979,19 @@ async function togglePaid(btn) {
 
 async function toggleLessonStatus(btn) {
   const status = btn.dataset.status;
-  let newStatus = status === 'planned' ? 'active' : status === 'active' ? 'done' : 'done';
+  if (status === 'done') return; // уже завершён, ничего не делаем
+  if (!btn.dataset.id) { showToast('Сначала сохрани урок'); return; }
+  btn.disabled = true;
+  let newStatus = status === 'planned' ? 'active' : 'done';
   const update = { status: newStatus };
   if (newStatus === 'active') update.started_at = new Date().toISOString();
   if (newStatus === 'done') update.ended_at = new Date().toISOString();
-  await sb.from('lessons').update(update).eq('id', btn.dataset.id);
+  const { error } = await sb.from('lessons').update(update).eq('id', btn.dataset.id);
+  btn.disabled = false;
+  if (error) { showToast('Ошибка: ' + error.message); console.error(error); return; }
   btn.textContent = newStatus === 'active' ? '🔴 Урок идёт — завершить' : '✓ Урок завершён';
   btn.dataset.status = newStatus;
-  showToast(newStatus === 'active' ? 'Урок начат!' : 'Урок завершён!');
+  showToast(newStatus === 'active' ? '🔴 Урок начат!' : '✓ Урок завершён!');
 }
 
 // ── Word Modal ──
