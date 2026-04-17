@@ -1123,9 +1123,12 @@ function pSc(n,i) {
   else if(n==='chats') pChats(c);
 }
 async function pHome(el) {
+  const{data:myStus}=await sb.from('students').select('id').eq('parent_user_id',me.id);
+  const stuIds=(myStus||[]).map(s=>s.id);
+  if(!stuIds.length){el.innerHTML=`<div class="page"><div class="stitle">Прогресс ученика 📊</div><div class="ssub">Обзор обучения</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников</p></div></div>`;return;}
   const[{data:ls},{data:ws}]=await Promise.all([
-    sb.from('lessons').select('*').order('date',{ascending:false}),
-    sb.from('words').select('level')
+    sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}),
+    sb.from('words').select('level').in('student_record_id',stuIds)
   ]);
   const known=(ws||[]).filter(w=>w.level===3).length;
   const grades=(ls||[]).filter(l=>l.grade).map(l=>l.grade);
@@ -1144,7 +1147,9 @@ async function pHome(el) {
   </div>`;
 }
 async function pLessons(el) {
-  const{data}=await sb.from('lessons').select('*').order('date',{ascending:false});
+  const{data:myStus}=await sb.from('students').select('id').eq('parent_user_id',me.id);
+  const stuIds=(myStus||[]).map(s=>s.id);
+  const{data}=stuIds.length?await sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}):{data:[]};
   el.innerHTML=`<div class="page"><div class="stitle">История уроков</div><div class="ssub">Все занятия</div><div id="pl-list"></div><div style="height:80px"></div></div>`;
   const l=document.getElementById('pl-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
@@ -1163,7 +1168,9 @@ async function pLessons(el) {
   </div>`).join('');
 }
 async function pProgress(el) {
-  const{data:ws}=await sb.from('words').select('level,topic');
+  const{data:myStus}=await sb.from('students').select('id').eq('parent_user_id',me.id);
+  const stuIds=(myStus||[]).map(s=>s.id);
+  const{data:ws}=stuIds.length?await sb.from('words').select('level,topic').in('student_record_id',stuIds):{data:[]};
   const lv=[0,0,0,0],tm={};
   (ws||[]).forEach(w=>{lv[w.level]++;if(!tm[w.topic])tm[w.topic]={t:0,k:0};tm[w.topic].t++;if(w.level===3)tm[w.topic].k++;});
   const tot=ws?.length||1;
@@ -1186,22 +1193,24 @@ async function pProgress(el) {
 }
 async function pChats(el) {
   el.innerHTML=`<div class="page"><div class="stitle">Чат с учителем</div><div class="ssub">Сообщения и вопросы</div><div id="pc-list">Загрузка...</div></div>`;
-  // Находим всех учителей у которых есть наши дети
-  const{data:ls}=await sb.from('lessons').select('teacher_id').limit(1);
-  const tid=ls?.[0]?.teacher_id;
-  if(!tid){document.getElementById('pc-list').innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет активных уроков</p></div>`;return;}
-  const[{data:tp},{data:stus}]=await Promise.all([
-    sb.from('profiles').select('id,name').eq('id',tid).single(),
-    sb.from('students').select('*').eq('teacher_id',tid)
-  ]);
+  // Берём только учеников, привязанных к этому родителю
+  const{data:myStus}=await sb.from('students').select('*').eq('parent_user_id',me.id);
   const l=document.getElementById('pc-list');
-  if(!stus?.length){l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет учеников</p></div>`;return;}
-  // Родитель видит один чат с учителем по каждому ребёнку
-  l.innerHTML=stus.map(s=>`<div class="chitem" onclick="openParentChat('${tid}','${s.id}','${s.name}','${tp?.name||"Учитель"}')">
+  if(!myStus?.length){
+    l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет привязанных учеников</p></div>`;
+    return;
+  }
+  const teacherIds=[...new Set(myStus.map(s=>s.teacher_id))];
+  const{data:teachers}=await sb.from('profiles').select('id,name').in('id',teacherIds);
+  const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t]));
+  l.innerHTML=myStus.map(s=>{
+    const tp=tMap[s.teacher_id];
+    return`<div class="chitem" onclick="openParentChat('${s.teacher_id}','${s.id}','${s.name}','${tp?.name||"Учитель"}')">
     <div class="chav" style="background:#16a34a">${tp?.name?.[0]?.toUpperCase()||'У'}</div>
     <div style="flex:1"><div class="chname">👨‍🏫 ${tp?.name||'Учитель'}</div><div class="chlast">Переписка по ученику: ${s.name}</div></div>
     ${chev()}
-  </div>`).join('');
+  </div>`;
+  }).join('');
   await sb.from('notifications').update({read:true}).eq('recipient_id',me.id).eq('read',false);
   checkUnread();
 }
