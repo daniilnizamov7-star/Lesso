@@ -461,25 +461,46 @@ async function subscribeNotifs() {
   await checkUnread();
   const rid = me.role === 'student' ? me.student_id : me.id;
   if(!rid) return;
-  const channel = sb.channel('notifs-'+rid)
+  // Подписка на уведомления
+  sb.channel('notifs-'+rid)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:`recipient_id=eq.${rid}`},
-      () => { checkUnread(); showToastNotif(); })
+      () => { checkUnread(); toast('🔔 Новое уведомление!'); })
+    .subscribe();
+  // Подписка на новые сообщения чата для красной точки
+  sb.channel('msgs-global-'+rid)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'},
+      (payload) => {
+        // Не показываем точку на своё сообщение
+        if(payload.new.sender_id === rid) return;
+        checkUnread();
+        // Если чат открыт — обновляем его
+        if(activeChatId && payload.new.chat_id === activeChatId) loadChatMsgs();
+        else if(lessonChatId && payload.new.lesson_id === lessonChatId) loadLessonMsgs();
+        else toast('💬 Новое сообщение');
+      })
     .subscribe();
 }
-
-function showToastNotif() {
-  toast('🔔 Новое уведомление!');
-}
 async function checkUnread() {
-  // Ученик идентифицируется по student_id, остальные по auth id
   const rid = me.role === 'student' ? me.student_id : me.id;
   if (!rid) return;
-  const { count } = await sb.from('notifications').select('*',{count:'exact',head:true})
+
+  // Считаем непрочитанные уведомления
+  const { count: notifCount } = await sb.from('notifications').select('*',{count:'exact',head:true})
     .eq('recipient_id', rid).eq('read', false);
-  unreadCount = count || 0;
+
+  // Считаем непрочитанные сообщения в чатах
+  // Сообщение непрочитанное если rid не в read_by и sender не я
+  const { count: msgCount } = await sb.from('chat_messages').select('*',{count:'exact',head:true})
+    .not('read_by', 'cs', `{${rid}}`)
+    .neq('sender_id', rid);
+
+  unreadCount = (notifCount || 0) + (msgCount || 0);
   const badge = document.getElementById('av-badge');
-  if (badge) { badge.textContent = unreadCount > 9 ? '9+' : unreadCount; badge.style.display = unreadCount > 0 ? 'flex' : 'none'; }
-  // Dot on chats nav tab
+  if (badge) {
+    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+    badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+  }
+  // Красная точка на вкладке Чаты
   const chatNavIdx = me.role === 'teacher' ? 4 : me.role === 'parent' ? 3 : 4;
   const dot = document.getElementById('nd'+chatNavIdx);
   if (dot) dot.classList.toggle('show', unreadCount > 0);
@@ -666,48 +687,83 @@ async function loadChatMsgs() {
   if(!activeChatId) return;
   const{data}=await sb.from('chat_messages').select('*').eq('chat_id',activeChatId).order('created_at');
   renderMsgs(data);
+  markMsgsRead(activeChatId, null);
 }
 async function loadLessonMsgs() {
   if(!lessonChatId) return;
   const{data}=await sb.from('chat_messages').select('*').eq('lesson_id',lessonChatId).order('created_at');
   renderMsgs(data);
+  markMsgsRead(null, lessonChatId);
+}
+
+async function markMsgsRead(chatId, lessonId) {
+  const rid = me.role === 'student' ? me.student_id : me.id;
+  if(!rid) return;
+  // Получаем непрочитанные сообщения
+  let q = sb.from('chat_messages').select('id,read_by').not('read_by','cs',`{${rid}}`).neq('sender_id',rid);
+  if(chatId) q = q.eq('chat_id', chatId);
+  if(lessonId) q = q.eq('lesson_id', lessonId);
+  const{data:msgs} = await q;
+  if(!msgs?.length) { checkUnread(); return; }
+  // Добавляем rid в read_by каждого сообщения
+  await Promise.all(msgs.map(m =>
+    sb.from('chat_messages').update({read_by:[...(m.read_by||[]),rid]}).eq('id',m.id)
+  ));
+  checkUnread();
 }
 
 function renderMsgs(data) {
-  const wrap=document.getElementById('chat-msgs'); if(!wrap) return;
+  const wrap=document.getElementById('chat-msgs');
+  if(!wrap) return;
   if(!data?.length){wrap.innerHTML=`<div style="text-align:center;color:var(--t3);font-size:13px;padding:20px">Напишите первое сообщение!</div>`;return;}
+  const myId = me.role === 'student' ? me.student_id : me.id;
   wrap.innerHTML=data.map(m=>{
-    const myId = me.role === 'student' ? me.student_id : me.id;
-    const mine = m.sender_id === myId || (me.role === 'student' && m.sender_role === 'student' && m.sender_name === me.name);
+    const mine = m.sender_id === myId || (me.role==='student' && m.sender_role==='student' && m.sender_name===me.name);
     return `<div class="msg ${mine?'mine':'theirs'}">
       ${!mine?`<div class="msg-who">${m.sender_name}</div>`:''}
       <div class="msg-bbl">${m.text}</div>
       <div class="msg-time">${ft(m.created_at)}</div>
     </div>`;
   }).join('');
-  wrap.scrollTop=wrap.scrollHeight;
+  // Scroll to bottom — use requestAnimationFrame to ensure DOM is painted
+  requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
 }
 
 async function sendMsg() {
   const inp=document.getElementById('chat-inp');
   const text=inp.value.trim(); if(!text) return;
   inp.value='';
-  // Ученик использует student_id как sender_id
-  const senderId = me.role === 'student' ? me.student_id : me.id;
+
+  // Показываем сообщение сразу (оптимистичный UI)
+  const wrap=document.getElementById('chat-msgs');
+  if(wrap){
+    const tempDiv=document.createElement('div');
+    tempDiv.className='msg mine';
+    tempDiv.innerHTML=`<div class="msg-bbl">${text}</div><div class="msg-time">${ft(new Date().toISOString())}</div>`;
+    wrap.appendChild(tempDiv);
+    requestAnimationFrame(()=>{wrap.scrollTop=wrap.scrollHeight;});
+  }
+
+  const senderId = me.role==='student' ? me.student_id : me.id;
   const payload={sender_id:senderId, sender_role:me.role, sender_name:me.name, text};
   if(activeChatId) payload.chat_id=activeChatId;
   else if(lessonChatId) payload.lesson_id=lessonChatId;
   const{error}=await sb.from('chat_messages').insert(payload);
   if(error){toast('Ошибка: '+error.message);return;}
-  // Уведомление собеседнику
+
+  // Обновляем last_message и отправляем уведомление
   if(activeChatId){
     const{data:chat}=await sb.from('chats').select('*').eq('id',activeChatId).single();
     if(chat){
       await sb.from('chats').update({last_message:text,last_message_at:new Date().toISOString()}).eq('id',activeChatId);
-      // Определяем получателя
       if(me.role==='teacher'){
-        // Уведомляем родителя или ученика — они идентифицируются по student_id
-        await sb.from('notifications').insert({recipient_id:chat.student_id,type:'new_message',title:'Новое сообщение',body:text});
+        await sb.from('notifications').insert([
+          {recipient_id:chat.student_id,type:'new_message',title:`Учитель пишет`,body:text},
+        ]);
+      } else if(me.role==='student'){
+        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:`${me.name} пишет`,body:text});
+      } else if(me.role==='parent'){
+        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:`Родитель пишет`,body:text});
       }
     }
   }
