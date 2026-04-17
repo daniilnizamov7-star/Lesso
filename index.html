@@ -834,20 +834,21 @@ async function sendMsg() {
   const{error}=await sb.from('chat_messages').insert(payload);
   if(error){toast('Ошибка: '+error.message);return;}
   // Уведомление учителю если пишет ученик через lesson chat
-  if(lessonChatId && me.role==='student'){
-    const tid=me.teacher_id;
-    if(tid){
-      const{error:ne}=await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId});
-      if(ne) toast('notif err: '+ne.message);
+  if(lessonChatId){
+    if(me.role==='student'){
+      // Ученик → уведомление учителю
+      const tid=me.teacher_id;
+      if(tid) await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId});
+    } else if(me.role==='teacher'){
+      // Учитель → уведомление ученику по этому уроку
+      const{data:les}=await sb.from('lessons').select('student_id').eq('id',lessonChatId).single();
+      if(les?.student_id) await sb.from('notifications').insert({recipient_id:les.student_id,type:'new_message',title:'Учитель написал в уроке',body:text,lesson_id:lessonChatId});
     }
   }
   // Уведомление от ученика в личном чате
   if(activeChatId && me.role==='student'){
     const tid=me.teacher_id;
-    if(tid){
-      const{error:ne2}=await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' пишет',body:text});
-      if(ne2) toast('notif2 err: '+ne2.message);
-    }
+    if(tid) await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' пишет',body:text});
   }
 
   // Обновляем last_message и отправляем уведомление
@@ -855,14 +856,25 @@ async function sendMsg() {
     const{data:chat}=await sb.from('chats').select('*').eq('id',activeChatId).single();
     if(chat){
       await sb.from('chats').update({last_message:text,last_message_at:new Date().toISOString()}).eq('id',activeChatId);
+      const isParentChat = chat.type === 'teacher_parent';
       if(me.role==='teacher'){
-        await sb.from('notifications').insert([
-          {recipient_id:chat.student_id,type:'new_message',title:`Учитель пишет`,body:text},
-        ]);
+        if(isParentChat){
+          // Учитель → родителю: уведомляем parent_user_id
+          const{data:stu}=await sb.from('students').select('parent_user_id,name').eq('id',chat.student_id).single();
+          if(stu?.parent_user_id) await sb.from('notifications').insert({recipient_id:stu.parent_user_id,type:'new_message',title:'Учитель пишет ('+stu.name+')',body:text});
+        } else {
+          // Учитель → ученику: уведомляем student_id + родителя
+          await sb.from('notifications').insert({recipient_id:chat.student_id,type:'new_message',title:'Учитель пишет',body:text});
+          const{data:stu}=await sb.from('students').select('parent_user_id,name').eq('id',chat.student_id).single();
+          if(stu?.parent_user_id) await sb.from('notifications').insert({recipient_id:stu.parent_user_id,type:'new_message',title:'Учитель написал '+stu.name,body:text});
+        }
       } else if(me.role==='student'){
-        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:`${me.name} пишет`,body:text});
+        // Ученик → учителю
+        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:me.name+' пишет',body:text});
       } else if(me.role==='parent'){
-        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:`Родитель пишет`,body:text});
+        // Родитель → учителю
+        const{data:stu}=await sb.from('students').select('name').eq('id',chat.student_id).single();
+        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:'Родитель ('+( stu?.name||'')+') пишет',body:text});
       }
     }
   }
