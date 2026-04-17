@@ -538,11 +538,55 @@ async function checkUnread() {
   const { count: notifCount } = await sb.from('notifications').select('*',{count:'exact',head:true})
     .eq('recipient_id', rid).eq('read', false);
 
-  // Считаем непрочитанные сообщения в чатах
-  // Сообщение непрочитанное если rid не в read_by и sender не я
-  const { count: msgCount } = await sb.from('chat_messages').select('*',{count:'exact',head:true})
-    .not('read_by', 'cs', `{${rid}}`)
-    .neq('sender_id', rid);
+  // Считаем непрочитанные сообщения — только в своих чатах
+  let msgCount = 0;
+  if(me.role === 'teacher') {
+    // Учитель: сообщения в чатах где он teacher_id
+    const{data:myChats}=await sb.from('chats').select('id').eq('teacher_id',rid);
+    const chatIds=(myChats||[]).map(c=>c.id);
+    if(chatIds.length){
+      const{count}=await sb.from('chat_messages').select('*',{count:'exact',head:true})
+        .in('chat_id',chatIds).not('read_by','cs',`{${rid}}`).neq('sender_id',rid);
+      msgCount=(count||0);
+    }
+    // Плюс lesson chats
+    const{data:myLessons}=await sb.from('lessons').select('id').eq('teacher_id',rid);
+    const lessonIds=(myLessons||[]).map(l=>l.id);
+    if(lessonIds.length){
+      const{count}=await sb.from('chat_messages').select('*',{count:'exact',head:true})
+        .in('lesson_id',lessonIds).not('read_by','cs',`{${rid}}`).neq('sender_id',rid);
+      msgCount+=(count||0);
+    }
+  } else if(me.role === 'student') {
+    // Ученик: только свои чаты и уроки
+    const{data:myChats}=await sb.from('chats').select('id').eq('student_id',rid);
+    const chatIds=(myChats||[]).map(c=>c.id);
+    if(chatIds.length){
+      const{count}=await sb.from('chat_messages').select('*',{count:'exact',head:true})
+        .in('chat_id',chatIds).not('read_by','cs',`{${rid}}`).neq('sender_id',rid);
+      msgCount=(count||0);
+    }
+    const{data:myLessons}=await sb.from('lessons').select('id').eq('student_id',rid);
+    const lessonIds=(myLessons||[]).map(l=>l.id);
+    if(lessonIds.length){
+      const{count}=await sb.from('chat_messages').select('*',{count:'exact',head:true})
+        .in('lesson_id',lessonIds).not('read_by','cs',`{${rid}}`).neq('sender_id',rid);
+      msgCount+=(count||0);
+    }
+  } else if(me.role === 'parent') {
+    // Родитель: чаты teacher_parent где его дети
+    const{data:myStus}=await sb.from('students').select('id').eq('parent_user_id',me.id);
+    const stuIds=(myStus||[]).map(s=>s.id);
+    if(stuIds.length){
+      const{data:myChats}=await sb.from('chats').select('id').in('student_id',stuIds).eq('type','teacher_parent');
+      const chatIds=(myChats||[]).map(c=>c.id);
+      if(chatIds.length){
+        const{count}=await sb.from('chat_messages').select('*',{count:'exact',head:true})
+          .in('chat_id',chatIds).not('read_by','cs',`{${rid}}`).neq('sender_id',rid);
+        msgCount=(count||0);
+      }
+    }
+  }
 
   unreadCount = (notifCount || 0) + (msgCount || 0);
   const badge = document.getElementById('av-badge');
