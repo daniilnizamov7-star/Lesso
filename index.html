@@ -1116,7 +1116,7 @@ function buildParent() {
   pSc('home',0);
 }
 function pSc(n,i) {
-  actNav(i); const c=document.getElementById('ac');
+  actNav(i); document.getElementById('fab')?.remove(); const c=document.getElementById('ac');
   if(n==='home') pHome(c);
   else if(n==='lessons') pLessons(c);
   else if(n==='progress') pProgress(c);
@@ -1135,6 +1135,7 @@ async function pHome(el) {
   const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1):'—';
   const unpaid=(ls||[]).filter(l=>!l.paid).length;
   const last=ls?.[0];
+  addFab(()=>openLinkChild());
   el.innerHTML=`<div class="page"><div class="stitle">Прогресс ученика 📊</div><div class="ssub">Обзор обучения</div>
     <div class="srow">
       <div class="sbox blue"><div class="sv">${ls?.length||0}</div><div class="sl">Уроков</div></div>
@@ -1213,6 +1214,54 @@ async function pChats(el) {
   }).join('');
   await sb.from('notifications').update({read:true}).eq('recipient_id',me.id).eq('read',false);
   checkUnread();
+}
+
+async function openLinkChild() {
+  // Показываем модал для привязки ученика по коду учителя + PIN
+  const mo = document.createElement('div');
+  mo.className='mo'; mo.id='m-link-child';
+  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  mo.innerHTML=`
+    <div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+      <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">Привязать ребёнка</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Узнайте у учителя код учителя и PIN ребёнка</div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">КОД УЧИТЕЛЯ</div>
+        <input id="lc-tcode" class="cinp" placeholder="Например: AB12" style="width:100%;box-sizing:border-box" maxlength="6">
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">PIN РЕБЁНКА</div>
+        <input id="lc-pin" class="cinp" type="tel" placeholder="4 цифры" style="width:100%;box-sizing:border-box" maxlength="4">
+      </div>
+      <div id="lc-err" class="err"></div>
+      <button class="btn bp" style="width:100%;margin-top:8px" onclick="doLinkChild()">Привязать</button>
+      <button class="btn bs" style="width:100%;margin-top:8px" onclick="document.getElementById('m-link-child')?.remove()">Отмена</button>
+    </div>`;
+  document.body.appendChild(mo);
+  mo.addEventListener('click', e => { if(e.target===mo) mo.remove(); });
+  setTimeout(()=>document.getElementById('lc-tcode')?.focus(),100);
+}
+
+async function doLinkChild() {
+  const tcode = document.getElementById('lc-tcode')?.value.trim().toUpperCase();
+  const pin   = document.getElementById('lc-pin')?.value.trim();
+  const err   = document.getElementById('lc-err');
+  err.classList.remove('show');
+  if(!tcode || pin.length<4){ err.textContent='Заполните все поля'; err.classList.add('show'); return; }
+  // Ищем учителя по коду
+  const{data:teacher}=await sb.from('profiles').select('id,name').eq('teacher_code',tcode).eq('role','teacher').single();
+  if(!teacher){ err.textContent='Учитель с таким кодом не найден'; err.classList.add('show'); return; }
+  // Ищем ученика у этого учителя по PIN
+  const{data:stu}=await sb.from('students').select('*').eq('teacher_id',teacher.id).eq('pin',pin).single();
+  if(!stu){ err.textContent='Неверный PIN ученика'; err.classList.add('show'); return; }
+  if(stu.parent_user_id && stu.parent_user_id !== me.id){ err.textContent='Этот ученик уже привязан к другому родителю'; err.classList.add('show'); return; }
+  // Привязываем
+  const{error}=await sb.from('students').update({parent_user_id:me.id}).eq('id',stu.id);
+  if(error){ err.textContent='Ошибка: '+error.message; err.classList.add('show'); return; }
+  document.getElementById('m-link-child')?.remove();
+  toast('✅ '+stu.name+' привязан!');
+  pSc('home',0);
 }
 
 async function openParentChat(tid, stuId, stuName, tname) {
