@@ -473,6 +473,30 @@ function addFab(fn) {
 }
 
 // ── Notifications ──
+async function deleteNotif(id) {
+  await sb.from('notifications').delete().eq('id',id);
+  document.getElementById('ni-'+id)?.remove();
+  const list=document.getElementById('notif-list');
+  if(list&&!list.querySelector('[id^="ni-"]')){
+    list.innerHTML='<div class="empty" style="padding:40px 0"><div class="ei">🔔</div><p>Уведомлений нет</p></div>';
+    const btn=document.querySelector('[onclick*="clearAllNotifs"]');
+    if(btn) btn.remove();
+  }
+  checkUnread();
+}
+async function clearAllNotifs(rid) {
+  await sb.from('notifications').delete().eq('recipient_id',rid);
+  const list=document.getElementById('notif-list');
+  if(list) list.innerHTML='<div class="empty" style="padding:40px 0"><div class="ei">🔔</div><p>Уведомлений нет</p></div>';
+  const btn=document.querySelector('[onclick*="clearAllNotifs"]');
+  if(btn) btn.remove();
+  unreadCount=0;
+  const badge=document.getElementById('av-badge');
+  if(badge) badge.style.display='none';
+  const chatNavIdx = me.role==='teacher'?4:me.role==='parent'?3:4;
+  const dot=document.getElementById('nd'+chatNavIdx);
+  if(dot) dot.classList.remove('show');
+}
 async function openNotifPanel() {
   document.getElementById('m-notif')?.remove();
   const rid = me.role === 'student' ? me.student_id : me.id;
@@ -483,19 +507,22 @@ async function openNotifPanel() {
   mo.style.cssText='';
   const items=!notifs?.length
     ?'<div class="empty" style="padding:40px 0"><div class="ei">🔔</div><p>Уведомлений нет</p></div>'
-    :notifs.map(n=>`<div style="padding:12px 0;border-bottom:1px solid var(--b);display:flex;gap:10px;align-items:flex-start">
+    :notifs.map(n=>`<div id="ni-${n.id}" style="padding:12px 0;border-bottom:1px solid var(--b);display:flex;gap:10px;align-items:flex-start">
         <div style="font-size:20px">${n.type==='new_message'?'💬':n.type==='lesson_created'?'📅':n.type==='homework'?'📝':'🔔'}</div>
         <div style="flex:1">
           <div style="font-weight:600;font-size:14px">${n.title||''}</div>
           <div style="font-size:13px;color:var(--t2);margin-top:2px">${n.body||''}</div>
           <div style="font-size:11px;color:var(--t2);margin-top:4px">${new Date(n.created_at).toLocaleString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
         </div>
-        ${!n.read?'<div style="width:8px;height:8px;border-radius:50%;background:var(--r);flex-shrink:0;margin-top:4px"></div>':''}
+        <button onclick="deleteNotif('${n.id}')" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:18px;padding:0 4px;flex-shrink:0">×</button>
       </div>`).join('');
   mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;max-height:70dvh;display:flex;flex-direction:column;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
     <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
-    <div style="font-size:18px;font-weight:700;margin-bottom:16px">Уведомления</div>
-    <div style="overflow-y:auto;flex:1">${items}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:18px;font-weight:700">Уведомления</div>
+      ${notifs?.length?`<button onclick="clearAllNotifs('${rid}')" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--r);font-weight:600;font-family:inherit">Удалить все</button>`:''}
+    </div>
+    <div style="overflow-y:auto;flex:1" id="notif-list">${items}</div>
     <button class="btn bs" style="width:100%;margin-top:12px" onclick="document.getElementById('m-notif')?.remove()">Закрыть</button>
   </div>`;
   document.body.appendChild(mo);
