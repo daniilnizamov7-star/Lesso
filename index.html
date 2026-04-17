@@ -452,7 +452,7 @@ function launchApp() {
   subscribeNotifs();
 }
 async function doLogout() {
-  if (me.role !== 'student') await sb.auth.signOut();
+  if (me.role === 'teacher' || me.role === 'parent') await sb.auth.signOut();
   me = null; selTeacherId = null;
   renderRoles();
 }
@@ -680,6 +680,18 @@ async function tChats(el) {
       <div class="chav" style="background:#2563eb">${s.name[0]}</div>
       <div style="flex:1"><div class="chname">🧒 ${s.name}</div><div class="chlast">Чат с учеником</div></div>
     </div>`).join('');
+  // Чаты по урокам
+  const{data:ls}=await sb.from('lessons').select('id,title,date,student_id').eq('teacher_id',me.id).order('date',{ascending:false}).limit(20);
+  const sm2=Object.fromEntries((stus||[]).map(s=>[s.id,s.name]));
+  if(ls?.length){
+    const lessonDiv=document.createElement('div');
+    lessonDiv.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin:20px 0 8px">Чаты по урокам</div>`+
+      ls.map(l=>`<div class="chitem" onclick="openLessonChat('${l.id}','${l.title.replace(/'/g,"\'")}')">
+        <div class="chav" style="background:#ea580c;font-size:14px">📚</div>
+        <div style="flex:1"><div class="chname">${l.title}</div><div class="chlast">${fd(l.date)}${l.student_id&&sm2[l.student_id]?' · '+sm2[l.student_id]:''}</div></div>
+      </div>`).join('');
+    document.getElementById('tc-list').appendChild(lessonDiv);
+  }
   // Уведомления прочитаны при открытии чатов
   await sb.from('notifications').update({read:true}).eq('recipient_id',me.id).eq('read',false);
   checkUnread();
@@ -800,6 +812,11 @@ async function sendMsg() {
   else if(lessonChatId) payload.lesson_id=lessonChatId;
   const{error}=await sb.from('chat_messages').insert(payload);
   if(error){toast('Ошибка: '+error.message);return;}
+  // Уведомление учителю если пишет ученик через lesson chat
+  if(lessonChatId && me.role==='student'){
+    const tid=me.teacher_id;
+    if(tid) await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId}).catch(()=>{});
+  }
 
   // Обновляем last_message и отправляем уведомление
   if(activeChatId){
@@ -905,10 +922,14 @@ async function saveLesson() {
     pendFile=null;
   }
   // Notify on homework
-  if(payload.homework&&stuId){
-    await sb.from('notifications').insert({recipient_id:stuId,type:'new_homework',title:'Новое домашнее задание',body:payload.homework,lesson_id:lid});
-    // Also notify parent — we store student record id; parent is identified separately
-    // For simplicity notify by student_id which parent checks
+  if(stuId){
+    // Уведомляем ученика о новом уроке
+    await sb.from('notifications').insert({recipient_id:stuId,type:'lesson_created',title:'Новый урок: '+title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
+    // Уведомляем родителя если привязан
+    const{data:stuRec}=await sb.from('students').select('parent_user_id').eq('id',stuId).single();
+    if(stuRec?.parent_user_id){
+      await sb.from('notifications').insert({recipient_id:stuRec.parent_user_id,type:'lesson_created',title:'Новый урок у '+payload.title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
+    }
   }
   closeM('m-lesson'); toast('Урок сохранён ✓'); tSc('lessons',2);
 }
