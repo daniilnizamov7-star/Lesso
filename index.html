@@ -425,9 +425,8 @@ async function doPin() {
   pg('pg-load');
   const { data: stu } = await sb.from('students').select('*').eq('teacher_id', selTeacherId).eq('pin', pin).single();
   if (!stu) { showPin(selTeacherId,''); perr('Неверный PIN-код'); return; }
-  await sb.auth.signInAnonymously().catch(() => {});
-  const { data: { user } } = await sb.auth.getUser();
-  me = { role: 'student', name: stu.name, id: user?.id||null, student_id: stu.id, teacher_id: selTeacherId };
+  // Ученик работает как anon — без входа в auth
+  me = { role: 'student', name: stu.name, id: stu.id, student_id: stu.id, teacher_id: selTeacherId };
   console.log('me after login:', JSON.stringify(me));
   launchApp();
 }
