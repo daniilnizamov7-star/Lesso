@@ -428,6 +428,7 @@ async function doPin() {
   await sb.auth.signInAnonymously().catch(() => {});
   const { data: { user } } = await sb.auth.getUser();
   me = { role: 'student', name: stu.name, id: user?.id||null, student_id: stu.id, teacher_id: selTeacherId };
+  console.log('me after login:', JSON.stringify(me));
   launchApp();
 }
 function perr(m) { const e = document.getElementById('perr'); if(e){e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000);} }
@@ -479,7 +480,8 @@ async function openNotifPanel() {
   const{data:notifs}=await sb.from('notifications').select('*').eq('recipient_id',rid).order('created_at',{ascending:false}).limit(20);
   const mo=document.createElement('div');
   mo.id='m-notif';
-  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  mo.className='mo open';
+  mo.style.cssText='';
   const items=!notifs?.length
     ?'<div class="empty" style="padding:40px 0"><div class="ei">🔔</div><p>Уведомлений нет</p></div>'
     :notifs.map(n=>`<div style="padding:12px 0;border-bottom:1px solid var(--b);display:flex;gap:10px;align-items:flex-start">
@@ -1015,7 +1017,7 @@ function buildStudent() {
   sSc('home',0);
 }
 function sSc(n,i) {
-  actNav(i); const c=document.getElementById('ac');
+  actNav(i); document.getElementById('fab')?.remove(); const c=document.getElementById('ac');
   if(n==='home') sHome(c);
   else if(n==='lessons') sLessons(c);
   else if(n==='cards') sCards(c);
@@ -1023,6 +1025,7 @@ function sSc(n,i) {
   else if(n==='chats') sChats(c);
 }
 async function sHome(el) {
+  console.log('sHome: teacher_id='+me.teacher_id+' student_id='+me.student_id);
   const[{data:ls},{data:ws}]=await Promise.all([
     sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(5),
     sb.from('words').select('level').eq('student_record_id',me.student_id)
@@ -1268,7 +1271,7 @@ async function pChats(el) {
 async function openLinkChild() {
   // Показываем модал для привязки ученика по коду учителя + PIN
   const mo = document.createElement('div');
-  mo.className='mo'; mo.id='m-link-child';
+  mo.className='mo open'; mo.id='m-link-child';
   mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
   mo.innerHTML=`
     <div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
