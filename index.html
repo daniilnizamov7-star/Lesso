@@ -836,7 +836,18 @@ async function sendMsg() {
   // Уведомление учителю если пишет ученик через lesson chat
   if(lessonChatId && me.role==='student'){
     const tid=me.teacher_id;
-    if(tid) await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId}).catch(()=>{});
+    if(tid){
+      const{error:ne}=await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId});
+      if(ne) toast('notif err: '+ne.message);
+    }
+  }
+  // Уведомление от ученика в личном чате
+  if(activeChatId && me.role==='student'){
+    const tid=me.teacher_id;
+    if(tid){
+      const{error:ne2}=await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' пишет',body:text});
+      if(ne2) toast('notif2 err: '+ne2.message);
+    }
   }
 
   // Обновляем last_message и отправляем уведомление
