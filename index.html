@@ -608,18 +608,33 @@ function tSc(n,i) {
 }
 
 async function tHome(el) {
-  el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">—</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">—</div><div class="sl">Учеников</div></div></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r">Загрузка...</div></div></div>`;
-  const [{count:lc},{count:sc},{data:rc}]=await Promise.all([
+  el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">—</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">—</div><div class="sl">Учеников</div></div></div><div class="card" id="th-next" style="display:none"></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r">Загрузка...</div></div></div>`;
+  const [{count:lc},{count:sc},{data:rc},{data:ss}]=await Promise.all([
     sb.from('lessons').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
     sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
-    sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false}).limit(4)
+    sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false}).limit(5),
+    sb.from('students').select('id,name').eq('teacher_id',me.id)
   ]);
   document.getElementById('th-l').textContent=lc||0;
   document.getElementById('th-s').textContent=sc||0;
+  const sm=Object.fromEntries((ss||[]).map(s=>[s.id,s.name]));
+  // Ближайший запланированный урок
+  const next=(rc||[]).find(l=>l.status==='planned'||!l.status||l.status==='active');
+  const nb=document.getElementById('th-next');
+  if(next&&nb){
+    nb.style.display='block';
+    nb.innerHTML=`<div class="clbl">📅 Ближайший урок</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:4px">${next.title}</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:10px">${fd(next.date)}${next.student_id&&sm[next.student_id]?' · '+sm[next.student_id]:''}</div>
+      <div style="display:flex;gap:8px">
+        ${next.status!=='done'?`<button class="btn bp bsm" onclick="openLesson('${next.id}')">Открыть →</button>`:''}
+        ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" class="btn bs bsm">🎥 Zoom</a>`:''}
+      </div>`;
+  }
   const r=document.getElementById('th-r');
   if(!rc?.length){r.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
   r.innerHTML=rc.map(l=>`<div class="lc" onclick="openLesson('${l.id}')">
-    <div class="lct"><div><div class="lcti">${l.title}</div><div class="lcm">${fd(l.date)}</div></div>
+    <div class="lct"><div><div class="lcti">${l.title}${l.student_id&&sm[l.student_id]?` <span style="font-size:12px;color:var(--t2);font-weight:500">· ${sm[l.student_id]}</span>`:''}</div><div class="lcm">${fd(l.date)}</div></div>
     ${l.grade?`<div class="grade g${l.grade}">${l.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
     <div class="lcf">${l.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}${l.homework?`<span class="bdg bo">📝 ДЗ</span>${l.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}</div>
   </div>`).join('');
@@ -1222,19 +1237,25 @@ function sSc(n,i) {
 async function sHome(el) {
   console.log('sHome: teacher_id='+me.teacher_id+' student_id='+me.student_id);
   const[{data:ls},{data:ws}]=await Promise.all([
-    sb.from('lessons').select('id,title,date,homework,hw_done,hw_photo,zoom_link,grade').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(5),
+    sb.from('lessons').select('id,title,date,homework,hw_done,hw_photo,zoom_link,grade,status').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(10),
     sb.from('words').select('level').eq('student_record_id',me.student_id)
   ]);
   const known=(ws||[]).filter(w=>w.level===3).length;
   const toRev=(ws||[]).filter(w=>w.level<3).length;
-  // Ищем последний урок с ДЗ которое ещё не выполнено
   const pending=(ls||[]).find(l=>l.homework && !l.hw_done);
+  const next=(ls||[]).find(l=>l.status==='planned'||l.status==='active');
   el.innerHTML=`<div class="page"><div class="stitle">Привет, ${me.name}! 👋</div>
     <div class="ssub">${toRev>0?`${toRev} слов для повторения`:'Все слова повторены! 🎉'}</div>
     <div class="srow">
       <div class="sbox blue"><div class="sv">${ws?.length||0}</div><div class="sl">Всего слов</div></div>
       <div class="sbox green"><div class="sv">${known}</div><div class="sl">Знаю хорошо</div></div>
     </div>
+    ${next?`<div class="card" style="border-color:var(--a);background:var(--al)">
+      <div class="clbl">📅 Следующий урок</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:4px">${next.title}</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:8px">${fd(next.date)}</div>
+      ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" class="btn bp bsm" style="display:inline-block">🎥 Zoom</a>`:''}
+    </div>`:''}
     ${pending?`<div class="card" style="border-color:#fbbf24;background:#fffbeb">
       <div class="clbl">📝 Домашнее задание</div>
       <div style="font-weight:600;font-size:15px">${pending.homework}</div>
@@ -1384,6 +1405,7 @@ async function pHome(el) {
   const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1):'—';
   const unpaid=(ls||[]).filter(l=>!l.paid).length;
   const last=ls?.[0];
+  const nextLesson=(ls||[]).find(l=>l.status==='planned'||l.status==='active');
   el.innerHTML=`<div class="page"><div class="stitle">Прогресс ученика 📊</div><div class="ssub">Обзор обучения</div>
     <div class="srow">
       <div class="sbox blue"><div class="sv">${ls?.length||0}</div><div class="sl">Уроков</div></div>
@@ -1391,6 +1413,11 @@ async function pHome(el) {
       <div class="sbox orange"><div class="sv">${ws?.length||0}</div><div class="sl">Слов</div></div>
       <div class="sbox blue"><div class="sv">${known}</div><div class="sl">Знает хорошо</div></div>
     </div>
+    ${nextLesson?`<div class="card" style="border-color:var(--a);background:var(--al)">
+      <div class="clbl">📅 Следующий урок</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:4px">${nextLesson.title}</div>
+      <div style="font-size:13px;color:var(--t2)">${fd(nextLesson.date)}</div>
+    </div>`:''}
     ${unpaid>0?`<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Не оплачено уроков: ${unpaid}</div></div>`:''}
     ${last?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)"><div class="clbl">📝 Текущее ДЗ</div><div style="font-weight:600;font-size:15px">${last.homework}</div><div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(last.date)}</div><div style="margin-top:8px">${last.hw_done?'<span style="color:#16a34a;font-weight:700;font-size:13px">✅ Ребёнок отметил как выполнено</span>':'<span style="color:#f59e0b;font-weight:600;font-size:13px">⏳ Ещё не выполнено</span>'}</div></div>`:''}
   </div>`;
