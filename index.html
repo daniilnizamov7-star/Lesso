@@ -425,6 +425,7 @@ async function doPin() {
   pg('pg-load');
   const { data: stu } = await sb.from('students').select('*').eq('teacher_id', selTeacherId).eq('pin', pin).single();
   if (!stu) { showPin(selTeacherId,''); perr('Неверный PIN-код'); return; }
+  if (stu.active === false) { showPin(selTeacherId,''); perr('Доступ заблокирован. Обратитесь к учителю.'); return; }
   // Ученик работает как anon — без входа в auth
   me = { role: 'student', name: stu.name, id: stu.id, student_id: stu.id, teacher_id: selTeacherId };
   console.log('me after login:', JSON.stringify(me));
@@ -616,7 +617,7 @@ async function tHome(el) {
   r.innerHTML=rc.map(l=>`<div class="lc" onclick="openLesson('${l.id}')">
     <div class="lct"><div><div class="lcti">${l.title}</div><div class="lcm">${fd(l.date)}</div></div>
     ${l.grade?`<div class="grade g${l.grade}">${l.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
-    <div class="lcf">${l.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}${l.homework?'<span class="bdg bo">📝 ДЗ</span>':''}</div>
+    <div class="lcf">${l.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}${l.homework?`<span class="bdg bo">📝 ДЗ</span>${l.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}</div>
   </div>`).join('');
 }
 
@@ -627,9 +628,12 @@ async function tStudents(el) {
   const l=document.getElementById('ts-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">👨‍🎓</div><p>Учеников пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
   l.innerHTML=data.map(s=>`<div class="scard" onclick="openEditStu('${s.id}')">
-    <div class="sav">${s.name[0].toUpperCase()}</div>
-    <div><div class="sname_">${s.name}</div><div class="smeta_">${s.subject||'—'}</div></div>
-    <div class="spinb">PIN: ${s.pin||'—'}</div>
+    <div class="sav" style="${s.active===false?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
+    <div style="flex:1"><div class="sname_">${s.name}${s.active===false?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div><div class="smeta_">${s.subject||'—'}</div></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="spinb">PIN: ${s.pin||'—'}</div>
+      <button class="bdg bo" style="cursor:pointer;border:none;font-size:13px" onclick="event.stopPropagation();sendReminder('${s.id}','${s.name.replace(/'/g,"\\'")}')">🔔</button>
+    </div>
   </div>`).join('');
 }
 
@@ -649,7 +653,7 @@ async function tLessons(el) {
     <div class="lcf">
       ${l_.status==='active'?'<span class="bdg br">🔴 Идёт</span>':l_.status==='done'?'<span class="bdg bgg">✓ Завершён</span>':''}
       ${l_.paid?'<span class="bdg bgg">Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
-      ${l_.homework?'<span class="bdg bo">📝 ДЗ</span>':''}
+      ${l_.homework?`<span class="bdg bo">📝 ДЗ</span>${l_.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}
     </div>
   </div>`).join('');
 }
@@ -1021,6 +1025,17 @@ async function openEditStu(id) {
   document.getElementById('si-subj').value=s.subject||'';
   document.getElementById('si-pin').value=s.pin||'';
   document.getElementById('si-delbtn').style.display='block';
+  // active toggle
+  let ab=document.getElementById('si-active-row');
+  if(!ab){
+    ab=document.createElement('div');
+    ab.id='si-active-row';
+    ab.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:14px';
+    document.getElementById('si-delbtn').before(ab);
+  }
+  const isActive=s.active!==false;
+  ab.innerHTML=`<div style="font-size:14px;font-weight:600">Доступ к приложению</div>
+    <button id="si-active-btn" onclick="togStuActive('${id}',${isActive})" style="padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-weight:700;font-size:13px;background:${isActive?'#dcfce7':'#fee2e2'};color:${isActive?'#16a34a':'#ef4444'}">${isActive?'✅ Активен':'🚫 Заблокирован'}</button>`;
   openM('m-stu');
 }
 async function saveStu() {
@@ -1067,6 +1082,52 @@ async function saveWord() {
   closeM('m-word'); toast('Слово добавлено ✓'); tSc('words',3);
 }
 
+// ── HOMEWORK DONE ──
+async function markHwDone(lessonId) {
+  const{error}=await sb.from('lessons').update({hw_done:true}).eq('id',lessonId);
+  if(error){toast('Ошибка 😢');return;}
+  toast('Отлично! ДЗ отмечено ✅');
+  if(me.role==='student') sSc('home',0);
+}
+
+// ── BLOCK STUDENT ──
+async function togStuActive(stuId, currentlyActive) {
+  const newVal=!currentlyActive;
+  const{error}=await sb.from('students').update({active:newVal}).eq('id',stuId);
+  if(error){toast('Ошибка: '+error.message);return;}
+  const btn=document.getElementById('si-active-btn');
+  if(btn){
+    btn.textContent=newVal?'✅ Активен':'🚫 Заблокирован';
+    btn.style.background=newVal?'#dcfce7':'#fee2e2';
+    btn.style.color=newVal?'#16a34a':'#ef4444';
+    btn.onclick=()=>togStuActive(stuId,newVal);
+  }
+  toast(newVal?'Доступ восстановлен ✅':'Ученик заблокирован 🚫');
+}
+
+// ── REMIND ──
+async function sendReminder(stuId, stuName) {
+  const{data:ls}=await sb.from('lessons').select('*').eq('student_id',stuId).order('date',{ascending:false}).limit(1);
+  const next=ls?.[0];
+  const dateStr=next?fd(next.date):'ближайшем занятии';
+  const zoom=next?.zoom_link?`\nСсылка Zoom: ${next.zoom_link}`:'';
+  const topic=next?.title?`\nТема: ${next.title}`:'';
+  const msg=`Добрый день! Напоминаем о занятии ${dateStr}.${topic}${zoom}\n\nПожалуйста, подтвердите.`;
+  const mo=document.createElement('div');
+  mo.className='mo open'; mo.id='m-remind';
+  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:12px">🔔 Напоминание: ${stuName}</div>
+    <textarea id="remind-text" style="width:100%;box-sizing:border-box;height:130px;border:1.5px solid var(--b);border-radius:12px;padding:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;resize:none;outline:none">${msg}</textarea>
+    <div style="font-size:12px;color:var(--t2);margin:8px 0 16px">Скопируйте и отправьте родителю/ученику в мессенджер</div>
+    <button class="btn bp" style="width:100%;margin-bottom:8px" onclick="navigator.clipboard.writeText(document.getElementById('remind-text').value);toast('Скопировано ✓')">📋 Скопировать</button>
+    <button class="btn bs" style="width:100%" onclick="document.getElementById('m-remind')?.remove()">Закрыть</button>
+  </div>`;
+  document.body.appendChild(mo);
+  mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
+}
+
 // ── STUDENT ──
 function buildStudent() {
   setNav([
@@ -1105,6 +1166,9 @@ async function sHome(el) {
       <div class="clbl">📝 Домашнее задание</div>
       <div style="font-weight:600;font-size:15px">${last.homework}</div>
       <div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(last.date)}</div>
+      ${last.hw_done
+        ? `<div style="margin-top:10px;font-size:13px;color:#16a34a;font-weight:700">✅ Выполнено</div>`
+        : `<button class="btn bp bsm" style="margin-top:10px" onclick="markHwDone('${last.id}')">Сделал ✓</button>`}
     </div>`:''}
     ${toRev>0?`<div class="card" style="display:flex;align-items:center;justify-content:space-between">
       <div><div style="font-weight:700">Повторить слова</div><div style="font-size:13px;color:var(--t2)">${toRev} карточек ждут</div></div>
@@ -1120,7 +1184,11 @@ async function sLessons(el) {
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
   l.innerHTML=data.map(ls=>`<div class="lc">
     <div class="lct"><div><div class="lcti">${ls.title}</div><div class="lcm">${fd(ls.date)}</div></div>${ls.grade?`<div class="grade g${ls.grade}">${ls.grade}</div>`:''}</div>
-    ${ls.homework?`<div style="margin-top:8px;font-size:13px;color:var(--o);font-weight:600">📝 ${ls.homework}</div>`:''}
+    ${ls.homework?`<div style="margin-top:8px;font-size:13px;color:var(--o);font-weight:600">📝 ${ls.homework}</div>
+      <div style="margin-top:6px">${ls.hw_done
+        ? `<span style="font-size:13px;color:#16a34a;font-weight:700">✅ Выполнено</span>`
+        : `<button class="bdg bgg" style="cursor:pointer;border:none;font-size:12px" onclick="markHwDone('${ls.id}')">Сделал ✓</button>`
+      }</div>`:''}
     <div class="lcf" style="margin-top:10px">
       ${ls.zoom_link?`<a href="${ls.zoom_link}" target="_blank" class="bdg bb">🎥 Zoom</a>`:''}
       <button class="bdg bgr" style="cursor:pointer;border:none" onclick="openLessonChat('${ls.id}','${ls.title.replace(/'/g,"\\'")}')">💬 Чат</button>
@@ -1253,7 +1321,7 @@ async function pHome(el) {
       <div class="sbox blue"><div class="sv">${known}</div><div class="sl">Знает хорошо</div></div>
     </div>
     ${unpaid>0?`<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Не оплачено уроков: ${unpaid}</div></div>`:''}
-    ${last?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)"><div class="clbl">📝 Текущее ДЗ</div><div style="font-weight:600;font-size:15px">${last.homework}</div><div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(last.date)}</div></div>`:''}
+    ${last?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)"><div class="clbl">📝 Текущее ДЗ</div><div style="font-weight:600;font-size:15px">${last.homework}</div><div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(last.date)}</div><div style="margin-top:8px">${last.hw_done?'<span style="color:#16a34a;font-weight:700;font-size:13px">✅ Ребёнок отметил как выполнено</span>':'<span style="color:#f59e0b;font-weight:600;font-size:13px">⏳ Ещё не выполнено</span>'}</div></div>`:''}
   </div>`;
 }
 async function pLessons(el) {
@@ -1267,7 +1335,7 @@ async function pLessons(el) {
     <div class="lct"><div><div class="lcti">${ls.title}</div><div class="lcm">${fd(ls.date)}</div></div>${ls.grade?`<div class="grade g${ls.grade}">${ls.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
     <div class="lcf">
       ${ls.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
-      ${ls.homework?'<span class="bdg bo">📝 ДЗ</span>':''}
+      ${ls.homework?`<span class="bdg bo">📝 ДЗ</span>${ls.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}
     </div>
     ${ls.homework?`<div style="margin-top:8px;font-size:13px;color:var(--t2)">${ls.homework}</div>`:''}
     <div class="lcf" style="margin-top:8px">
