@@ -13,1245 +13,1103 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#f8f9fc;--white:#fff;--border:#e8eaf0;--text:#0f1520;--text2:#5a6478;--text3:#9aa0b0;--accent:#2563eb;--al:#eff4ff;--ad:#1d4ed8;--green:#16a34a;--gl:#f0fdf4;--orange:#ea580c;--ol:#fff7ed;--red:#dc2626;--rl:#fef2f2;--r:16px;--rs:10px;--sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--shl:0 4px 24px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04)}
+    :root{--bg:#f8f9fc;--w:#fff;--b:#e8eaf0;--t:#0f1520;--t2:#5a6478;--t3:#9aa0b0;--a:#2563eb;--al:#eff4ff;--ad:#1d4ed8;--g:#16a34a;--gl:#f0fdf4;--o:#ea580c;--ol:#fff7ed;--r:#dc2626;--rl:#fef2f2;--rd:16px;--rs:10px;--sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--shl:0 4px 24px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04)}
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif;color:var(--text);overflow-x:hidden}
-    /* Layout */
-    .page{padding:20px 16px 100px;max-width:480px;margin:0 auto;animation:fadeUp .2s ease}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-    .app-header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--white);border-bottom:1px solid var(--border);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between}
-    .app-logo{font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--accent)}
-    .app-user{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text2)}
-    .avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;background:var(--accent);flex-shrink:0}
-    .logout-btn{background:none;border:none;cursor:pointer;color:var(--text3);padding:6px;border-radius:8px}
-    .app-content{padding-top:56px;min-height:100dvh}
-    .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--white);border-top:1px solid var(--border);display:flex;padding-bottom:env(safe-area-inset-bottom)}
-    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border:none;background:none;cursor:pointer;color:var(--text3);font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;transition:color .15s}
-    .nav-item.active{color:var(--accent)}
-    .nav-item svg{width:22px;height:22px}
-    .fab{position:fixed;right:20px;bottom:74px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(37,99,235,.35);transition:transform .15s;z-index:99}
+    html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif;color:var(--t);overflow-x:hidden}
+    .page{padding:20px 16px 100px;max-width:480px;margin:0 auto;animation:fu .2s ease}
+    @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .hdr{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--w);border-bottom:1px solid var(--b);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between}
+    .logo{font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--a)}
+    .usr{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--t2)}
+    .av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;background:var(--a);flex-shrink:0;position:relative}
+    .av-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;background:var(--r);border-radius:50%;border:2px solid var(--w);font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+    .logout{background:none;border:none;cursor:pointer;color:var(--t3);padding:6px;border-radius:8px}
+    .content{padding-top:56px;min-height:100dvh}
+    .bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--w);border-top:1px solid var(--b);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+    .ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border:none;background:none;cursor:pointer;color:var(--t3);font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;transition:color .15s;position:relative}
+    .ni.active{color:var(--a)}
+    .ni svg{width:22px;height:22px}
+    .ni-dot{position:absolute;top:8px;right:calc(50% - 14px);width:8px;height:8px;background:var(--r);border-radius:50%;border:2px solid var(--w);display:none}
+    .ni-dot.show{display:block}
+    .fab{position:fixed;right:20px;bottom:74px;width:52px;height:52px;border-radius:50%;background:var(--a);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(37,99,235,.35);transition:transform .15s;z-index:99}
     .fab:active{transform:scale(.93)}
     .fab svg{width:22px;height:22px;color:#fff}
     /* Auth */
-    .auth-page{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-    .logo{font-family:'Fraunces',serif;font-size:48px;font-weight:900;color:var(--accent);letter-spacing:-1px;margin-bottom:4px}
-    .logo-sub{font-size:14px;color:var(--text3);margin-bottom:40px;font-weight:500}
-    .role-cards{display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px}
-    .role-card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .18s;box-shadow:var(--sh);text-align:left}
-    .role-card:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shl)}
-    .role-card:active{transform:scale(.98)}
-    .role-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-    .role-name{font-weight:700;font-size:15px;margin-bottom:2px}
-    .role-desc{font-size:12px;color:var(--text2)}
-    /* Form panel */
-    .form-panel{background:var(--white);border-radius:var(--r);border:1px solid var(--border);padding:24px;width:100%;max-width:360px;box-shadow:var(--shl);margin-top:16px}
-    .panel-back{display:flex;align-items:center;gap:8px;color:var(--text2);font-size:14px;font-weight:600;cursor:pointer;background:none;border:none;padding:0;margin-bottom:20px}
-    .panel-back:hover{color:var(--accent)}
-    .panel-title{font-family:'Fraunces',serif;font-size:24px;font-weight:900;margin-bottom:6px}
-    .panel-sub{font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5}
-    /* Inputs */
-    .form-group{margin-bottom:14px}
-    .form-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;display:block}
-    .form-input,.form-select,.form-textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--rs);padding:12px 14px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:500;outline:none;transition:border-color .15s;-webkit-appearance:none}
-    .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);background:var(--white)}
-    .form-input::placeholder{color:var(--text3);font-weight:400}
-    .form-textarea{resize:none;min-height:80px}
-    /* PIN */
+    .auth-pg{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+    .logo-big{font-family:'Fraunces',serif;font-size:48px;font-weight:900;color:var(--a);letter-spacing:-1px;margin-bottom:4px}
+    .logo-sub{font-size:14px;color:var(--t3);margin-bottom:40px;font-weight:500}
+    .panel{background:var(--w);border-radius:var(--rd);border:1px solid var(--b);padding:24px;width:100%;max-width:360px;box-shadow:var(--shl)}
+    .pback{display:flex;align-items:center;gap:8px;color:var(--t2);font-size:14px;font-weight:600;cursor:pointer;background:none;border:none;padding:0;margin-bottom:20px}
+    .pback:hover{color:var(--a)}
+    .ptitle{font-family:'Fraunces',serif;font-size:24px;font-weight:900;margin-bottom:6px}
+    .psub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.5}
+    .rcards{display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px}
+    .rcard{background:var(--w);border:1.5px solid var(--b);border-radius:var(--rd);padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .18s;box-shadow:var(--sh);text-align:left}
+    .rcard:hover{border-color:var(--a);transform:translateY(-1px)}
+    .rcard:active{transform:scale(.98)}
+    .ricon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .rname{font-weight:700;font-size:15px;margin-bottom:2px}
+    .rdesc{font-size:12px;color:var(--t2)}
+    /* Forms */
+    .fg{margin-bottom:14px}
+    .fl{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;display:block}
+    .fi,.fs,.fta{width:100%;background:var(--bg);border:1.5px solid var(--b);border-radius:var(--rs);padding:12px 14px;color:var(--t);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:500;outline:none;transition:border-color .15s;-webkit-appearance:none}
+    .fi:focus,.fs:focus,.fta:focus{border-color:var(--a);background:var(--w)}
+    .fi::placeholder{color:var(--t3);font-weight:400}
+    .fta{resize:none;min-height:80px}
     .pin-wrap{display:flex;gap:10px;justify-content:center;margin:8px 0 24px}
-    .pin-digit{width:60px;height:68px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--white);font-size:26px;font-weight:800;text-align:center;color:var(--accent);outline:none;font-family:'Plus Jakarta Sans',sans-serif;transition:border-color .15s;-webkit-appearance:none}
-    .pin-digit:focus{border-color:var(--accent)}
+    .pd{width:60px;height:68px;border:1.5px solid var(--b);border-radius:var(--rs);background:var(--w);font-size:26px;font-weight:800;text-align:center;color:var(--a);outline:none;font-family:'Plus Jakarta Sans',sans-serif;transition:border-color .15s;-webkit-appearance:none}
+    .pd:focus{border-color:var(--a)}
+    .err{background:var(--rl);border:1px solid #fecaca;color:var(--r);padding:12px 14px;border-radius:var(--rs);font-size:13px;font-weight:600;margin-bottom:14px;display:none}
+    .err.show{display:block}
     /* Buttons */
     .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 20px;border-radius:var(--rs);border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;transition:all .15s}
     .btn:active{transform:scale(.98)}
     .btn:disabled{opacity:.6;cursor:not-allowed}
-    .btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}
-    .btn-primary:hover:not(:disabled){background:var(--ad)}
-    .btn-secondary{background:var(--white);color:var(--text);border:1.5px solid var(--border)}
-    .btn-danger{background:var(--rl);color:var(--red);border:1px solid #fecaca}
-    .btn-green{background:var(--gl);color:var(--green);border:1.5px solid #bbf7d0}
-    .btn-sm{padding:8px 14px;font-size:13px;width:auto}
-    .btn-row{display:flex;gap:10px;margin-top:8px}
-    /* Error */
-    .error-msg{background:var(--rl);border:1px solid #fecaca;color:var(--red);padding:12px 14px;border-radius:var(--rs);font-size:13px;font-weight:600;margin-bottom:14px;display:none}
-    .error-msg.show{display:block}
+    .bp{background:var(--a);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+    .bp:hover:not(:disabled){background:var(--ad)}
+    .bs{background:var(--w);color:var(--t);border:1.5px solid var(--b)}
+    .bd{background:var(--rl);color:var(--r);border:1px solid #fecaca}
+    .bg_{background:var(--gl);color:var(--g);border:1.5px solid #bbf7d0}
+    .bsm{padding:8px 14px;font-size:13px;width:auto}
+    .brow{display:flex;gap:10px;margin-top:8px}
     /* Cards */
-    .card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;box-shadow:var(--sh)}
-    .card-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:10px}
-    .stat-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-    .stat-box{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
-    .stat-val{font-family:'Fraunces',serif;font-size:32px;font-weight:900;line-height:1}
-    .stat-lbl{font-size:12px;color:var(--text2);font-weight:600;margin-top:4px}
-    .stat-box.blue .stat-val{color:var(--accent)}
-    .stat-box.green .stat-val{color:var(--green)}
-    .stat-box.orange .stat-val{color:var(--orange)}
-    /* Section */
-    .sec-title{font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px}
-    .sec-sub{font-size:13px;color:var(--text2);margin-bottom:18px}
-    .sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .card{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:16px;margin-bottom:10px;box-shadow:var(--sh)}
+    .clbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:10px}
+    .srow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .sbox{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:16px;box-shadow:var(--sh)}
+    .sv{font-family:'Fraunces',serif;font-size:32px;font-weight:900;line-height:1}
+    .sl{font-size:12px;color:var(--t2);font-weight:600;margin-top:4px}
+    .sbox.blue .sv{color:var(--a)}.sbox.green .sv{color:var(--g)}.sbox.orange .sv{color:var(--o)}
+    .stitle{font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px}
+    .ssub{font-size:13px;color:var(--t2);margin-bottom:18px}
+    .shdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
     /* Badges */
-    .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
-    .badge-blue{background:var(--al);color:var(--accent)}
-    .badge-green{background:var(--gl);color:var(--green)}
-    .badge-orange{background:var(--ol);color:var(--orange)}
-    .badge-gray{background:var(--bg);color:var(--text2);border:1px solid var(--border)}
-    .badge-red{background:var(--rl);color:var(--red)}
+    .bdg{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+    .bb{background:var(--al);color:var(--a)}.bgg{background:var(--gl);color:var(--g)}.bo{background:var(--ol);color:var(--o)}.bgr{background:var(--bg);color:var(--t2);border:1px solid var(--b)}.br{background:var(--rl);color:var(--r)}
     /* Lesson card */
-    .lcard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;box-shadow:var(--sh);cursor:pointer;transition:all .15s}
-    .lcard:hover{border-color:var(--accent);box-shadow:var(--shl)}
-    .lcard-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
-    .lcard-title{font-weight:700;font-size:15px}
-    .lcard-meta{font-size:12px;color:var(--text2);margin-top:2px}
-    .lcard-footer{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .lc{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:16px;margin-bottom:10px;box-shadow:var(--sh);cursor:pointer;transition:all .15s}
+    .lc:hover{border-color:var(--a);box-shadow:var(--shl)}
+    .lct{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+    .lcti{font-weight:700;font-size:15px}
+    .lcm{font-size:12px;color:var(--t2);margin-top:2px}
+    .lcf{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
     .grade{font-family:'Fraunces',serif;font-weight:900;font-size:18px;padding:2px 10px;border-radius:10px}
-    .grade-5{background:var(--gl);color:var(--green)}
-    .grade-4{background:var(--al);color:var(--accent)}
-    .grade-3{background:var(--ol);color:var(--orange)}
-    .grade-2{background:var(--rl);color:var(--red)}
-    /* Word */
-    .witem{display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh);cursor:pointer;transition:border-color .15s}
-    .witem:hover{border-color:var(--accent)}
-    .ldot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .g5{background:var(--gl);color:var(--g)}.g4{background:var(--al);color:var(--a)}.g3{background:var(--ol);color:var(--o)}.g2{background:var(--rl);color:var(--r)}
+    /* Words */
+    .wi{display:flex;align-items:center;gap:12px;background:var(--w);border:1px solid var(--b);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh);cursor:pointer;transition:border-color .15s}
+    .wi:hover{border-color:var(--a)}
+    .ld{width:10px;height:10px;border-radius:50%;flex-shrink:0}
     .lv0{background:#cbd5e1}.lv1{background:#f87171}.lv2{background:#fb923c}.lv3{background:#4ade80}
-    .wen{font-weight:700;font-size:15px}
-    .wru{font-size:13px;color:var(--text2)}
-    .wchip{margin-left:auto;font-size:11px;color:var(--text3);background:var(--bg);padding:3px 8px;border-radius:8px;flex-shrink:0}
+    .wen{font-weight:700;font-size:15px}.wru{font-size:13px;color:var(--t2)}
+    .wch{margin-left:auto;font-size:11px;color:var(--t3);background:var(--bg);padding:3px 8px;border-radius:8px;flex-shrink:0}
     /* Flashcard */
-    .fc-wrap{perspective:1000px;margin:16px 0}
+    .fcw{perspective:1000px;margin:16px 0}
     .fc{position:relative;width:100%;height:200px;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,0,.2,1);cursor:pointer}
     .fc.flipped{transform:rotateY(180deg)}
-    .fc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--r);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--border);box-shadow:var(--shl)}
-    .fc-front{background:var(--white)}
-    .fc-back{background:var(--al);border-color:#bfdbfe;transform:rotateY(180deg)}
-    .fc-word{font-family:'Fraunces',serif;font-size:34px;font-weight:900;text-align:center;padding:0 20px}
-    .fc-hint{font-size:13px;color:var(--text3);font-weight:600}
-    .fc-chip{font-size:12px;color:var(--accent);background:var(--al);padding:4px 12px;border-radius:20px;font-weight:700}
-    /* Progress bar */
-    .pbar-wrap{background:var(--bg);border-radius:20px;height:8px;overflow:hidden;margin-top:4px}
-    .pbar{height:100%;border-radius:20px;background:var(--accent);transition:width .6s}
+    .fcf{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--rd);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--b);box-shadow:var(--shl)}
+    .fcfr{background:var(--w)}.fcbk{background:var(--al);border-color:#bfdbfe;transform:rotateY(180deg)}
+    .fcw2{font-family:'Fraunces',serif;font-size:34px;font-weight:900;text-align:center;padding:0 20px}
+    .fch{font-size:13px;color:var(--t3);font-weight:600}
+    .fcc{font-size:12px;color:var(--a);background:var(--al);padding:4px 12px;border-radius:20px;font-weight:700}
+    /* Progress */
+    .pb{background:var(--bg);border-radius:20px;height:8px;overflow:hidden;margin-top:4px}
+    .pbf{height:100%;border-radius:20px;background:var(--a);transition:width .6s}
     /* Chat */
-    .chat-list{display:flex;flex-direction:column;gap:10px;padding:10px 0}
+    .chat-pg{display:flex;flex-direction:column;height:calc(100dvh - 56px - 64px);padding:0}
+    .chat-list-wrap{flex:1;overflow-y:auto;padding:16px}
+    .chat-msgs{display:flex;flex-direction:column;gap:10px}
     .msg{max-width:82%}
-    .msg.mine{align-self:flex-end}
-    .msg.theirs{align-self:flex-start}
-    .msg-bubble{padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;font-weight:500}
-    .msg.mine .msg-bubble{background:var(--accent);color:#fff;border-bottom-right-radius:4px}
-    .msg.theirs .msg-bubble{background:var(--white);border:1px solid var(--border);color:var(--text);border-bottom-left-radius:4px;box-shadow:var(--sh)}
-    .msg-who{font-size:11px;color:var(--text3);margin-bottom:3px;font-weight:600}
-    .msg-time{font-size:11px;color:var(--text3);margin-top:3px;font-weight:500}
+    .msg.mine{align-self:flex-end}.msg.theirs{align-self:flex-start}
+    .msg-bbl{padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;font-weight:500}
+    .msg.mine .msg-bbl{background:var(--a);color:#fff;border-bottom-right-radius:4px}
+    .msg.theirs .msg-bbl{background:var(--w);border:1px solid var(--b);color:var(--t);border-bottom-left-radius:4px;box-shadow:var(--sh)}
+    .msg-who{font-size:11px;color:var(--t3);margin-bottom:3px;font-weight:600}
+    .msg-time{font-size:11px;color:var(--t3);margin-top:3px;font-weight:500}
     .msg.mine .msg-time{text-align:right}
-    .chat-bottom{position:sticky;bottom:0;background:var(--bg);padding:10px 0 calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px}
-    .chat-input{flex:1;background:var(--white);border:1.5px solid var(--border);border-radius:24px;padding:11px 16px;font-size:14px;font-weight:500;font-family:'Plus Jakarta Sans',sans-serif;outline:none;color:var(--text)}
-    .chat-input:focus{border-color:var(--accent)}
-    .chat-send{width:42px;height:42px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .chat-send svg{width:18px;height:18px;color:#fff}
+    .chat-inp-wrap{padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--w);border-top:1px solid var(--b);display:flex;gap:8px;flex-shrink:0}
+    .cinp{flex:1;background:var(--bg);border:1.5px solid var(--b);border-radius:24px;padding:11px 16px;font-size:14px;font-weight:500;font-family:'Plus Jakarta Sans',sans-serif;outline:none;color:var(--t)}
+    .cinp:focus{border-color:var(--a)}
+    .csend{width:42px;height:42px;border-radius:50%;background:var(--a);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+    .csend svg{width:18px;height:18px;color:#fff}
+    /* Chat list items */
+    .chitem{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;box-shadow:var(--sh)}
+    .chitem:hover{border-color:var(--a)}
+    .chav{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:#fff;flex-shrink:0;position:relative}
+    .chav-dot{position:absolute;top:-2px;right:-2px;width:12px;height:12px;background:var(--r);border-radius:50%;border:2px solid var(--w)}
+    .chname{font-weight:700;font-size:15px}
+    .chlast{font-size:12px;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+    .chtime{margin-left:auto;font-size:11px;color:var(--t3);font-weight:600;flex-shrink:0}
+    /* Notifications */
+    .notif{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);display:flex;gap:12px;align-items:flex-start}
+    .notif.unread{border-color:var(--a);background:var(--al)}
+    .notif-icon{font-size:20px;flex-shrink:0;margin-top:2px}
+    .notif-title{font-weight:700;font-size:14px}
+    .notif-body{font-size:13px;color:var(--t2);margin-top:2px}
+    .notif-time{font-size:11px;color:var(--t3);margin-top:4px;font-weight:600}
     /* Modal */
-    .modal-overlay{position:fixed;inset:0;background:rgba(15,21,32,.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(2px)}
-    .modal-overlay.open{opacity:1;pointer-events:all}
-    .modal{background:var(--white);border-radius:24px 24px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:480px;max-height:92dvh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
-    .modal-overlay.open .modal{transform:none}
-    .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
-    .modal-title{font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:18px}
+    .mo{position:fixed;inset:0;background:rgba(15,21,32,.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(2px)}
+    .mo.open{opacity:1;pointer-events:all}
+    .modal{background:var(--w);border-radius:24px 24px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:480px;max-height:92dvh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+    .mo.open .modal{transform:none}
+    .mh{width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 20px}
+    .mt{font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:18px}
     /* Pay toggle */
-    .pay-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--border);margin-top:10px}
-    .pay-lbl{font-size:13px;color:var(--text2);font-weight:600}
-    .toggle{width:44px;height:24px;border-radius:12px;background:var(--border);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
-    .toggle.on{background:var(--green)}
-    .toggle::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-    .toggle.on::after{transform:translateX(20px)}
-    /* Level selector */
-    .level-row{display:flex;gap:8px}
-    .lopt{flex:1;padding:10px 6px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--white);color:var(--text2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer;text-align:center;transition:all .15s}
-    .lopt.active{border-color:var(--accent);background:var(--al);color:var(--accent)}
-    /* Filter */
+    .pr{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--b);margin-top:10px}
+    .pl{font-size:13px;color:var(--t2);font-weight:600}
+    .tog{width:44px;height:24px;border-radius:12px;background:var(--b);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+    .tog.on{background:var(--g)}
+    .tog::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+    .tog.on::after{transform:translateX(20px)}
+    .lrow{display:flex;gap:8px}
+    .lo{flex:1;padding:10px 6px;border-radius:var(--rs);border:1.5px solid var(--b);background:var(--w);color:var(--t2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer;text-align:center;transition:all .15s}
+    .lo.active{border-color:var(--a);background:var(--al);color:var(--a)}
     .frow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
-    .fchip{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s}
-    .fchip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-    /* Student card */
-    .scard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:10px;box-shadow:var(--sh);display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s}
-    .scard:hover{border-color:var(--accent)}
-    .savatar{width:44px;height:44px;border-radius:50%;background:var(--al);color:var(--accent);font-family:'Fraunces',serif;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .sname{font-weight:700;font-size:15px}
-    .smeta{font-size:12px;color:var(--text2);margin-top:2px}
-    .spin-badge{margin-left:auto;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--text2);font-family:'Fraunces',serif}
-    /* Empty / Loading */
-    .empty{text-align:center;padding:48px 20px;color:var(--text2)}
-    .empty-icon{font-size:44px;margin-bottom:12px}
-    .empty p{font-size:14px;line-height:1.6}
+    .fc2{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1.5px solid var(--b);background:var(--w);color:var(--t2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s}
+    .fc2.active{background:var(--a);color:#fff;border-color:var(--a)}
+    .scard{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:16px;margin-bottom:10px;box-shadow:var(--sh);display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s}
+    .scard:hover{border-color:var(--a)}
+    .sav{width:44px;height:44px;border-radius:50%;background:var(--al);color:var(--a);font-family:'Fraunces',serif;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sname_{font-weight:700;font-size:15px}.smeta_{font-size:12px;color:var(--t2);margin-top:2px}
+    .spinb{margin-left:auto;background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--t2);font-family:'Fraunces',serif}
+    .mitem{display:flex;align-items:center;gap:12px;background:var(--w);border:1px solid var(--b);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh)}
+    .mico{width:38px;height:38px;border-radius:10px;background:var(--rl);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+    .mname_{font-weight:600;font-size:14px}.msize_{font-size:12px;color:var(--t2)}
+    .titem{background:var(--w);border:1.5px solid var(--b);border-radius:var(--rd);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;box-shadow:var(--sh);margin-bottom:10px}
+    .titem:hover{border-color:var(--a)}
+    .empty{text-align:center;padding:48px 20px;color:var(--t2)}
+    .ei{font-size:44px;margin-bottom:12px}
     .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;gap:16px}
-    .spinner{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+    .sp{width:34px;height:34px;border:3px solid var(--b);border-top-color:var(--a);border-radius:50%;animation:spin .7s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-    /* Toast */
-    #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:#fff;border-radius:20px;padding:10px 20px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;z-index:999}
+    #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--t);color:#fff;border-radius:20px;padding:10px 20px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;z-index:999}
     #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-    /* Material item */
-    .mitem{display:flex;align-items:center;gap:12px;background:var(--white);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh)}
-    .micon{width:38px;height:38px;border-radius:10px;background:var(--rl);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
-    .mname{font-weight:600;font-size:14px}
-    .msize{font-size:12px;color:var(--text2)}
-    /* Teacher selector on login */
-    .teacher-item{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;box-shadow:var(--sh);margin-bottom:10px}
-    .teacher-item:hover{border-color:var(--accent)}
-    .teacher-item:active{transform:scale(.98)}
   </style>
 </head>
 <body>
-
-<!-- ══ PAGES ══ -->
-<div id="pg-loading" class="loading"><div class="spinner"></div><div style="font-size:14px;color:var(--text2);font-weight:600">Загрузка...</div></div>
+<div id="pg-load" class="loading"><div class="sp"></div><div style="font-size:14px;color:var(--t2);font-weight:600">Загрузка...</div></div>
 <div id="pg-roles" style="display:none"></div>
 <div id="pg-auth" style="display:none"></div>
 <div id="pg-teachers" style="display:none"></div>
 <div id="pg-pin" style="display:none"></div>
-<div id="pg-app" style="display:none;flex-direction:column;height:100dvh"></div>
-
+<div id="pg-app" style="display:none"></div>
 <div id="toast"></div>
 
-<!-- ══ MODALS ══ -->
-<div class="modal-overlay" id="m-lesson">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="m-lesson-title">Урок</div>
-    <div class="form-group"><label class="form-label">Ученик</label><select class="form-select" id="li-student"></select></div>
-    <div class="form-group"><label class="form-label">Тема урока</label><input class="form-input" id="li-title" placeholder="Past Simple, числа 1-20..."></div>
-    <div class="form-group"><label class="form-label">Дата</label><input class="form-input" type="date" id="li-date"></div>
-    <div class="form-group"><label class="form-label">Ссылка Zoom</label><input class="form-input" type="url" id="li-zoom" placeholder="https://zoom.us/j/..."></div>
-    <div class="form-group"><label class="form-label">Домашнее задание</label><textarea class="form-textarea" id="li-hw" placeholder="Выучить слова, написать предложения..."></textarea></div>
-    <div class="form-group"><label class="form-label">Оценка</label>
-      <select class="form-select" id="li-grade">
-        <option value="">— не ставить —</option>
-        <option value="5">5 — Отлично</option><option value="4">4 — Хорошо</option>
-        <option value="3">3 — Удовлетворительно</option><option value="2">2 — Плохо</option>
-      </select>
-    </div>
-    <div class="form-group"><label class="form-label">Заметки</label><textarea class="form-textarea" id="li-notes" placeholder="Что далось сложно..."></textarea></div>
-    <div class="pay-row"><div class="pay-lbl">Урок оплачен</div><button class="toggle" id="li-paid" onclick="togglePaid(this)"></button></div>
-    <button class="btn btn-secondary" id="li-status-btn" style="margin-top:12px" onclick="toggleStatus(this)">▶ Начать урок</button>
-    <div class="btn-row" style="margin-top:10px">
-      <button class="btn btn-secondary" onclick="closeModal('m-lesson')">Отмена</button>
-      <button class="btn btn-primary" onclick="saveLesson()">Сохранить</button>
-    </div>
-    <button class="btn btn-danger" id="li-delete-btn" style="display:none;margin-top:8px" onclick="deleteLesson()">Удалить урок</button>
+<!-- Modals -->
+<div class="mo" id="m-lesson"><div class="modal">
+  <div class="mh"></div><div class="mt" id="mlt">Урок</div>
+  <div class="fg"><label class="fl">Ученик</label><select class="fs" id="li-stu"></select></div>
+  <div class="fg"><label class="fl">Тема урока</label><input class="fi" id="li-title" placeholder="Past Simple, числа..."></div>
+  <div class="fg"><label class="fl">Дата</label><input class="fi" type="date" id="li-date"></div>
+  <div class="fg"><label class="fl">Ссылка Zoom</label><input class="fi" type="url" id="li-zoom" placeholder="https://zoom.us/j/..."></div>
+  <div class="fg"><label class="fl">Домашнее задание</label><textarea class="fta" id="li-hw" placeholder="Выучить слова..."></textarea></div>
+  <div class="fg"><label class="fl">Оценка</label>
+    <select class="fs" id="li-grade"><option value="">— не ставить —</option><option value="5">5 — Отлично</option><option value="4">4 — Хорошо</option><option value="3">3 — Удовл.</option><option value="2">2 — Плохо</option></select>
   </div>
-</div>
+  <div class="fg"><label class="fl">Заметки</label><textarea class="fta" id="li-notes" placeholder="Что далось сложно..."></textarea></div>
+  <div class="fg"><label class="fl">Материалы урока</label>
+    <div id="li-mats" style="margin-bottom:8px"></div>
+    <label style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1.5px dashed var(--b);border-radius:var(--rs);padding:12px 14px;cursor:pointer;font-size:14px;color:var(--t2);font-weight:600">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Загрузить файл
+      <input type="file" id="li-file" accept=".pdf,.doc,.docx,.jpg,.png" style="display:none" onchange="onFileSelect(this)">
+    </label>
+    <div id="li-fprev" style="margin-top:8px"></div>
+  </div>
+  <div class="pr"><div class="pl">Урок оплачен</div><button class="tog" id="li-paid" onclick="togPaid(this)"></button></div>
+  <button class="btn bs" id="li-stbtn" style="margin-top:12px" onclick="togStatus(this)">▶ Начать урок</button>
+  <div class="brow" style="margin-top:10px">
+    <button class="btn bs" onclick="closeM('m-lesson')">Отмена</button>
+    <button class="btn bp" onclick="saveLesson()">Сохранить</button>
+  </div>
+  <button class="btn bd" id="li-delbtn" style="display:none;margin-top:8px" onclick="delLesson()">Удалить урок</button>
+</div></div>
 
-<div class="modal-overlay" id="m-word">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title">Новое слово</div>
-    <div class="form-group"><label class="form-label">Английское слово</label><input class="form-input" id="wi-en" placeholder="apple"></div>
-    <div class="form-group"><label class="form-label">Перевод</label><input class="form-input" id="wi-ru" placeholder="яблоко"></div>
-    <div class="form-group"><label class="form-label">Тема</label><input class="form-input" id="wi-topic" placeholder="Еда, Животные..."></div>
-    <div class="form-group"><label class="form-label">Уровень знания</label>
-      <div class="level-row">
-        <button class="lopt active" data-lv="0" onclick="selLv(this)">Новое</button>
-        <button class="lopt" data-lv="1" onclick="selLv(this)">Учит</button>
-        <button class="lopt" data-lv="2" onclick="selLv(this)">Почти</button>
-        <button class="lopt" data-lv="3" onclick="selLv(this)">Знает ✓</button>
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="closeModal('m-word')">Отмена</button>
-      <button class="btn btn-primary" onclick="saveWord()">Добавить</button>
+<div class="mo" id="m-word"><div class="modal">
+  <div class="mh"></div><div class="mt">Новое слово</div>
+  <div class="fg"><label class="fl">Ученик</label><select class="fs" id="wi-stu"></select></div>
+  <div class="fg"><label class="fl">Английское слово</label><input class="fi" id="wi-en" placeholder="apple"></div>
+  <div class="fg"><label class="fl">Перевод</label><input class="fi" id="wi-ru" placeholder="яблоко"></div>
+  <div class="fg"><label class="fl">Тема</label><input class="fi" id="wi-topic" placeholder="Еда, Животные..."></div>
+  <div class="fg"><label class="fl">Уровень</label>
+    <div class="lrow">
+      <button class="lo active" data-lv="0" onclick="selLv(this)">Новое</button>
+      <button class="lo" data-lv="1" onclick="selLv(this)">Учит</button>
+      <button class="lo" data-lv="2" onclick="selLv(this)">Почти</button>
+      <button class="lo" data-lv="3" onclick="selLv(this)">Знает ✓</button>
     </div>
   </div>
-</div>
+  <div class="brow"><button class="btn bs" onclick="closeM('m-word')">Отмена</button><button class="btn bp" onclick="saveWord()">Добавить</button></div>
+</div></div>
 
-<div class="modal-overlay" id="m-student">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="m-student-title">Новый ученик</div>
-    <div class="form-group"><label class="form-label">Имя ученика</label><input class="form-input" id="si-name" placeholder="Вадим"></div>
-    <div class="form-group"><label class="form-label">Предмет</label><input class="form-input" id="si-subject" placeholder="Английский, Математика..."></div>
-    <div class="form-group"><label class="form-label">PIN-код (4 цифры)</label><input class="form-input" id="si-pin" type="number" placeholder="1234" maxlength="4"></div>
-    <div class="btn-row">
-      <button class="btn btn-secondary" onclick="closeModal('m-student')">Отмена</button>
-      <button class="btn btn-primary" onclick="saveStudent()">Сохранить</button>
-    </div>
-    <button class="btn btn-danger" id="si-delete-btn" style="display:none;margin-top:8px" onclick="deleteStudent()">Удалить ученика</button>
-  </div>
-</div>
+<div class="mo" id="m-stu"><div class="modal">
+  <div class="mh"></div><div class="mt" id="mstu-t">Новый ученик</div>
+  <div class="fg"><label class="fl">Имя</label><input class="fi" id="si-name" placeholder="Вадим"></div>
+  <div class="fg"><label class="fl">Предмет</label><input class="fi" id="si-subj" placeholder="Английский..."></div>
+  <div class="fg"><label class="fl">PIN-код (4 цифры)</label><input class="fi" id="si-pin" type="number" placeholder="1234"></div>
+  <div class="brow"><button class="btn bs" onclick="closeM('m-stu')">Отмена</button><button class="btn bp" onclick="saveStu()">Сохранить</button></div>
+  <button class="btn bd" id="si-delbtn" style="display:none;margin-top:8px" onclick="delStu()">Удалить ученика</button>
+</div></div>
 
-<div class="modal-overlay" id="m-chat">
-  <div class="modal" style="height:85dvh;display:flex;flex-direction:column">
-    <div class="modal-handle"></div>
-    <div class="modal-title" id="m-chat-title">Чат</div>
-    <div id="chat-messages" class="chat-list" style="flex:1;overflow-y:auto"></div>
-    <div class="chat-bottom">
-      <input class="chat-input" id="chat-input" placeholder="Написать сообщение..." onkeydown="if(event.key==='Enter')sendMsg()">
-      <button class="chat-send" onclick="sendMsg()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg></button>
-    </div>
+<div class="mo" id="m-chat"><div class="modal" style="height:88dvh;display:flex;flex-direction:column;padding-bottom:0">
+  <div class="mh"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-shrink:0;padding:0 0 0 0">
+    <div class="chav" id="chat-av" style="background:var(--a);width:36px;height:36px;font-size:16px"></div>
+    <div><div style="font-weight:700;font-size:16px" id="chat-title">Чат</div><div style="font-size:12px;color:var(--t2)" id="chat-sub"></div></div>
+    <button class="btn bs bsm" style="margin-left:auto" onclick="closeM('m-chat')">✕</button>
   </div>
-</div>
+  <div id="chat-msgs" class="chat-msgs" style="flex:1;overflow-y:auto;padding:0 0 10px"></div>
+  <div class="chat-inp-wrap" style="margin:0 -20px;padding:12px 20px calc(12px + env(safe-area-inset-bottom))">
+    <input class="cinp" id="chat-inp" placeholder="Написать..." onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="csend" onclick="sendMsg()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg></button>
+  </div>
+</div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const SUPA_URL = 'https://yiqipulgofoschkccaxr.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
-const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+const SU = 'https://yiqipulgofoschkccaxr.supabase.co';
+const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
+const sb = supabase.createClient(SU, SK);
 
-let me = null; // { role, name, id, student_id (for student) }
-let editLessonId = null;
-let editStudentId = null;
-let chatLessonId = null;
-let wLevel = 0;
-let chatChannel = null;
+let me = null; // {role, name, id, student_id, teacher_id, teacher_code}
+let editLessonId = null, editStuId = null;
+let activeChatId = null, chatChannel = null, lessonChatId = null;
+let wLevel = 0, pendingFile = null;
+let unreadCount = 0;
 
-// ════════════════════════════════════════
-//  PAGE HELPERS
-// ════════════════════════════════════════
-function showPg(id) {
-  ['pg-loading','pg-roles','pg-auth','pg-teachers','pg-pin','pg-app'].forEach(p => {
-    const el = document.getElementById(p);
-    el.style.display = 'none';
+// ── Pages ──
+function pg(id) {
+  ['pg-load','pg-roles','pg-auth','pg-teachers','pg-pin','pg-app'].forEach(p => {
+    document.getElementById(p).style.display = 'none';
   });
-  const target = document.getElementById(id);
-  target.style.display = id === 'pg-app' ? 'flex' : 'block';
+  document.getElementById(id).style.display = 'block';
 }
-
-function toast(msg) {
+function toast(m) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._t);
-  t._t = setTimeout(() => t.classList.remove('show'), 2500);
+  t.textContent = m; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2500);
 }
+function openM(id) { document.getElementById(id).classList.add('open'); }
+function closeM(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.mo').forEach(o => o.addEventListener('click', e => { if (e.target === o) closeM(o.id); }));
+function fd(d) { return new Date(d).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}); }
+function ft(d) { return new Date(d).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
+function chev() { return `<svg style="margin-left:auto;color:var(--t3);flex-shrink:0" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>`; }
+function backSvg() { return `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>`; }
 
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(o =>
-  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); })
-);
-
-function fmtDate(d) { return new Date(d).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}); }
-function fmtTime(d) { return new Date(d).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
-
-// ════════════════════════════════════════
-//  INIT
-// ════════════════════════════════════════
+// ── Init ──
 (async () => {
-  showPg('pg-loading');
+  pg('pg-load');
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
-    const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-    if (profile) {
-      me = { role: profile.role, name: profile.name, id: session.user.id, teacher_code: profile.teacher_code };
-      launchApp();
-      return;
-    }
+    const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+    if (p) { me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code }; launchApp(); return; }
   }
   renderRoles();
 })();
 
-// ════════════════════════════════════════
-//  ROLE SELECTION
-// ════════════════════════════════════════
+// ── Roles ──
 function renderRoles() {
-  showPg('pg-roles');
-  document.getElementById('pg-roles').innerHTML = `
-    <div class="auth-page">
-      <div class="logo">Lesso</div>
-      <div class="logo-sub">Платформа для обучения</div>
-      <div class="role-cards">
-        <button class="role-card" onclick="showAuth('teacher')">
-          <div class="role-icon" style="background:#eff4ff">👨‍🏫</div>
-          <div><div class="role-name">Учитель</div><div class="role-desc">Управление уроками и учениками</div></div>
-          <svg style="margin-left:auto;color:var(--text3);flex-shrink:0" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-        <button class="role-card" onclick="showAuth('parent')">
-          <div class="role-icon" style="background:#f0fdf4">👨‍👩‍👦</div>
-          <div><div class="role-name">Родитель</div><div class="role-desc">Прогресс и контроль занятий</div></div>
-          <svg style="margin-left:auto;color:var(--text3);flex-shrink:0" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-        <button class="role-card" onclick="showTeacherSelect()">
-          <div class="role-icon" style="background:#fff7ed">🧒</div>
-          <div><div class="role-name">Ученик</div><div class="role-desc">Уроки, слова и карточки</div></div>
-          <svg style="margin-left:auto;color:var(--text3);flex-shrink:0" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-      </div>
-    </div>`;
-}
-
-// ════════════════════════════════════════
-//  AUTH (teacher/parent)
-// ════════════════════════════════════════
-let authRole = '', authMode = 'login';
-function showAuth(role) {
-  authRole = role;
-  authMode = 'login';
-  showPg('pg-auth');
-  document.getElementById('pg-auth').innerHTML = `
-    <div class="auth-page">
-      <div class="form-panel">
-        <button class="panel-back" onclick="renderRoles()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Назад
-        </button>
-        <div class="panel-title" id="auth-title">${role === 'teacher' ? 'Учитель' : 'Родитель'}</div>
-        <div class="panel-sub" id="auth-sub">Войдите в свой аккаунт</div>
-        <div class="error-msg" id="auth-err"></div>
-        <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="auth-email" placeholder="example@mail.ru"></div>
-        <div class="form-group"><label class="form-label">Пароль</label><input class="form-input" type="password" id="auth-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doAuth()"></div>
-        <button class="btn btn-primary" id="auth-btn" onclick="doAuth()">Войти</button>
-        <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--text2)">
-          Нет аккаунта? <a style="color:var(--accent);font-weight:700;cursor:pointer" onclick="toggleAuthMode()">Зарегистрироваться</a>
-        </div>
-      </div>
-    </div>`;
-}
-
-function toggleAuthMode() {
-  authMode = authMode === 'login' ? 'register' : 'login';
-  document.getElementById('auth-btn').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
-  document.querySelector('[onclick="toggleAuthMode()"]').textContent = authMode === 'login' ? 'Зарегистрироваться' : 'Уже есть аккаунт';
-}
-
-async function doAuth() {
-  const email = document.getElementById('auth-email').value.trim();
-  const pass = document.getElementById('auth-pass').value;
-  const errEl = document.getElementById('auth-err');
-  errEl.classList.remove('show');
-  if (!email || !pass) { errEl.textContent = 'Заполните все поля'; errEl.classList.add('show'); return; }
-  document.getElementById('auth-btn').textContent = '...';
-  showPg('pg-loading');
-
-  let result, uid;
-  if (authMode === 'register') {
-    result = await sb.auth.signUp({ email, password: pass });
-    if (result.error) { showPg('pg-auth'); errEl.textContent = result.error.message; errEl.classList.add('show'); document.getElementById('auth-btn').textContent = 'Зарегистрироваться'; return; }
-    uid = result.data.user.id;
-    // Генерируем уникальный teacher_code если учитель
-    const code = authRole === 'teacher' ? Math.random().toString(36).substring(2,6).toUpperCase() : null;
-    await sb.from('profiles').upsert({ id: uid, role: authRole, name: email.split('@')[0], teacher_code: code });
-  } else {
-    result = await sb.auth.signInWithPassword({ email, password: pass });
-    if (result.error) { showPg('pg-auth'); errEl.textContent = result.error.message === 'Invalid login credentials' ? 'Неверный email или пароль' : result.error.message; errEl.classList.add('show'); document.getElementById('auth-btn').textContent = 'Войти'; return; }
-    uid = result.data.user.id;
-  }
-
-  const { data: profile } = await sb.from('profiles').select('*').eq('id', uid).single();
-  me = { role: profile.role, name: profile.name, id: uid, teacher_code: profile.teacher_code };
-  launchApp();
-}
-
-// ════════════════════════════════════════
-//  STUDENT LOGIN — выбор учителя → PIN
-// ════════════════════════════════════════
-let selectedTeacherId = null;
-async function showTeacherSelect() {
-  showPg('pg-loading');
-  const { data: teachers } = await sb.from('profiles').select('id,name,teacher_code').eq('role','teacher');
-  showPg('pg-teachers');
-  document.getElementById('pg-teachers').innerHTML = `
-    <div class="auth-page">
-      <div class="form-panel" style="max-width:360px">
-        <button class="panel-back" onclick="renderRoles()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Назад
-        </button>
-        <div class="panel-title">Выбери учителя</div>
-        <div class="panel-sub">Нажми на своего учителя</div>
-        ${!teachers?.length ? '<p style="color:var(--text2);font-size:14px">Учителей пока нет</p>' :
-          teachers.map(t => `
-            <div class="teacher-item" onclick="showPin('${t.id}','${t.name}')">
-              <div class="savatar">${t.name[0].toUpperCase()}</div>
-              <div><div class="role-name">${t.name}</div><div class="role-desc">Код: ${t.teacher_code || '—'}</div></div>
-            </div>`).join('')}
-      </div>
-    </div>`;
-}
-
-function showPin(teacherId, teacherName) {
-  selectedTeacherId = teacherId;
-  showPg('pg-pin');
-  document.getElementById('pg-pin').innerHTML = `
-    <div class="auth-page">
-      <div class="form-panel" style="max-width:360px">
-        <button class="panel-back" onclick="showTeacherSelect()">
-          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Назад
-        </button>
-        <div class="panel-title">Привет! 👋</div>
-        <div class="panel-sub">Учитель: <strong>${teacherName}</strong><br>Введи свой PIN-код</div>
-        <div class="error-msg" id="pin-err"></div>
-        <div class="pin-wrap">
-          <input class="pin-digit" type="tel" maxlength="1" id="p0" oninput="pinInput(this,0)">
-          <input class="pin-digit" type="tel" maxlength="1" id="p1" oninput="pinInput(this,1)">
-          <input class="pin-digit" type="tel" maxlength="1" id="p2" oninput="pinInput(this,2)">
-          <input class="pin-digit" type="tel" maxlength="1" id="p3" oninput="pinInput(this,3)">
-        </div>
-        <button class="btn btn-primary" onclick="doPin()">Войти</button>
-      </div>
-    </div>`;
-  setTimeout(() => document.getElementById('p0')?.focus(), 100);
-}
-
-function pinInput(el, idx) {
-  el.value = el.value.toString().slice(-1);
-  if (el.value && idx < 3) document.getElementById('p' + (idx+1)).focus();
-  if (idx === 3 && el.value) doPin();
-}
-
-async function doPin() {
-  const pin = [0,1,2,3].map(i => document.getElementById('p'+i)?.value||'').join('');
-  if (pin.length < 4) { showPinErr('Введи все 4 цифры'); return; }
-
-  showPg('pg-loading');
-  // Ищем ученика по teacher_id + pin
-  const { data: student } = await sb.from('students')
-    .select('*').eq('teacher_id', selectedTeacherId).eq('pin', pin).single();
-
-  if (!student) {
-    showPin(selectedTeacherId, '');
-    showPinErr('Неверный PIN-код');
-    return;
-  }
-
-  // Анонимный вход в Supabase чтобы RLS работал
-  const { data: anonData } = await sb.auth.signInAnonymously();
-  me = { role: 'student', name: student.name, id: anonData?.user?.id || null, student_id: student.id, teacher_id: selectedTeacherId };
-  launchApp();
-}
-
-function showPinErr(msg) {
-  const el = document.getElementById('pin-err');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 3000);
-}
-
-// ════════════════════════════════════════
-//  APP LAUNCH
-// ════════════════════════════════════════
-function launchApp() {
-  showPg('pg-app');
-  const app = document.getElementById('pg-app');
-  app.innerHTML = `
-    <header class="app-header">
-      <div class="app-logo">Lesso</div>
-      <div class="app-user">
-        <div class="avatar">${(me.name||'?')[0].toUpperCase()}</div>
-        <span style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${me.name}</span>
-        <button class="logout-btn" onclick="doLogout()" title="Выйти">
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-        </button>
-      </div>
-    </header>
-    <div class="app-content" id="app-content"></div>
-    <nav class="bottom-nav" id="app-nav"></nav>`;
-
-  if (me.role === 'teacher') buildTeacher();
-  else if (me.role === 'parent') buildParent();
-  else buildStudent();
-}
-
-async function doLogout() {
-  if (me.role !== 'student') await sb.auth.signOut();
-  me = null; selectedTeacherId = null;
-  renderRoles();
-}
-
-// ════════════════════════════════════════
-//  NAV HELPER
-// ════════════════════════════════════════
-function setNav(items) {
-  document.getElementById('app-nav').innerHTML = items.map((item, i) => `
-    <button class="nav-item ${i===0?'active':''}" id="nav-${i}" onclick="${item.fn}">
-      ${item.icon}<span>${item.label}</span>
-    </button>`).join('');
-}
-function setActiveNav(idx) {
-  document.querySelectorAll('.nav-item').forEach((b,i) => b.classList.toggle('active', i===idx));
-}
-
-// ════════════════════════════════════════
-//  ──── TEACHER ────
-// ════════════════════════════════════════
-function buildTeacher() {
-  setNav([
-    { fn:"tScreen('home',0)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>`, label:'Главная' },
-    { fn:"tScreen('students',1)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>`, label:'Ученики' },
-    { fn:"tScreen('lessons',2)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`, label:'Уроки' },
-    { fn:"tScreen('words',3)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.25V19.25M12 6.25C10.83 5.48 9.25 5 7.5 5C5.75 5 4.17 5.48 3 6.25V19.25C4.17 18.48 5.75 18 7.5 18C9.25 18 10.83 18.48 12 19.25M12 6.25C13.17 5.48 14.75 5 16.5 5C18.25 5 19.83 5.48 21 6.25V19.25C19.83 18.48 18.25 18 16.5 18C14.75 18 13.17 18.48 12 19.25"/></svg>`, label:'Слова' },
-    { fn:"tScreen('progress',4)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 20h18M7 20V10M11 20V4M15 20V14M19 20V8"/></svg>`, label:'Прогресс' }
-  ]);
-  tScreen('home', 0);
-}
-
-function tScreen(name, idx) {
-  setActiveNav(idx);
-  const fab = document.getElementById('fab');
-  if (fab) fab.remove();
-  const content = document.getElementById('app-content');
-  if (name==='home') tHome(content);
-  else if (name==='students') tStudents(content);
-  else if (name==='lessons') tLessons(content);
-  else if (name==='words') tWords(content);
-  else if (name==='progress') tProgress(content);
-}
-
-async function tHome(el) {
-  el.innerHTML = `<div class="page"><div class="sec-title">Панель учителя 👋</div><div class="sec-sub">${me.name} · Код: <strong>${me.teacher_code||'—'}</strong></div><div class="stat-row"><div class="stat-box blue"><div class="stat-val" id="th-l">—</div><div class="stat-lbl">Уроков</div></div><div class="stat-box green"><div class="stat-val" id="th-s">—</div><div class="stat-lbl">Учеников</div></div></div><div class="card"><div class="card-label">Последние уроки</div><div id="th-recent">Загрузка...</div></div></div>`;
-
-  const [{ count: lc }, { count: sc }, { data: recent }] = await Promise.all([
-    sb.from('lessons').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
-    sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
-    sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false}).limit(4)
-  ]);
-  document.getElementById('th-l').textContent = lc||0;
-  document.getElementById('th-s').textContent = sc||0;
-  const r = document.getElementById('th-recent');
-  if (!recent?.length) { r.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Уроков пока нет</p></div>'; return; }
-  r.innerHTML = recent.map(l => `
-    <div class="lcard" onclick="openLesson('${l.id}')">
-      <div class="lcard-top">
-        <div><div class="lcard-title">${l.title}</div><div class="lcard-meta">${fmtDate(l.date)}</div></div>
-        ${l.grade ? `<div class="grade grade-${l.grade}">${l.grade}</div>` : '<span class="badge badge-gray">Запланирован</span>'}
-      </div>
-      <div class="lcard-footer">
-        ${l.paid ? '<span class="badge badge-green">✓ Оплачен</span>' : '<span class="badge badge-gray">Не оплачен</span>'}
-        ${l.homework ? '<span class="badge badge-orange">📝 ДЗ</span>' : ''}
-      </div>
-    </div>`).join('');
-}
-
-async function tStudents(el) {
-  el.innerHTML = `<div class="page"><div class="sec-header"><div><div class="sec-title">Ученики</div><div class="sec-sub">Управление учениками</div></div></div><div id="t-students">Загрузка...</div><div style="height:80px"></div></div>`;
-  addFab(() => openAddStudent());
-  const { data } = await sb.from('students').select('*').eq('teacher_id',me.id).order('created_at');
-  const list = document.getElementById('t-students');
-  if (!data?.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">👨‍🎓</div><p>Учеников пока нет.<br>Нажми + чтобы добавить.</p></div>'; return; }
-  list.innerHTML = data.map(s => `
-    <div class="scard" onclick="openEditStudent('${s.id}')">
-      <div class="savatar">${s.name[0].toUpperCase()}</div>
-      <div><div class="sname">${s.name}</div><div class="smeta">${s.subject||'—'}</div></div>
-      <div class="spin-badge">PIN: ${s.pin||'—'}</div>
-    </div>`).join('');
-}
-
-async function tLessons(el) {
-  el.innerHTML = `<div class="page"><div class="sec-title">Уроки</div><div class="sec-sub">История и планирование</div><div id="t-lessons">Загрузка...</div><div style="height:80px"></div></div>`;
-  addFab(() => openAddLesson());
-  const { data: students } = await sb.from('students').select('id,name').eq('teacher_id',me.id);
-  const { data: lessons } = await sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false});
-  const list = document.getElementById('t-lessons');
-  if (!lessons?.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><p>Уроков пока нет.<br>Нажми + чтобы добавить.</p></div>'; return; }
-  const stuMap = Object.fromEntries((students||[]).map(s=>[s.id,s.name]));
-  list.innerHTML = lessons.map(l => `
-    <div class="lcard" onclick="openLesson('${l.id}')">
-      <div class="lcard-top">
-        <div><div class="lcard-title">${l.title}</div><div class="lcard-meta">${fmtDate(l.date)}${l.student_id&&stuMap[l.student_id]?' · '+stuMap[l.student_id]:''}</div></div>
-        ${l.grade ? `<div class="grade grade-${l.grade}">${l.grade}</div>` : ''}
-      </div>
-      <div class="lcard-footer">
-        ${l.status==='active'?'<span class="badge badge-red">🔴 Идёт</span>':''}
-        ${l.status==='done'?'<span class="badge badge-green">✓ Завершён</span>':''}
-        ${l.paid?'<span class="badge badge-green">Оплачен</span>':'<span class="badge badge-gray">Не оплачен</span>'}
-        ${l.homework?'<span class="badge badge-orange">📝 ДЗ</span>':''}
-      </div>
-    </div>`).join('');
-}
-
-let allWords = [];
-let wordTargetStudentId = null;
-let wordStudents = [];
-async function tWords(el) {
-  const { data: studs } = await sb.from('students').select('id,name').eq('teacher_id',me.id);
-  wordStudents = studs||[];
-  wordTargetStudentId = wordStudents[0]?.id || null;
-
-  el.innerHTML = `<div class="page"><div class="sec-title">Словарь</div><div class="sec-sub">Слова по ученикам</div>
-    <div class="frow" id="student-tabs">
-      ${wordStudents.map(s=>`<button class="fchip${s.id===wordTargetStudentId?' active':''}" data-sid="${s.id}" onclick="switchWordStudent(this)">${s.name}</button>`).join('')}
-    </div>
-    <div class="frow"><button class="fchip active" data-f="all" onclick="filterWords(this)">Все</button><button class="fchip" data-f="0" onclick="filterWords(this)">Новые</button><button class="fchip" data-f="1" onclick="filterWords(this)">Учат</button><button class="fchip" data-f="2" onclick="filterWords(this)">Почти</button><button class="fchip" data-f="3" onclick="filterWords(this)">Знают ✓</button></div>
-    <div id="t-words">Загрузка...</div><div style="height:80px"></div></div>`;
-  addFab(() => openAddWord());
-  await loadWordsByStudent(wordTargetStudentId);
-}
-
-async function switchWordStudent(btn) {
-  document.querySelectorAll('#student-tabs .fchip').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  wordTargetStudentId = btn.dataset.sid;
-  await loadWordsByStudent(wordTargetStudentId);
-}
-
-async function loadWordsByStudent(studentId) {
-  let q = sb.from('words').select('*').order('created_at',{ascending:false});
-  if (studentId) q = q.eq('student_record_id', studentId);
-  else q = q.is('student_record_id', null);
-  const { data } = await q;
-  allWords = data||[];
-  renderWordList('all');
-}
-
-function filterWords(btn) {
-  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
-  btn.classList.add('active');
-  renderWordList(btn.dataset.f);
-}
-
-function renderWordList(f) {
-  const list = document.getElementById('t-words');
-  if (!list) return;
-  const filtered = f==='all' ? allWords : allWords.filter(w=>w.level==f);
-  if (!filtered.length) { list.innerHTML='<div class="empty"><div class="empty-icon">📖</div><p>Нет слов</p></div>'; return; }
-  list.innerHTML = filtered.map(w=>`
-    <div class="witem">
-      <div class="ldot lv${w.level}"></div>
-      <div><div class="wen">${w.word}</div><div class="wru">${w.translation}</div></div>
-      <div class="wchip">${w.topic||'—'}</div>
-    </div>`).join('');
-}
-
-async function tProgress(el) {
-  const [{ data: words },{ data: lessons }] = await Promise.all([
-    sb.from('words').select('level,topic'),
-    sb.from('lessons').select('grade,paid').eq('teacher_id',me.id)
-  ]);
-  const lvls=[0,0,0,0]; const tmap={};
-  (words||[]).forEach(w=>{
-    lvls[w.level]++;
-    if (!tmap[w.topic]) tmap[w.topic]={t:0,k:0};
-    tmap[w.topic].t++; if(w.level===3) tmap[w.topic].k++;
-  });
-  const tot=words?.length||1;
-  const grades=(lessons||[]).filter(l=>l.grade).map(l=>l.grade);
-  const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1):'—';
-  const unpaid=(lessons||[]).filter(l=>!l.paid).length;
-
-  el.innerHTML=`<div class="page"><div class="sec-title">Прогресс</div><div class="sec-sub">Общая статистика</div>
-    <div class="stat-row">
-      <div class="stat-box blue"><div class="stat-val">${words?.length||0}</div><div class="stat-lbl">Всего слов</div></div>
-      <div class="stat-box green"><div class="stat-val">${avg}</div><div class="stat-lbl">Средняя оценка</div></div>
-    </div>
-    ${unpaid>0?`<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Неоплачено уроков: ${unpaid}</div></div>`:''}
-    <div class="card"><div class="card-label">Уровни знания слов</div>
-      ${['Новые','Учат','Почти','Знают'].map((l,i)=>`
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <div class="ldot lv${i}"></div>
-          <div style="font-size:13px;font-weight:600;min-width:70px">${l}</div>
-          <div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:${Math.round(lvls[i]/tot*100)}%;background:${['#cbd5e1','#f87171','#fb923c','#4ade80'][i]}"></div></div>
-          <div style="font-size:13px;color:var(--text2);font-weight:700">${lvls[i]}</div>
-        </div>`).join('')}
-    </div>
-    <div class="card"><div class="card-label">По темам</div>
-      ${Object.entries(tmap).map(([t,v])=>`
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <div style="font-size:13px;font-weight:600;min-width:90px">${t}</div>
-          <div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:${Math.round(v.k/v.t*100)}%"></div></div>
-          <div style="font-size:12px;color:var(--text2);font-weight:700">${v.k}/${v.t}</div>
-        </div>`).join('')||'<p style="font-size:14px;color:var(--text2)">Нет данных</p>'}
+  pg('pg-roles');
+  document.getElementById('pg-roles').innerHTML = `<div class="auth-pg">
+    <div class="logo-big">Lesso</div><div class="logo-sub">Платформа для обучения</div>
+    <div class="rcards">
+      <button class="rcard" onclick="showAuth('teacher')"><div class="ricon" style="background:#eff4ff">👨‍🏫</div><div><div class="rname">Учитель</div><div class="rdesc">Управление уроками и учениками</div></div>${chev()}</button>
+      <button class="rcard" onclick="showAuth('parent')"><div class="ricon" style="background:#f0fdf4">👨‍👩‍👦</div><div><div class="rname">Родитель</div><div class="rdesc">Прогресс и контроль занятий</div></div>${chev()}</button>
+      <button class="rcard" onclick="showTeachers()"><div class="ricon" style="background:#fff7ed">🧒</div><div><div class="rname">Ученик</div><div class="rdesc">Уроки, слова и карточки</div></div>${chev()}</button>
     </div>
   </div>`;
 }
 
+let authRole = '', authMode = 'login';
+function showAuth(role) {
+  authRole = role; authMode = 'login';
+  pg('pg-auth');
+  document.getElementById('pg-auth').innerHTML = `<div class="auth-pg"><div class="panel">
+    <button class="pback" onclick="renderRoles()">${backSvg()} Назад</button>
+    <div class="ptitle">${role === 'teacher' ? 'Учитель' : 'Родитель'}</div>
+    <div class="psub">Войдите в аккаунт</div>
+    <div class="err" id="aerr"></div>
+    <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="aem" placeholder="example@mail.ru"></div>
+    <div class="fg"><label class="fl">Пароль</label><input class="fi" type="password" id="apw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doAuth()"></div>
+    <button class="btn bp" id="abtn" onclick="doAuth()">Войти</button>
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--t2)">Нет аккаунта? <a style="color:var(--a);font-weight:700;cursor:pointer" onclick="togAuth()">Зарегистрироваться</a></div>
+  </div></div>`;
+}
+function togAuth() {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  document.getElementById('abtn').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
+  document.querySelector('#pg-auth a').textContent = authMode === 'login' ? 'Зарегистрироваться' : 'Уже есть аккаунт';
+}
+async function doAuth() {
+  const em = document.getElementById('aem').value.trim();
+  const pw = document.getElementById('apw').value;
+  const err = document.getElementById('aerr');
+  err.classList.remove('show');
+  if (!em || !pw) { err.textContent = 'Заполните все поля'; err.classList.add('show'); return; }
+  document.getElementById('abtn').textContent = '...';
+  pg('pg-load');
+  let res, uid;
+  if (authMode === 'register') {
+    res = await sb.auth.signUp({ email: em, password: pw });
+    if (res.error) { pg('pg-auth'); err.textContent = res.error.message; err.classList.add('show'); document.getElementById('abtn').textContent = 'Зарегистрироваться'; return; }
+    uid = res.data.user.id;
+    const code = authRole === 'teacher' ? Math.random().toString(36).substring(2,6).toUpperCase() : null;
+    await sb.from('profiles').upsert({ id: uid, role: authRole, name: em.split('@')[0], teacher_code: code });
+  } else {
+    res = await sb.auth.signInWithPassword({ email: em, password: pw });
+    if (res.error) { pg('pg-auth'); err.textContent = res.error.message.includes('Invalid') ? 'Неверный email или пароль' : res.error.message; err.classList.add('show'); document.getElementById('abtn').textContent = 'Войти'; return; }
+    uid = res.data.user.id;
+  }
+  const { data: p } = await sb.from('profiles').select('*').eq('id', uid).single();
+  me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code };
+  launchApp();
+}
+
+// ── Student Login ──
+let selTeacherId = null;
+async function showTeachers() {
+  pg('pg-load');
+  const { data: ts } = await sb.from('profiles').select('id,name,teacher_code').eq('role','teacher');
+  pg('pg-teachers');
+  document.getElementById('pg-teachers').innerHTML = `<div class="auth-pg"><div class="panel">
+    <button class="pback" onclick="renderRoles()">${backSvg()} Назад</button>
+    <div class="ptitle">Выбери учителя</div><div class="psub">Нажми на своего учителя</div>
+    ${!ts?.length ? '<p style="color:var(--t2);font-size:14px">Учителей пока нет</p>' :
+      ts.map(t => `<div class="titem" onclick="showPin('${t.id}','${t.name}')">
+        <div class="sav">${t.name[0].toUpperCase()}</div>
+        <div><div class="rname">${t.name}</div><div class="rdesc">Код: ${t.teacher_code||'—'}</div></div>${chev()}
+      </div>`).join('')}
+  </div></div>`;
+}
+function showPin(tid, tname) {
+  selTeacherId = tid; pg('pg-pin');
+  document.getElementById('pg-pin').innerHTML = `<div class="auth-pg"><div class="panel">
+    <button class="pback" onclick="showTeachers()">${backSvg()} Назад</button>
+    <div class="ptitle">Привет! 👋</div>
+    <div class="psub">Учитель: <strong>${tname}</strong><br>Введи свой PIN-код</div>
+    <div class="err" id="perr"></div>
+    <div class="pin-wrap">
+      <input class="pd" type="tel" maxlength="1" id="p0" oninput="pi(this,0)">
+      <input class="pd" type="tel" maxlength="1" id="p1" oninput="pi(this,1)">
+      <input class="pd" type="tel" maxlength="1" id="p2" oninput="pi(this,2)">
+      <input class="pd" type="tel" maxlength="1" id="p3" oninput="pi(this,3)">
+    </div>
+    <button class="btn bp" onclick="doPin()">Войти</button>
+  </div></div>`;
+  setTimeout(() => document.getElementById('p0')?.focus(), 100);
+}
+function pi(el, idx) {
+  el.value = el.value.toString().slice(-1);
+  if (el.value && idx < 3) document.getElementById('p'+(idx+1)).focus();
+  if (idx === 3 && el.value) doPin();
+}
+async function doPin() {
+  const pin = [0,1,2,3].map(i => document.getElementById('p'+i)?.value||'').join('');
+  if (pin.length < 4) { perr('Введи все 4 цифры'); return; }
+  pg('pg-load');
+  const { data: stu } = await sb.from('students').select('*').eq('teacher_id', selTeacherId).eq('pin', pin).single();
+  if (!stu) { showPin(selTeacherId,''); perr('Неверный PIN-код'); return; }
+  await sb.auth.signInAnonymously().catch(() => {});
+  const { data: { user } } = await sb.auth.getUser();
+  me = { role: 'student', name: stu.name, id: user?.id||null, student_id: stu.id, teacher_id: selTeacherId };
+  launchApp();
+}
+function perr(m) { const e = document.getElementById('perr'); if(e){e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000);} }
+
+// ── App ──
+function launchApp() {
+  pg('pg-app');
+  document.getElementById('pg-app').innerHTML = `
+    <header class="hdr">
+      <div class="logo">Lesso</div>
+      <div class="usr">
+        <div class="av" id="av">${(me.name||'?')[0].toUpperCase()}<span class="av-badge" id="av-badge" style="display:none"></span></div>
+        <span style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${me.name}</span>
+        <button class="logout" onclick="doLogout()"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></button>
+      </div>
+    </header>
+    <div class="content" id="ac"></div>
+    <nav class="bnav" id="an"></nav>`;
+  if (me.role === 'teacher') buildTeacher();
+  else if (me.role === 'parent') buildParent();
+  else buildStudent();
+  subscribeNotifs();
+}
+async function doLogout() {
+  if (me.role !== 'student') await sb.auth.signOut();
+  me = null; selTeacherId = null;
+  renderRoles();
+}
+
+// ── Nav ──
+function setNav(items) {
+  document.getElementById('an').innerHTML = items.map((it,i) =>
+    `<button class="ni${i===0?' active':''}" id="ni${i}" onclick="${it.fn}">
+      ${it.ico}<div class="ni-dot" id="nd${i}"></div><span>${it.lbl}</span>
+    </button>`).join('');
+}
+function actNav(i) { document.querySelectorAll('.ni').forEach((b,j)=>b.classList.toggle('active',j===i)); }
 function addFab(fn) {
-  const old = document.getElementById('fab');
-  if (old) old.remove();
-  const btn = document.createElement('button');
-  btn.className = 'fab'; btn.id = 'fab';
-  btn.innerHTML = `<svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`;
-  btn.onclick = fn;
-  document.body.appendChild(btn);
+  document.getElementById('fab')?.remove();
+  const b = document.createElement('button'); b.className='fab'; b.id='fab';
+  b.innerHTML=`<svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`;
+  b.onclick=fn; document.body.appendChild(b);
 }
 
-// ── Lesson CRUD ──
-async function openAddLesson() {
-  editLessonId = null;
-  document.getElementById('m-lesson-title').textContent = 'Новый урок';
-  document.getElementById('li-title').value = '';
-  document.getElementById('li-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('li-zoom').value = '';
-  document.getElementById('li-hw').value = '';
-  document.getElementById('li-notes').value = '';
-  document.getElementById('li-grade').value = '';
-  const paid = document.getElementById('li-paid');
-  paid.classList.remove('on'); paid.dataset.lessonId=''; paid.dataset.paid='0';
-  const sb2 = document.getElementById('li-status-btn');
-  sb2.textContent='▶ Начать урок'; sb2.dataset.status='planned'; sb2.dataset.lid='';
-  document.getElementById('li-delete-btn').style.display='none';
-  await populateStudentSelect(null);
-  openModal('m-lesson');
+// ── Notifications ──
+async function subscribeNotifs() {
+  await checkUnread();
+  const channel = sb.channel('notifs-'+me.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:`recipient_id=eq.${me.id}`},
+      () => { checkUnread(); })
+    .subscribe();
+}
+async function checkUnread() {
+  const { count } = await sb.from('notifications').select('*',{count:'exact',head:true})
+    .eq('recipient_id', me.id).eq('read', false);
+  unreadCount = count || 0;
+  const badge = document.getElementById('av-badge');
+  if (badge) { badge.textContent = unreadCount > 9 ? '9+' : unreadCount; badge.style.display = unreadCount > 0 ? 'flex' : 'none'; }
+  // Dot on chat nav
+  const chatNavIdx = me.role === 'teacher' ? 4 : me.role === 'parent' ? 3 : 3;
+  const dot = document.getElementById('nd'+chatNavIdx);
+  if (dot) dot.classList.toggle('show', unreadCount > 0);
+}
+async function createNotif(recipientId, type, title, body, lessonId=null) {
+  if (!recipientId) return;
+  await sb.from('notifications').insert({ recipient_id: recipientId, type, title, body, lesson_id: lessonId });
 }
 
-async function populateStudentSelect(selectedId) {
-  const { data: studs } = await sb.from('students').select('id,name').eq('teacher_id',me.id);
-  const sel = document.getElementById('li-student');
-  if (!sel) return;
-  sel.innerHTML = (studs||[]).map(s =>
-    `<option value="${s.id}" ${s.id===selectedId?'selected':''}>${s.name}</option>`
-  ).join('') || '<option value="">Нет учеников</option>';
+// ── TEACHER ──
+function buildTeacher() {
+  setNav([
+    {fn:"tSc('home',0)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>`,lbl:'Главная'},
+    {fn:"tSc('students',1)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>`,lbl:'Ученики'},
+    {fn:"tSc('lessons',2)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,lbl:'Уроки'},
+    {fn:"tSc('words',3)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.25V19.25M12 6.25C10.83 5.48 9.25 5 7.5 5C5.75 5 4.17 5.48 3 6.25V19.25C4.17 18.48 5.75 18 7.5 18C9.25 18 10.83 18.48 12 19.25M12 6.25C13.17 5.48 14.75 5 16.5 5C18.25 5 19.83 5.48 21 6.25V19.25C19.83 18.48 18.25 18 16.5 18C14.75 18 13.17 18.48 12 19.25"/></svg>`,lbl:'Слова'},
+    {fn:"tSc('chats',4)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,lbl:'Чаты'}
+  ]);
+  tSc('home',0);
+}
+function tSc(n,i) {
+  actNav(i); document.getElementById('fab')?.remove();
+  const c=document.getElementById('ac');
+  if(n==='home') tHome(c);
+  else if(n==='students') tStudents(c);
+  else if(n==='lessons') tLessons(c);
+  else if(n==='words') tWords(c);
+  else if(n==='chats') tChats(c);
 }
 
-async function openLesson(id) {
-  const { data: l } = await sb.from('lessons').select('*').eq('id',id).single();
-  if (!l) return;
-  editLessonId = id;
-  document.getElementById('m-lesson-title').textContent = 'Урок';
-  document.getElementById('li-title').value = l.title;
-  document.getElementById('li-date').value = l.date;
-  document.getElementById('li-zoom').value = l.zoom_link||'';
-  document.getElementById('li-hw').value = l.homework||'';
-  document.getElementById('li-notes').value = l.notes||'';
-  document.getElementById('li-grade').value = l.grade||'';
-  const paid = document.getElementById('li-paid');
-  paid.classList.toggle('on', l.paid); paid.dataset.lessonId=id; paid.dataset.paid=l.paid?'1':'0';
-  const sb2 = document.getElementById('li-status-btn');
-  sb2.textContent = l.status==='active'?'🔴 Урок идёт — завершить':l.status==='done'?'✓ Урок завершён':'▶ Начать урок';
-  sb2.dataset.status=l.status; sb2.dataset.lid=id;
-  document.getElementById('li-delete-btn').style.display='block';
-  await populateStudentSelect(l.student_id);
-  openModal('m-lesson');
+async function tHome(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">—</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">—</div><div class="sl">Учеников</div></div></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r">Загрузка...</div></div></div>`;
+  const [{count:lc},{count:sc},{data:rc}]=await Promise.all([
+    sb.from('lessons').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
+    sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
+    sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false}).limit(4)
+  ]);
+  document.getElementById('th-l').textContent=lc||0;
+  document.getElementById('th-s').textContent=sc||0;
+  const r=document.getElementById('th-r');
+  if(!rc?.length){r.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
+  r.innerHTML=rc.map(l=>`<div class="lc" onclick="openLesson('${l.id}')">
+    <div class="lct"><div><div class="lcti">${l.title}</div><div class="lcm">${fd(l.date)}</div></div>
+    ${l.grade?`<div class="grade g${l.grade}">${l.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
+    <div class="lcf">${l.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}${l.homework?'<span class="bdg bo">📝 ДЗ</span>':''}</div>
+  </div>`).join('');
 }
 
-async function saveLesson() {
-  const title = document.getElementById('li-title').value.trim();
-  const date = document.getElementById('li-date').value;
-  if (!title||!date) { toast('Заполни название и дату'); return; }
-  const stuSel = document.getElementById('li-student');
-  const payload = {
-    title, date, teacher_id: me.id,
-    student_id: stuSel?.value || null,
-    zoom_link: document.getElementById('li-zoom').value.trim()||null,
-    homework: document.getElementById('li-hw').value.trim()||null,
-    notes: document.getElementById('li-notes').value.trim()||null,
-    grade: document.getElementById('li-grade').value ? parseInt(document.getElementById('li-grade').value) : null
-  };
-  let error;
-  if (editLessonId) {
-    ({error} = await sb.from('lessons').update(payload).eq('id',editLessonId));
-  } else {
-    ({error} = await sb.from('lessons').insert({...payload, status:'planned'}));
+async function tStudents(el) {
+  el.innerHTML=`<div class="page"><div class="shdr"><div><div class="stitle">Ученики</div><div class="ssub">Управление</div></div></div><div id="ts-list">Загрузка...</div><div style="height:80px"></div></div>`;
+  addFab(()=>openAddStu());
+  const{data}=await sb.from('students').select('*').eq('teacher_id',me.id).order('created_at');
+  const l=document.getElementById('ts-list');
+  if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">👨‍🎓</div><p>Учеников пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
+  l.innerHTML=data.map(s=>`<div class="scard" onclick="openEditStu('${s.id}')">
+    <div class="sav">${s.name[0].toUpperCase()}</div>
+    <div><div class="sname_">${s.name}</div><div class="smeta_">${s.subject||'—'}</div></div>
+    <div class="spinb">PIN: ${s.pin||'—'}</div>
+  </div>`).join('');
+}
+
+async function tLessons(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Уроки</div><div class="ssub">История и планирование</div><div id="tl-list">Загрузка...</div><div style="height:80px"></div></div>`;
+  addFab(()=>openAddLesson());
+  const[{data:ss},{data:ls}]=await Promise.all([
+    sb.from('students').select('id,name').eq('teacher_id',me.id),
+    sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false})
+  ]);
+  const sm=Object.fromEntries((ss||[]).map(s=>[s.id,s.name]));
+  const l=document.getElementById('tl-list');
+  if(!ls?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
+  l.innerHTML=ls.map(l_=>`<div class="lc" onclick="openLesson('${l_.id}')">
+    <div class="lct"><div><div class="lcti">${l_.title}</div><div class="lcm">${fd(l_.date)}${l_.student_id&&sm[l_.student_id]?' · '+sm[l_.student_id]:''}</div></div>
+    ${l_.grade?`<div class="grade g${l_.grade}">${l_.grade}</div>`:''}</div>
+    <div class="lcf">
+      ${l_.status==='active'?'<span class="bdg br">🔴 Идёт</span>':l_.status==='done'?'<span class="bdg bgg">✓ Завершён</span>':''}
+      ${l_.paid?'<span class="bdg bgg">Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
+      ${l_.homework?'<span class="bdg bo">📝 ДЗ</span>':''}
+    </div>
+  </div>`).join('');
+}
+
+let allW=[], wStuId=null, wStus=[];
+async function tWords(el) {
+  const{data:ss}=await sb.from('students').select('id,name').eq('teacher_id',me.id);
+  wStus=ss||[]; wStuId=wStus[0]?.id||null;
+  el.innerHTML=`<div class="page"><div class="stitle">Словарь</div><div class="ssub">Слова по ученикам</div>
+    <div class="frow" id="wstu-tabs">${wStus.map(s=>`<button class="fc2${s.id===wStuId?' active':''}" data-sid="${s.id}" onclick="switchWStu(this)">${s.name}</button>`).join('')}</div>
+    <div class="frow"><button class="fc2 active" data-f="all" onclick="filterW(this)">Все</button><button class="fc2" data-f="0" onclick="filterW(this)">Новые</button><button class="fc2" data-f="1" onclick="filterW(this)">Учат</button><button class="fc2" data-f="2" onclick="filterW(this)">Почти</button><button class="fc2" data-f="3" onclick="filterW(this)">Знают ✓</button></div>
+    <div id="tw-list">Загрузка...</div><div style="height:80px"></div></div>`;
+  addFab(()=>openAddWord());
+  await loadW(wStuId);
+}
+async function switchWStu(btn) {
+  document.querySelectorAll('#wstu-tabs .fc2').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); wStuId=btn.dataset.sid; await loadW(wStuId);
+}
+async function loadW(sid) {
+  let q=sb.from('words').select('*').order('created_at',{ascending:false});
+  if(sid) q=q.eq('student_record_id',sid); else q=q.is('student_record_id',null);
+  const{data}=await q; allW=data||[]; renderW('all');
+}
+function filterW(btn) { document.querySelectorAll('#tw-list').length&&document.querySelectorAll('.frow .fc2').forEach(c=>c.dataset.f&&c.classList.remove('active')); btn.classList.add('active'); renderW(btn.dataset.f); }
+function renderW(f) {
+  const l=document.getElementById('tw-list'); if(!l) return;
+  const d=f==='all'?allW:allW.filter(w=>w.level==f);
+  if(!d.length){l.innerHTML=`<div class="empty"><div class="ei">📖</div><p>Нет слов</p></div>`;return;}
+  l.innerHTML=d.map(w=>`<div class="wi"><div class="ld lv${w.level}"></div><div><div class="wen">${w.word}</div><div class="wru">${w.translation}</div></div><div class="wch">${w.topic||'—'}</div></div>`).join('');
+}
+
+// ── Teacher Chats ──
+async function tChats(el) {
+  document.getElementById('fab')?.remove();
+  el.innerHTML=`<div class="page"><div class="stitle">Чаты</div><div class="ssub">Сообщения с учениками и родителями</div><div id="tc-list">Загрузка...</div></div>`;
+  // Загружаем учеников учителя
+  const{data:stus}=await sb.from('students').select('*').eq('teacher_id',me.id);
+  const l=document.getElementById('tc-list');
+  if(!stus?.length){l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Сначала добавьте учеников</p></div>`;return;}
+  // Для каждого ученика показываем два чата
+  l.innerHTML=stus.map(s=>`
+    <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px">${s.name}</div>
+    <div class="chitem" onclick="openChat('teacher_parent','${s.id}','${s.name}','Родитель')">
+      <div class="chav" style="background:#16a34a">${s.name[0]}</div>
+      <div style="flex:1"><div class="chname">👨‍👩‍👦 Родитель</div><div class="chlast">Чат с родителями ${s.name}</div></div>
+    </div>
+    <div class="chitem" onclick="openChat('teacher_student','${s.id}','${s.name}','${s.name}')">
+      <div class="chav" style="background:#2563eb">${s.name[0]}</div>
+      <div style="flex:1"><div class="chname">🧒 ${s.name}</div><div class="chlast">Чат с учеником</div></div>
+    </div>`).join('');
+  // Уведомления прочитаны при открытии чатов
+  await sb.from('notifications').update({read:true}).eq('recipient_id',me.id).eq('read',false);
+  checkUnread();
+}
+
+// ── Open Chat ──
+async function openChat(type, stuId, stuName, recipientName) {
+  // Найти или создать чат
+  let { data: chat } = await sb.from('chats').select('*').eq('teacher_id',me.id).eq('student_id',stuId).eq('type',type).single();
+  if (!chat) {
+    const{data:nc}=await sb.from('chats').insert({teacher_id:me.id,student_id:stuId,type}).select().single();
+    chat=nc;
   }
-  if (error) { toast('Ошибка: '+error.message); return; }
-  closeModal('m-lesson');
-  toast('Урок сохранён ✓');
-  tScreen('lessons', 2);
-}
-
-async function deleteLesson() {
-  if (!editLessonId) return;
-  const {error} = await sb.from('lessons').delete().eq('id',editLessonId);
-  if (error) { toast('Ошибка: '+error.message); return; }
-  closeModal('m-lesson');
-  toast('Урок удалён');
-  tScreen('lessons', 2);
-}
-
-function togglePaid(btn) {
-  if (!btn.dataset.lessonId) return;
-  const paid = btn.dataset.paid === '0';
-  sb.from('lessons').update({paid}).eq('id',btn.dataset.lessonId).then(({error}) => {
-    if (error) { toast('Ошибка'); return; }
-    btn.dataset.paid = paid?'1':'0';
-    btn.classList.toggle('on', paid);
-    toast(paid?'Отмечен как оплаченный ✓':'Отметка снята');
-  });
-}
-
-async function toggleStatus(btn) {
-  if (btn.dataset.status==='done') return;
-  if (!btn.dataset.lid) { toast('Сначала сохрани урок'); return; }
-  btn.disabled = true;
-  const newStatus = btn.dataset.status==='planned' ? 'active' : 'done';
-  const update = {status: newStatus};
-  if (newStatus==='active') update.started_at = new Date().toISOString();
-  if (newStatus==='done') update.ended_at = new Date().toISOString();
-  const {error} = await sb.from('lessons').update(update).eq('id',btn.dataset.lid);
-  btn.disabled = false;
-  if (error) { toast('Ошибка: '+error.message); return; }
-  btn.textContent = newStatus==='active'?'🔴 Урок идёт — завершить':'✓ Урок завершён';
-  btn.dataset.status = newStatus;
-  toast(newStatus==='active'?'🔴 Урок начат!':'✓ Урок завершён!');
-}
-
-// ── Student CRUD ──
-function openAddStudent() {
-  editStudentId = null;
-  document.getElementById('m-student-title').textContent = 'Новый ученик';
-  document.getElementById('si-name').value = '';
-  document.getElementById('si-subject').value = '';
-  document.getElementById('si-pin').value = '';
-  document.getElementById('si-delete-btn').style.display = 'none';
-  openModal('m-student');
-}
-
-async function openEditStudent(id) {
-  const { data: s } = await sb.from('students').select('*').eq('id',id).single();
-  if (!s) return;
-  editStudentId = id;
-  document.getElementById('m-student-title').textContent = 'Редактировать ученика';
-  document.getElementById('si-name').value = s.name;
-  document.getElementById('si-subject').value = s.subject||'';
-  document.getElementById('si-pin').value = s.pin||'';
-  document.getElementById('si-delete-btn').style.display = 'block';
-  openModal('m-student');
-}
-
-async function saveStudent() {
-  const name = document.getElementById('si-name').value.trim();
-  const pin = document.getElementById('si-pin').value.trim();
-  if (!name) { toast('Введи имя ученика'); return; }
-  if (!pin || pin.length !== 4 || isNaN(pin)) { toast('PIN должен быть 4 цифры'); return; }
-
-  // Проверка лимита (только при добавлении нового)
-  if (!editStudentId) {
-    const [{ count: current }, { data: profile }] = await Promise.all([
-      sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
-      sb.from('profiles').select('students_limit').eq('id',me.id).single()
-    ]);
-    const limit = profile?.students_limit ?? 1;
-    if (current >= limit) {
-      toast(`Лимит ${limit} уч. достигнут. Пишите: +7 991 174-51-13`);
-      return;
-    }
-  }
-
-  // Проверка уникальности PIN у этого учителя
-  const { data: existing } = await sb.from('students')
-    .select('id').eq('teacher_id',me.id).eq('pin',pin)
-    .neq('id', editStudentId||'00000000-0000-0000-0000-000000000000');
-  if (existing?.length) { toast('Такой PIN уже есть у другого ученика'); return; }
-
-  const payload = { name, pin, subject: document.getElementById('si-subject').value.trim()||'Английский', teacher_id: me.id };
-  let error;
-  if (editStudentId) {
-    ({error} = await sb.from('students').update(payload).eq('id',editStudentId));
-  } else {
-    ({error} = await sb.from('students').insert(payload));
-  }
-  if (error) { toast('Ошибка: '+error.message); return; }
-  closeModal('m-student');
-  toast('Ученик сохранён ✓');
-  tScreen('students', 1);
-}
-
-async function deleteStudent() {
-  if (!editStudentId) return;
-  const {error} = await sb.from('students').delete().eq('id',editStudentId);
-  if (error) { toast('Ошибка: '+error.message); return; }
-  closeModal('m-student');
-  toast('Ученик удалён');
-  tScreen('students', 1);
-}
-
-// ── Word CRUD ──
-function selLv(btn) {
-  wLevel = parseInt(btn.dataset.lv);
-  document.querySelectorAll('.lopt').forEach(b=>b.classList.toggle('active', b.dataset.lv==wLevel));
-}
-
-function openAddWord() {
-  document.getElementById('wi-en').value='';
-  document.getElementById('wi-ru').value='';
-  document.getElementById('wi-topic').value='';
-  wLevel=0;
-  document.querySelectorAll('.lopt').forEach(b=>b.classList.toggle('active',b.dataset.lv=='0'));
-  openModal('m-word');
-}
-
-async function saveWord() {
-  const word=document.getElementById('wi-en').value.trim();
-  const translation=document.getElementById('wi-ru').value.trim();
-  if (!word||!translation) { toast('Заполни слово и перевод'); return; }
-  const {error}=await sb.from('words').insert({
-    word, translation,
-    topic: document.getElementById('wi-topic').value.trim()||'Разное',
-    level: wLevel, next_review: new Date().toISOString(),
-    student_record_id: wordTargetStudentId || null
-  });
-  if (error) { toast('Ошибка: '+error.message); return; }
-  closeModal('m-word');
-  toast('Слово добавлено ✓');
-  tScreen('words', 3);
-}
-
-// ── Chat ──
-async function openChat(lessonId, lessonTitle) {
-  chatLessonId = lessonId;
-  document.getElementById('m-chat-title').textContent = '💬 ' + lessonTitle;
-  document.getElementById('chat-messages').innerHTML = '<div style="text-align:center;color:var(--text3);font-size:13px;padding:20px">Загрузка...</div>';
-  openModal('m-chat');
-  await loadMessages();
-  // Realtime подписка
-  if (chatChannel) chatChannel.unsubscribe();
-  chatChannel = sb.channel('chat-'+lessonId)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages',filter:`lesson_id=eq.${lessonId}`},
-      () => loadMessages())
+  if (!chat) { toast('Ошибка создания чата'); return; }
+  activeChatId=chat.id;
+  const isParent=type==='teacher_parent';
+  document.getElementById('chat-av').textContent=stuName[0].toUpperCase();
+  document.getElementById('chat-av').style.background=isParent?'#16a34a':'#2563eb';
+  document.getElementById('chat-title').textContent=isParent?`Родитель (${stuName})`:`${stuName}`;
+  document.getElementById('chat-sub').textContent=isParent?'Чат с родителями':'Чат с учеником';
+  openM('m-chat');
+  await loadChatMsgs();
+  if(chatChannel) chatChannel.unsubscribe();
+  chatChannel=sb.channel('ch-'+chat.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:`chat_id=eq.${chat.id}`},()=>loadChatMsgs())
     .subscribe();
 }
 
-async function loadMessages() {
-  const {data}=await sb.from('messages').select('*').eq('lesson_id',chatLessonId).order('created_at');
-  const wrap=document.getElementById('chat-messages');
-  if (!wrap) return;
-  if (!data?.length) { wrap.innerHTML='<div class="empty"><div class="empty-icon">💬</div><p>Напишите первое сообщение!</p></div>'; return; }
+async function openLessonChat(lessonId, lessonTitle) {
+  lessonChatId=lessonId; activeChatId=null;
+  document.getElementById('chat-av').textContent='📚';
+  document.getElementById('chat-av').style.background='#ea580c';
+  document.getElementById('chat-title').textContent=lessonTitle;
+  document.getElementById('chat-sub').textContent='Чат по уроку';
+  openM('m-chat');
+  await loadLessonMsgs();
+  if(chatChannel) chatChannel.unsubscribe();
+  chatChannel=sb.channel('lch-'+lessonId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:`lesson_id=eq.${lessonId}`},()=>loadLessonMsgs())
+    .subscribe();
+}
+
+async function loadChatMsgs() {
+  if(!activeChatId) return;
+  const{data}=await sb.from('chat_messages').select('*').eq('chat_id',activeChatId).order('created_at');
+  renderMsgs(data);
+}
+async function loadLessonMsgs() {
+  if(!lessonChatId) return;
+  const{data}=await sb.from('chat_messages').select('*').eq('lesson_id',lessonChatId).order('created_at');
+  renderMsgs(data);
+}
+
+function renderMsgs(data) {
+  const wrap=document.getElementById('chat-msgs'); if(!wrap) return;
+  if(!data?.length){wrap.innerHTML=`<div style="text-align:center;color:var(--t3);font-size:13px;padding:20px">Напишите первое сообщение!</div>`;return;}
   wrap.innerHTML=data.map(m=>{
-    const mine = m.sender_id===me.id;
+    const mine=m.sender_id===me.id||(me.role==='student'&&m.sender_role==='student');
     return `<div class="msg ${mine?'mine':'theirs'}">
-      ${!mine?`<div class="msg-who">${m.sender_role==='teacher'?'Учитель':m.sender_role==='parent'?'Родитель':'Вадим'}</div>`:''}
-      <div class="msg-bubble">${m.text}</div>
-      <div class="msg-time">${fmtTime(m.created_at)}</div>
+      ${!mine?`<div class="msg-who">${m.sender_name}</div>`:''}
+      <div class="msg-bbl">${m.text}</div>
+      <div class="msg-time">${ft(m.created_at)}</div>
     </div>`;
   }).join('');
   wrap.scrollTop=wrap.scrollHeight;
 }
 
 async function sendMsg() {
-  const input=document.getElementById('chat-input');
-  const text=input.value.trim();
-  if (!text||!chatLessonId) return;
-  input.value='';
-  const {error}=await sb.from('messages').insert({
-    lesson_id:chatLessonId, sender_id:me.id, sender_role:me.role, text
-  });
-  if (error) toast('Ошибка: '+error.message);
+  const inp=document.getElementById('chat-inp');
+  const text=inp.value.trim(); if(!text) return;
+  inp.value='';
+  const payload={sender_id:me.id,sender_role:me.role,sender_name:me.name,text};
+  if(activeChatId) payload.chat_id=activeChatId;
+  if(lessonChatId&&!activeChatId) payload.lesson_id=lessonChatId;
+  const{error}=await sb.from('chat_messages').insert(payload);
+  if(error){toast('Ошибка: '+error.message);return;}
+  // Уведомление собеседнику
+  if(activeChatId){
+    const{data:chat}=await sb.from('chats').select('*').eq('id',activeChatId).single();
+    if(chat){
+      await sb.from('chats').update({last_message:text,last_message_at:new Date().toISOString()}).eq('id',activeChatId);
+      // Определяем получателя
+      if(me.role==='teacher'){
+        // Уведомляем родителя или ученика — они идентифицируются по student_id
+        await sb.from('notifications').insert({recipient_id:chat.student_id,type:'new_message',title:'Новое сообщение',body:text});
+      }
+    }
+  }
 }
 
-// ════════════════════════════════════════
-//  ──── STUDENT ────
-// ════════════════════════════════════════
-function buildStudent() {
-  setNav([
-    { fn:"sScreen('home',0)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>`, label:'Главная' },
-    { fn:"sScreen('lessons',1)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`, label:'Уроки' },
-    { fn:"sScreen('cards',2)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="3"/><path d="M16 2H8M12 2v4"/></svg>`, label:'Карточки' },
-    { fn:"sScreen('words',3)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.25V19.25M12 6.25C10.83 5.48 9.25 5 7.5 5C5.75 5 4.17 5.48 3 6.25V19.25C4.17 18.48 5.75 18 7.5 18C9.25 18 10.83 18.48 12 19.25M12 6.25C13.17 5.48 14.75 5 16.5 5C18.25 5 19.83 5.48 21 6.25V19.25C19.83 18.48 18.25 18 16.5 18C14.75 18 13.17 18.48 12 19.25"/></svg>`, label:'Слова' }
-  ]);
-  sScreen('home', 0);
-}
-
-function sScreen(name, idx) {
-  setActiveNav(idx);
-  const content=document.getElementById('app-content');
-  if (name==='home') sHome(content);
-  else if (name==='lessons') sLessons(content);
-  else if (name==='cards') sCards(content);
-  else if (name==='words') sWordsList(content);
-}
-
-async function sHome(el) {
-  const [{data:lessons},{data:words}]=await Promise.all([
-    sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(5),
-    sb.from('words').select('level')
-  ]);
-  const known=(words||[]).filter(w=>w.level===3).length;
-  const toReview=(words||[]).filter(w=>w.level<3).length;
-  const last=lessons?.[0];
-  el.innerHTML=`<div class="page">
-    <div class="sec-title">Привет, ${me.name}! 👋</div>
-    <div class="sec-sub">${toReview>0?`${toReview} слов для повторения`:'Все слова повторены! 🎉'}</div>
-    <div class="stat-row">
-      <div class="stat-box blue"><div class="stat-val">${words?.length||0}</div><div class="stat-lbl">Всего слов</div></div>
-      <div class="stat-box green"><div class="stat-val">${known}</div><div class="stat-lbl">Знаю хорошо</div></div>
-    </div>
-    ${last?.homework?`<div class="card" style="border-color:#fbbf24;background:#fffbeb">
-      <div class="card-label">📝 Домашнее задание</div>
-      <div style="font-weight:600;font-size:15px">${last.homework}</div>
-      <div style="font-size:12px;color:var(--text2);margin-top:6px">${fmtDate(last.date)}</div>
-    </div>`:''}
-    ${toReview>0?`<div class="card" style="display:flex;align-items:center;justify-content:space-between">
-      <div><div style="font-weight:700">Повторить слова</div><div style="font-size:13px;color:var(--text2)">${toReview} карточек ждут</div></div>
-      <button class="btn btn-primary btn-sm" onclick="sScreen('cards',2)">Начать →</button>
-    </div>`:''}
+// ── Lesson CRUD ──
+let pendFile=null;
+function onFileSelect(input) {
+  const f=input.files[0]; if(!f) return;
+  pendFile=f;
+  const sz=f.size>1024*1024?(f.size/1024/1024).toFixed(1)+' МБ':Math.round(f.size/1024)+' КБ';
+  document.getElementById('li-fprev').innerHTML=`<div class="mitem">
+    <div class="mico">${f.type.includes('pdf')?'📄':f.type.includes('image')?'🖼️':'📎'}</div>
+    <div style="flex:1"><div class="mname_">${f.name}</div><div class="msize_">${sz}</div></div>
+    <button onclick="pendFile=null;document.getElementById('li-fprev').innerHTML='';document.getElementById('li-file').value=''" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:20px">×</button>
   </div>`;
 }
-
-async function sLessons(el) {
-  const {data}=await sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false});
-  el.innerHTML=`<div class="page"><div class="sec-title">Мои уроки</div><div class="sec-sub">История занятий</div><div id="s-lessons"></div><div style="height:80px"></div></div>`;
-  const list=document.getElementById('s-lessons');
-  if (!data?.length) { list.innerHTML='<div class="empty"><div class="empty-icon">📅</div><p>Уроков пока нет</p></div>'; return; }
-  list.innerHTML=data.map(l=>`
-    <div class="lcard">
-      <div class="lcard-top">
-        <div><div class="lcard-title">${l.title}</div><div class="lcard-meta">${fmtDate(l.date)}</div></div>
-        ${l.grade?`<div class="grade grade-${l.grade}">${l.grade}</div>`:''}
-      </div>
-      ${l.homework?`<div style="margin-top:8px;font-size:13px;color:var(--orange);font-weight:600">📝 ${l.homework}</div>`:''}
-      <div class="lcard-footer">
-        ${l.zoom_link?`<a href="${l.zoom_link}" target="_blank" class="badge badge-blue">🎥 Войти в Zoom</a>`:''}
-        <button class="badge badge-gray" style="cursor:pointer;border:none" onclick="openChat('${l.id}','${l.title.replace(/'/g,"\\'")}')">💬 Чат</button>
-      </div>
-    </div>`).join('');
+async function uploadFile(file, lid) {
+  const ext=file.name.split('.').pop();
+  const path=`lessons/${lid}/${Date.now()}.${ext}`;
+  const{error}=await sb.storage.from('lesso-files').upload(path,file,{upsert:true});
+  if(error){toast('Ошибка загрузки: '+error.message);return null;}
+  const{data:u}=sb.storage.from('lesso-files').getPublicUrl(path);
+  return{url:u.publicUrl,name:file.name,size:Math.round(file.size/1024)+' КБ',type:ext};
+}
+async function loadLessonMats(lid) {
+  const{data}=await sb.from('materials').select('*').eq('lesson_id',lid).order('created_at');
+  const w=document.getElementById('li-mats'); if(!w) return;
+  w.innerHTML=(data||[]).map(m=>`<div class="mitem">
+    <div class="mico">${m.file_type==='pdf'?'📄':m.file_type?.match(/jpg|png|jpeg/)?'🖼️':'📎'}</div>
+    <div style="flex:1"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
+    <a href="${m.file_url}" target="_blank" style="background:var(--al);color:var(--a);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none">Открыть</a>
+  </div>`).join('');
+}
+async function popStuSelect(selId) {
+  const{data}=await sb.from('students').select('id,name').eq('teacher_id',me.id);
+  const s=document.getElementById('li-stu'); if(!s) return;
+  s.innerHTML=(data||[]).map(st=>`<option value="${st.id}"${st.id===selId?' selected':''}>${st.name}</option>`).join('')||'<option value="">Нет учеников</option>';
+  // Word modal student select
+  const ws=document.getElementById('wi-stu'); if(ws) ws.innerHTML=s.innerHTML;
+}
+async function openAddLesson() {
+  editLessonId=null;
+  document.getElementById('mlt').textContent='Новый урок';
+  ['li-title','li-zoom','li-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('li-hw').value='';
+  document.getElementById('li-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('li-grade').value='';
+  document.getElementById('li-mats').innerHTML='';
+  document.getElementById('li-fprev').innerHTML='';
+  pendFile=null;
+  const p=document.getElementById('li-paid'); p.classList.remove('on'); p.dataset.lid=''; p.dataset.paid='0';
+  const sb2=document.getElementById('li-stbtn'); sb2.textContent='▶ Начать урок'; sb2.dataset.status='planned'; sb2.dataset.lid='';
+  document.getElementById('li-delbtn').style.display='none';
+  await popStuSelect(null);
+  openM('m-lesson');
+}
+async function openLesson(id) {
+  const{data:l}=await sb.from('lessons').select('*').eq('id',id).single(); if(!l) return;
+  editLessonId=id;
+  document.getElementById('mlt').textContent='Урок';
+  document.getElementById('li-title').value=l.title;
+  document.getElementById('li-date').value=l.date;
+  document.getElementById('li-zoom').value=l.zoom_link||'';
+  document.getElementById('li-hw').value=l.homework||'';
+  document.getElementById('li-notes').value=l.notes||'';
+  document.getElementById('li-grade').value=l.grade||'';
+  const p=document.getElementById('li-paid'); p.classList.toggle('on',l.paid); p.dataset.lid=id; p.dataset.paid=l.paid?'1':'0';
+  const sb2=document.getElementById('li-stbtn'); sb2.textContent=l.status==='active'?'🔴 Урок идёт — завершить':l.status==='done'?'✓ Урок завершён':'▶ Начать урок'; sb2.dataset.status=l.status; sb2.dataset.lid=id;
+  document.getElementById('li-delbtn').style.display='block';
+  document.getElementById('li-fprev').innerHTML=''; pendFile=null;
+  await Promise.all([popStuSelect(l.student_id), loadLessonMats(id)]);
+  openM('m-lesson');
+}
+async function saveLesson() {
+  const title=document.getElementById('li-title').value.trim();
+  const date=document.getElementById('li-date').value;
+  if(!title||!date){toast('Заполни название и дату');return;}
+  const stuId=document.getElementById('li-stu')?.value||null;
+  const payload={title,date,teacher_id:me.id,student_id:stuId,zoom_link:document.getElementById('li-zoom').value.trim()||null,homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
+  let error, lid=editLessonId;
+  if(editLessonId){({error}=await sb.from('lessons').update(payload).eq('id',editLessonId));}
+  else{const r=await sb.from('lessons').insert({...payload,status:'planned'}).select('id').single();error=r.error;lid=r.data?.id;}
+  if(error){toast('Ошибка: '+error.message);return;}
+  // Upload file
+  if(pendFile&&lid){
+    const fd=await uploadFile(pendFile,lid);
+    if(fd) await sb.from('materials').insert({lesson_id:lid,teacher_id:me.id,name:fd.name,file_url:fd.url,file_type:fd.type,file_size:fd.size});
+    pendFile=null;
+  }
+  // Notify on homework
+  if(payload.homework&&stuId){
+    await sb.from('notifications').insert({recipient_id:stuId,type:'new_homework',title:'Новое домашнее задание',body:payload.homework,lesson_id:lid});
+    // Also notify parent — we store student record id; parent is identified separately
+    // For simplicity notify by student_id which parent checks
+  }
+  closeM('m-lesson'); toast('Урок сохранён ✓'); tSc('lessons',2);
+}
+async function delLesson() {
+  if(!editLessonId) return;
+  const{error}=await sb.from('lessons').delete().eq('id',editLessonId);
+  if(error){toast('Ошибка: '+error.message);return;}
+  closeM('m-lesson'); toast('Урок удалён'); tSc('lessons',2);
+}
+function togPaid(btn) {
+  if(!btn.dataset.lid) return;
+  const paid=btn.dataset.paid==='0';
+  sb.from('lessons').update({paid}).eq('id',btn.dataset.lid).then(({error})=>{
+    if(error){toast('Ошибка');return;}
+    btn.dataset.paid=paid?'1':'0'; btn.classList.toggle('on',paid);
+    toast(paid?'Оплачен ✓':'Отметка снята');
+  });
+}
+async function togStatus(btn) {
+  if(btn.dataset.status==='done') return;
+  if(!btn.dataset.lid){toast('Сначала сохрани урок');return;}
+  btn.disabled=true;
+  const ns=btn.dataset.status==='planned'?'active':'done';
+  const upd={status:ns};
+  if(ns==='active') upd.started_at=new Date().toISOString();
+  if(ns==='done') upd.ended_at=new Date().toISOString();
+  const{error}=await sb.from('lessons').update(upd).eq('id',btn.dataset.lid);
+  btn.disabled=false;
+  if(error){toast('Ошибка: '+error.message);return;}
+  btn.textContent=ns==='active'?'🔴 Урок идёт — завершить':'✓ Урок завершён';
+  btn.dataset.status=ns;
+  toast(ns==='active'?'🔴 Урок начат!':'✓ Урок завершён!');
+}
+// Student CRUD
+function openAddStu() {
+  editStuId=null;
+  document.getElementById('mstu-t').textContent='Новый ученик';
+  ['si-name','si-subj','si-pin'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('si-delbtn').style.display='none';
+  openM('m-stu');
+}
+async function openEditStu(id) {
+  const{data:s}=await sb.from('students').select('*').eq('id',id).single(); if(!s) return;
+  editStuId=id;
+  document.getElementById('mstu-t').textContent='Редактировать ученика';
+  document.getElementById('si-name').value=s.name;
+  document.getElementById('si-subj').value=s.subject||'';
+  document.getElementById('si-pin').value=s.pin||'';
+  document.getElementById('si-delbtn').style.display='block';
+  openM('m-stu');
+}
+async function saveStu() {
+  const name=document.getElementById('si-name').value.trim();
+  const pin=document.getElementById('si-pin').value.toString().trim();
+  if(!name){toast('Введи имя');return;}
+  if(!pin||pin.length!==4||isNaN(pin)){toast('PIN — 4 цифры');return;}
+  if(!editStuId){
+    const[{count},{data:prof}]=await Promise.all([
+      sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
+      sb.from('profiles').select('students_limit').eq('id',me.id).single()
+    ]);
+    const lim=prof?.students_limit??1;
+    if(count>=lim){toast(`Лимит ${lim} уч. Пишите: +7 991 174-51-13`);return;}
+  }
+  const{data:ex}=await sb.from('students').select('id').eq('teacher_id',me.id).eq('pin',pin).neq('id',editStuId||'00000000-0000-0000-0000-000000000000');
+  if(ex?.length){toast('Такой PIN уже занят');return;}
+  const payload={name,pin,subject:document.getElementById('si-subj').value.trim()||'Английский',teacher_id:me.id};
+  const{error}=editStuId?await sb.from('students').update(payload).eq('id',editStuId):await sb.from('students').insert(payload);
+  if(error){toast('Ошибка: '+error.message);return;}
+  closeM('m-stu'); toast('Ученик сохранён ✓'); tSc('students',1);
+}
+async function delStu() {
+  if(!editStuId) return;
+  const{error}=await sb.from('students').delete().eq('id',editStuId);
+  if(error){toast('Ошибка: '+error.message);return;}
+  closeM('m-stu'); toast('Ученик удалён'); tSc('students',1);
+}
+// Word CRUD
+function selLv(btn) { wLevel=parseInt(btn.dataset.lv); document.querySelectorAll('.lo').forEach(b=>b.classList.toggle('active',b.dataset.lv==wLevel)); }
+async function openAddWord() {
+  ['wi-en','wi-ru','wi-topic'].forEach(id=>document.getElementById(id).value='');
+  wLevel=0; document.querySelectorAll('.lo').forEach(b=>b.classList.toggle('active',b.dataset.lv=='0'));
+  await popStuSelect(wStuId);
+  openM('m-word');
+}
+async function saveWord() {
+  const word=document.getElementById('wi-en').value.trim();
+  const tr=document.getElementById('wi-ru').value.trim();
+  if(!word||!tr){toast('Заполни слово и перевод');return;}
+  const sid=document.getElementById('wi-stu')?.value||null;
+  const{error}=await sb.from('words').insert({word,translation:tr,topic:document.getElementById('wi-topic').value.trim()||'Разное',level:wLevel,next_review:new Date().toISOString(),student_record_id:sid});
+  if(error){toast('Ошибка: '+error.message);return;}
+  closeM('m-word'); toast('Слово добавлено ✓'); tSc('words',3);
 }
 
-let reviewQ=[], reviewIdx=0, cardFlipped=false;
+// ── STUDENT ──
+function buildStudent() {
+  setNav([
+    {fn:"sSc('home',0)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>`,lbl:'Главная'},
+    {fn:"sSc('lessons',1)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,lbl:'Уроки'},
+    {fn:"sSc('cards',2)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="3"/><path d="M16 2H8M12 2v4"/></svg>`,lbl:'Карточки'},
+    {fn:"sSc('words',3)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.25V19.25M12 6.25C10.83 5.48 9.25 5 7.5 5C5.75 5 4.17 5.48 3 6.25V19.25C4.17 18.48 5.75 18 7.5 18C9.25 18 10.83 18.48 12 19.25M12 6.25C13.17 5.48 14.75 5 16.5 5C18.25 5 19.83 5.48 21 6.25V19.25C19.83 18.48 18.25 18 16.5 18C14.75 18 13.17 18.48 12 19.25"/></svg>`,lbl:'Слова'},
+    {fn:"sSc('notifs',4)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>`,lbl:'Уведомления'}
+  ]);
+  sSc('home',0);
+}
+function sSc(n,i) {
+  actNav(i); const c=document.getElementById('ac');
+  if(n==='home') sHome(c);
+  else if(n==='lessons') sLessons(c);
+  else if(n==='cards') sCards(c);
+  else if(n==='words') sWords(c);
+  else if(n==='notifs') sNotifs(c);
+}
+async function sHome(el) {
+  const[{data:ls},{data:ws}]=await Promise.all([
+    sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(5),
+    sb.from('words').select('level').eq('student_record_id',me.student_id)
+  ]);
+  const known=(ws||[]).filter(w=>w.level===3).length;
+  const toRev=(ws||[]).filter(w=>w.level<3).length;
+  const last=ls?.[0];
+  el.innerHTML=`<div class="page"><div class="stitle">Привет, ${me.name}! 👋</div>
+    <div class="ssub">${toRev>0?`${toRev} слов для повторения`:'Все слова повторены! 🎉'}</div>
+    <div class="srow">
+      <div class="sbox blue"><div class="sv">${ws?.length||0}</div><div class="sl">Всего слов</div></div>
+      <div class="sbox green"><div class="sv">${known}</div><div class="sl">Знаю хорошо</div></div>
+    </div>
+    ${last?.homework?`<div class="card" style="border-color:#fbbf24;background:#fffbeb">
+      <div class="clbl">📝 Домашнее задание</div>
+      <div style="font-weight:600;font-size:15px">${last.homework}</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(last.date)}</div>
+    </div>`:''}
+    ${toRev>0?`<div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-weight:700">Повторить слова</div><div style="font-size:13px;color:var(--t2)">${toRev} карточек ждут</div></div>
+      <button class="btn bp bsm" onclick="sSc('cards',2)">Начать →</button>
+    </div>`:''}
+  </div>`;
+  // Отметить уведомления прочитанными
+  await sb.from('notifications').update({read:true}).eq('recipient_id',me.student_id).eq('read',false);
+  checkUnread();
+}
+async function sLessons(el) {
+  const{data}=await sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false});
+  el.innerHTML=`<div class="page"><div class="stitle">Мои уроки</div><div class="ssub">История занятий</div><div id="sl-list"></div><div style="height:80px"></div></div>`;
+  const l=document.getElementById('sl-list');
+  if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
+  l.innerHTML=data.map(ls=>`<div class="lc">
+    <div class="lct"><div><div class="lcti">${ls.title}</div><div class="lcm">${fd(ls.date)}</div></div>${ls.grade?`<div class="grade g${ls.grade}">${ls.grade}</div>`:''}</div>
+    ${ls.homework?`<div style="margin-top:8px;font-size:13px;color:var(--o);font-weight:600">📝 ${ls.homework}</div>`:''}
+    <div class="lcf" style="margin-top:10px">
+      ${ls.zoom_link?`<a href="${ls.zoom_link}" target="_blank" class="bdg bb">🎥 Zoom</a>`:''}
+      <button class="bdg bgr" style="cursor:pointer;border:none" onclick="openLessonChat('${ls.id}','${ls.title.replace(/'/g,"\\'")}')">💬 Чат</button>
+      <button class="bdg bb" style="cursor:pointer;border:none" onclick="togMats('${ls.id}')">📎 Материалы</button>
+    </div>
+    <div id="mat-${ls.id}" style="display:none;margin-top:8px"></div>
+  </div>`).join('');
+}
+async function togMats(lid) {
+  const w=document.getElementById('mat-'+lid); if(!w) return;
+  if(w.style.display!=='none'){w.style.display='none';return;}
+  w.style.display='block'; w.innerHTML='<div style="font-size:13px;color:var(--t3);padding:8px">Загрузка...</div>';
+  const{data}=await sb.from('materials').select('*').eq('lesson_id',lid).order('created_at');
+  if(!data?.length){w.innerHTML='<div style="font-size:13px;color:var(--t3);padding:8px">Материалов пока нет</div>';return;}
+  w.innerHTML=data.map(m=>`<div class="mitem">
+    <div class="mico">${m.file_type==='pdf'?'📄':m.file_type?.match(/jpg|png|jpeg/)?'🖼️':'📎'}</div>
+    <div style="flex:1"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
+    <a href="${m.file_url}" target="_blank" style="background:var(--al);color:var(--a);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none">Открыть</a>
+  </div>`).join('');
+}
+let rQ=[],rIdx=0,cFlip=false;
 async function sCards(el) {
-  const {data}=await sb.from('words').select('*').eq('student_record_id',me.student_id);
+  const{data}=await sb.from('words').select('*').eq('student_record_id',me.student_id);
   const now=new Date();
-  reviewQ=(data||[]).filter(w=>w.level<3||new Date(w.next_review)<=now);
-  if (!reviewQ.length) reviewQ=data||[];
-  reviewQ=reviewQ.sort(()=>Math.random()-.5).slice(0,20);
-  reviewIdx=0;
-  el.innerHTML=`<div class="page"><div class="sec-title">Карточки</div><div id="cards-area"></div></div>`;
+  rQ=(data||[]).filter(w=>w.level<3||new Date(w.next_review)<=now);
+  if(!rQ.length) rQ=data||[];
+  rQ=rQ.sort(()=>Math.random()-.5).slice(0,20);
+  rIdx=0; el.innerHTML=`<div class="page"><div class="stitle">Карточки</div><div id="ca"></div></div>`;
   renderCard();
 }
-
 function renderCard() {
-  const area=document.getElementById('cards-area');
-  if (!area) return;
-  if (!reviewQ.length) { area.innerHTML='<div class="empty"><div class="empty-icon">📖</div><p>Слов пока нет</p></div>'; return; }
-  if (reviewIdx>=reviewQ.length) {
-    area.innerHTML=`<div class="empty"><div class="empty-icon">🏆</div><p>Все карточки пройдены!<br>Молодец, ${me.name}!</p><br><button class="btn btn-primary" style="max-width:200px;margin:0 auto" onclick="sScreen('cards',2)">Ещё раз</button></div>`;
-    return;
-  }
-  const w=reviewQ[reviewIdx];
-  const dots=reviewQ.slice(0,Math.min(10,reviewQ.length)).map((_,i)=>
-    `<div style="width:8px;height:8px;border-radius:50%;background:${i<reviewIdx?'var(--green)':i===reviewIdx?'var(--accent)':'var(--border)'}"></div>`
-  ).join('');
-  cardFlipped=false;
-  area.innerHTML=`
-    <div style="display:flex;gap:5px;align-items:center;justify-content:center;margin-bottom:14px">${dots}<span style="font-size:13px;color:var(--text2);font-weight:600;margin-left:4px">${reviewIdx+1}/${reviewQ.length}</span></div>
-    <div class="fc-wrap"><div class="fc" id="fc" onclick="flipCard()">
-      <div class="fc-face fc-front">
-        <div class="fc-chip">${w.topic||'—'}</div>
-        <div class="fc-word">${w.word}</div>
-        <div class="fc-hint">Нажми — увидишь перевод</div>
-      </div>
-      <div class="fc-face fc-back">
-        <div class="fc-word" style="color:var(--accent)">${w.translation}</div>
-        <div class="fc-hint">${w.word}</div>
-      </div>
+  const a=document.getElementById('ca'); if(!a) return;
+  if(!rQ.length){a.innerHTML=`<div class="empty"><div class="ei">📖</div><p>Слов пока нет</p></div>`;return;}
+  if(rIdx>=rQ.length){a.innerHTML=`<div class="empty"><div class="ei">🏆</div><p>Все карточки пройдены!<br>Молодец, ${me.name}!</p><br><button class="btn bp" style="max-width:200px;margin:0 auto" onclick="sSc('cards',2)">Ещё раз</button></div>`;return;}
+  const w=rQ[rIdx];
+  const dots=rQ.slice(0,Math.min(10,rQ.length)).map((_,i)=>`<div style="width:8px;height:8px;border-radius:50%;background:${i<rIdx?'var(--g)':i===rIdx?'var(--a)':'var(--b)'}"></div>`).join('');
+  cFlip=false;
+  a.innerHTML=`<div style="display:flex;gap:5px;align-items:center;justify-content:center;margin-bottom:14px">${dots}<span style="font-size:13px;color:var(--t2);font-weight:600;margin-left:4px">${rIdx+1}/${rQ.length}</span></div>
+    <div class="fcw"><div class="fc" id="fc" onclick="flipCard()">
+      <div class="fcf fcfr"><div class="fcc">${w.topic||'—'}</div><div class="fcw2">${w.word}</div><div class="fch">Нажми — увидишь перевод</div></div>
+      <div class="fcf fcbk"><div class="fcw2" style="color:var(--a)">${w.translation}</div><div class="fch">${w.word}</div></div>
     </div></div>
-    <div id="fc-btns" style="display:none;margin-top:12px;display:none">
-      <div style="display:flex;gap:10px">
-        <button style="flex:1;padding:13px;border-radius:var(--rs);border:1.5px solid #fecaca;background:var(--rl);color:var(--red);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer" onclick="markCard(false)">Не знаю 😕</button>
-        <button style="flex:1;padding:13px;border-radius:var(--rs);border:1.5px solid #bbf7d0;background:var(--gl);color:var(--green);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer" onclick="markCard(true)">Знаю! ✓</button>
-      </div>
-    </div>
-    <p style="text-align:center;color:var(--text3);font-size:12px;margin-top:14px;font-weight:600">Нажми на карточку</p>`;
+    <div id="fcb" style="display:none;margin-top:12px"><div style="display:flex;gap:10px">
+      <button style="flex:1;padding:13px;border-radius:var(--rs);border:1.5px solid #fecaca;background:var(--rl);color:var(--r);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer" onclick="markCard(false)">Не знаю 😕</button>
+      <button style="flex:1;padding:13px;border-radius:var(--rs);border:1.5px solid #bbf7d0;background:var(--gl);color:var(--g);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer" onclick="markCard(true)">Знаю! ✓</button>
+    </div></div>
+    <p style="text-align:center;color:var(--t3);font-size:12px;margin-top:14px;font-weight:600">Нажми на карточку</p>`;
 }
-
 function flipCard() {
-  const fc=document.getElementById('fc'); if (!fc) return;
-  cardFlipped=!cardFlipped; fc.classList.toggle('flipped',cardFlipped);
-  document.getElementById('fc-btns').style.display=cardFlipped?'block':'none';
+  const f=document.getElementById('fc'); if(!f) return;
+  cFlip=!cFlip; f.classList.toggle('flipped',cFlip);
+  document.getElementById('fcb').style.display=cFlip?'block':'none';
 }
-
 async function markCard(knew) {
-  const w=reviewQ[reviewIdx];
-  const nLv=knew?Math.min(3,w.level+1):Math.max(0,w.level-1);
-  const d=new Date(); d.setDate(d.getDate()+([1,3,7,14][nLv]||14));
-  await sb.from('words').update({level:nLv,next_review:d.toISOString()}).eq('id',w.id);
-  reviewIdx++; renderCard();
+  const w=rQ[rIdx];
+  const nl=knew?Math.min(3,w.level+1):Math.max(0,w.level-1);
+  const d=new Date(); d.setDate(d.getDate()+([1,3,7,14][nl]||14));
+  await sb.from('words').update({level:nl,next_review:d.toISOString()}).eq('id',w.id);
+  rIdx++; renderCard();
+}
+async function sWords(el) {
+  const{data}=await sb.from('words').select('*').eq('student_record_id',me.student_id).order('level',{ascending:false});
+  el.innerHTML=`<div class="page"><div class="stitle">Мои слова</div><div class="ssub">${data?.length||0} слов в словаре</div><div id="sw-list"></div><div style="height:80px"></div></div>`;
+  const l=document.getElementById('sw-list');
+  if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📖</div><p>Слов пока нет</p></div>`;return;}
+  l.innerHTML=data.map(w=>`<div class="wi"><div class="ld lv${w.level}"></div><div><div class="wen">${w.word}</div><div class="wru">${w.translation}</div></div><div class="wch">${w.topic||'—'}</div></div>`).join('');
+}
+async function sNotifs(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Уведомления</div><div class="ssub">Новые задания и сообщения</div><div id="sn-list">Загрузка...</div></div>`;
+  const{data}=await sb.from('notifications').select('*').eq('recipient_id',me.student_id).order('created_at',{ascending:false}).limit(30);
+  const l=document.getElementById('sn-list');
+  if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">🔔</div><p>Уведомлений пока нет</p></div>`;return;}
+  const icons={new_homework:'📝',new_message:'💬',lesson_started:'🔴',lesson_done:'✓'};
+  l.innerHTML=data.map(n=>`<div class="notif${!n.read?' unread':''}">
+    <div class="notif-icon">${icons[n.type]||'🔔'}</div>
+    <div style="flex:1"><div class="notif-title">${n.title}</div>${n.body?`<div class="notif-body">${n.body}</div>`:''}<div class="notif-time">${fd(n.created_at)}</div></div>
+  </div>`).join('');
+  await sb.from('notifications').update({read:true}).eq('recipient_id',me.student_id);
+  checkUnread();
 }
 
-async function sWordsList(el) {
-  const {data}=await sb.from('words').select('*').eq('student_record_id',me.student_id).order('level',{ascending:false});
-  el.innerHTML=`<div class="page"><div class="sec-title">Мои слова</div><div class="sec-sub">${data?.length||0} слов в словаре</div><div id="s-words"></div><div style="height:80px"></div></div>`;
-  const list=document.getElementById('s-words');
-  if (!data?.length) { list.innerHTML='<div class="empty"><div class="empty-icon">📖</div><p>Слов пока нет</p></div>'; return; }
-  list.innerHTML=data.map(w=>`
-    <div class="witem">
-      <div class="ldot lv${w.level}"></div>
-      <div><div class="wen">${w.word}</div><div class="wru">${w.translation}</div></div>
-      <div class="wchip">${w.topic||'—'}</div>
-    </div>`).join('');
-}
-
-// ════════════════════════════════════════
-//  ──── PARENT ────
-// ════════════════════════════════════════
+// ── PARENT ──
 function buildParent() {
   setNav([
-    { fn:"pScreen('home',0)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>`, label:'Главная' },
-    { fn:"pScreen('lessons',1)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`, label:'Уроки' },
-    { fn:"pScreen('progress',2)", icon:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 20h18M7 20V10M11 20V4M15 20V14M19 20V8"/></svg>`, label:'Прогресс' }
+    {fn:"pSc('home',0)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>`,lbl:'Главная'},
+    {fn:"pSc('lessons',1)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,lbl:'Уроки'},
+    {fn:"pSc('progress',2)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 20h18M7 20V10M11 20V4M15 20V14M19 20V8"/></svg>`,lbl:'Прогресс'},
+    {fn:"pSc('chats',3)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,lbl:'Чат'}
   ]);
-  pScreen('home', 0);
+  pSc('home',0);
 }
-
-function pScreen(name, idx) {
-  setActiveNav(idx);
-  const content=document.getElementById('app-content');
-  if (name==='home') pHome(content);
-  else if (name==='lessons') pLessons(content);
-  else if (name==='progress') pProgress(content);
+function pSc(n,i) {
+  actNav(i); const c=document.getElementById('ac');
+  if(n==='home') pHome(c);
+  else if(n==='lessons') pLessons(c);
+  else if(n==='progress') pProgress(c);
+  else if(n==='chats') pChats(c);
 }
-
 async function pHome(el) {
-  const [{data:lessons},{data:words}]=await Promise.all([
+  const[{data:ls},{data:ws}]=await Promise.all([
     sb.from('lessons').select('*').order('date',{ascending:false}),
     sb.from('words').select('level')
   ]);
-  const known=(words||[]).filter(w=>w.level===3).length;
-  const grades=(lessons||[]).filter(l=>l.grade).map(l=>l.grade);
+  const known=(ws||[]).filter(w=>w.level===3).length;
+  const grades=(ls||[]).filter(l=>l.grade).map(l=>l.grade);
   const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1):'—';
-  const unpaid=(lessons||[]).filter(l=>!l.paid).length;
-  const last=lessons?.[0];
-  el.innerHTML=`<div class="page">
-    <div class="sec-title">Прогресс ученика 📊</div>
-    <div class="sec-sub">Обзор обучения</div>
-    <div class="stat-row">
-      <div class="stat-box blue"><div class="stat-val">${lessons?.length||0}</div><div class="stat-lbl">Уроков</div></div>
-      <div class="stat-box green"><div class="stat-val">${avg}</div><div class="stat-lbl">Средняя оценка</div></div>
-      <div class="stat-box orange"><div class="stat-val">${words?.length||0}</div><div class="stat-lbl">Слов</div></div>
-      <div class="stat-box blue"><div class="stat-val">${known}</div><div class="stat-lbl">Знает хорошо</div></div>
+  const unpaid=(ls||[]).filter(l=>!l.paid).length;
+  const last=ls?.[0];
+  el.innerHTML=`<div class="page"><div class="stitle">Прогресс ученика 📊</div><div class="ssub">Обзор обучения</div>
+    <div class="srow">
+      <div class="sbox blue"><div class="sv">${ls?.length||0}</div><div class="sl">Уроков</div></div>
+      <div class="sbox green"><div class="sv">${avg}</div><div class="sl">Средняя оценка</div></div>
+      <div class="sbox orange"><div class="sv">${ws?.length||0}</div><div class="sl">Слов</div></div>
+      <div class="sbox blue"><div class="sv">${known}</div><div class="sl">Знает хорошо</div></div>
     </div>
     ${unpaid>0?`<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Не оплачено уроков: ${unpaid}</div></div>`:''}
-    ${last?.homework?`<div class="card" style="border-color:#fb923c;background:#fff7ed">
-      <div class="card-label">📝 Текущее ДЗ</div>
-      <div style="font-weight:600;font-size:15px">${last.homework}</div>
-      <div style="font-size:12px;color:var(--text2);margin-top:6px">${fmtDate(last.date)}</div>
-    </div>`:''}
+    ${last?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)"><div class="clbl">📝 Текущее ДЗ</div><div style="font-weight:600;font-size:15px">${last.homework}</div><div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(last.date)}</div></div>`:''}
   </div>`;
 }
-
 async function pLessons(el) {
-  const {data}=await sb.from('lessons').select('*').order('date',{ascending:false});
-  el.innerHTML=`<div class="page"><div class="sec-title">История уроков</div><div class="sec-sub">Все занятия</div><div id="p-lessons"></div><div style="height:80px"></div></div>`;
-  const list=document.getElementById('p-lessons');
-  if (!data?.length) { list.innerHTML='<div class="empty"><div class="empty-icon">📅</div><p>Уроков пока нет</p></div>'; return; }
-  list.innerHTML=data.map(l=>`
-    <div class="lcard">
-      <div class="lcard-top">
-        <div><div class="lcard-title">${l.title}</div><div class="lcard-meta">${fmtDate(l.date)}</div></div>
-        ${l.grade?`<div class="grade grade-${l.grade}">${l.grade}</div>`:'<span class="badge badge-gray">Запланирован</span>'}
-      </div>
-      <div class="lcard-footer">
-        ${l.paid?'<span class="badge badge-green">✓ Оплачен</span>':'<span class="badge badge-gray">Не оплачен</span>'}
-        ${l.homework?'<span class="badge badge-orange">📝 ДЗ</span>':''}
-      </div>
-      ${l.homework?`<div style="margin-top:8px;font-size:13px;color:var(--text2)">${l.homework}</div>`:''}
-      <div class="lcard-footer" style="margin-top:8px">
-        <button class="badge badge-gray" style="cursor:pointer;border:none" onclick="openChat('${l.id}','${l.title.replace(/'/g,"\\'")}')">💬 Написать учителю</button>
-      </div>
-    </div>`).join('');
-}
-
-async function pProgress(el) {
-  const {data:words}=await sb.from('words').select('level,topic');
-  const lvls=[0,0,0,0]; const tmap={};
-  (words||[]).forEach(w=>{
-    lvls[w.level]++;
-    if (!tmap[w.topic]) tmap[w.topic]={t:0,k:0};
-    tmap[w.topic].t++; if(w.level===3) tmap[w.topic].k++;
-  });
-  const tot=words?.length||1;
-  el.innerHTML=`<div class="page"><div class="sec-title">Прогресс по словам</div><div class="sec-sub">Детальная статистика</div>
-    <div class="card"><div class="card-label">Уровни знания</div>
-      ${['Новые','Учит','Почти знает','Знает'].map((l,i)=>`
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <div class="ldot lv${i}"></div>
-          <div style="font-size:13px;font-weight:600;min-width:100px">${l}</div>
-          <div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:${Math.round(lvls[i]/tot*100)}%;background:${['#cbd5e1','#f87171','#fb923c','#4ade80'][i]}"></div></div>
-          <div style="font-size:13px;color:var(--text2);font-weight:700">${lvls[i]}</div>
-        </div>`).join('')}
+  const{data}=await sb.from('lessons').select('*').order('date',{ascending:false});
+  el.innerHTML=`<div class="page"><div class="stitle">История уроков</div><div class="ssub">Все занятия</div><div id="pl-list"></div><div style="height:80px"></div></div>`;
+  const l=document.getElementById('pl-list');
+  if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
+  l.innerHTML=data.map(ls=>`<div class="lc">
+    <div class="lct"><div><div class="lcti">${ls.title}</div><div class="lcm">${fd(ls.date)}</div></div>${ls.grade?`<div class="grade g${ls.grade}">${ls.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
+    <div class="lcf">
+      ${ls.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
+      ${ls.homework?'<span class="bdg bo">📝 ДЗ</span>':''}
     </div>
-    <div class="card"><div class="card-label">По темам</div>
-      ${Object.entries(tmap).map(([t,v])=>`
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-          <div style="font-size:13px;font-weight:600;min-width:90px">${t}</div>
-          <div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:${Math.round(v.k/v.t*100)}%"></div></div>
-          <div style="font-size:12px;color:var(--text2);font-weight:700">${v.k}/${v.t}</div>
-        </div>`).join('')||'<p style="font-size:14px;color:var(--text2)">Нет данных</p>'}
+    ${ls.homework?`<div style="margin-top:8px;font-size:13px;color:var(--t2)">${ls.homework}</div>`:''}
+    <div class="lcf" style="margin-top:8px">
+      <button class="bdg bgr" style="cursor:pointer;border:none" onclick="openLessonChat('${ls.id}','${ls.title.replace(/'/g,"\\'")}')">💬 Чат по уроку</button>
+      <button class="bdg bb" style="cursor:pointer;border:none" onclick="togMats('${ls.id}')">📎 Материалы</button>
+    </div>
+    <div id="mat-${ls.id}" style="display:none;margin-top:8px"></div>
+  </div>`).join('');
+}
+async function pProgress(el) {
+  const{data:ws}=await sb.from('words').select('level,topic');
+  const lv=[0,0,0,0],tm={};
+  (ws||[]).forEach(w=>{lv[w.level]++;if(!tm[w.topic])tm[w.topic]={t:0,k:0};tm[w.topic].t++;if(w.level===3)tm[w.topic].k++;});
+  const tot=ws?.length||1;
+  el.innerHTML=`<div class="page"><div class="stitle">Прогресс по словам</div><div class="ssub">Детальная статистика</div>
+    <div class="card"><div class="clbl">Уровни знания</div>
+      ${['Новые','Учит','Почти знает','Знает'].map((l,i)=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="ld lv${i}"></div><div style="font-size:13px;font-weight:600;min-width:100px">${l}</div>
+        <div class="pb" style="flex:1"><div class="pbf" style="width:${Math.round(lv[i]/tot*100)}%;background:${['#cbd5e1','#f87171','#fb923c','#4ade80'][i]}"></div></div>
+        <div style="font-size:13px;color:var(--t2);font-weight:700">${lv[i]}</div>
+      </div>`).join('')}
+    </div>
+    <div class="card"><div class="clbl">По темам</div>
+      ${Object.entries(tm).map(([t,v])=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600;min-width:90px">${t}</div>
+        <div class="pb" style="flex:1"><div class="pbf" style="width:${Math.round(v.k/v.t*100)}%"></div></div>
+        <div style="font-size:12px;color:var(--t2);font-weight:700">${v.k}/${v.t}</div>
+      </div>`).join('')||'<p style="font-size:14px;color:var(--t2)">Нет данных</p>'}
     </div>
   </div>`;
 }
-
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW:', e));
+async function pChats(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Чат с учителем</div><div class="ssub">Сообщения и вопросы</div><div id="pc-list">Загрузка...</div></div>`;
+  // Находим всех учителей у которых есть наши дети
+  const{data:ls}=await sb.from('lessons').select('teacher_id').limit(1);
+  const tid=ls?.[0]?.teacher_id;
+  if(!tid){document.getElementById('pc-list').innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет активных уроков</p></div>`;return;}
+  const{data:tp}=await sb.from('profiles').select('id,name').eq('id',tid).single();
+  const{data:stus}=await sb.from('students').select('*').eq('teacher_id',tid);
+  const l=document.getElementById('pc-list');
+  if(!stus?.length){l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет учеников</p></div>`;return;}
+  l.innerHTML=stus.map(s=>`<div class="chitem" onclick="openChat('teacher_parent','${s.id}','${s.name}','Учитель')">
+    <div class="chav" style="background:#16a34a">${tp?.name?.[0]||'У'}</div>
+    <div style="flex:1"><div class="chname">👨‍🏫 ${tp?.name||'Учитель'}</div><div class="chlast">Переписка по ${s.name}</div></div>
+    ${chev()}
+  </div>`).join('');
+  await sb.from('notifications').update({read:true}).eq('recipient_id',me.id).eq('read',false);
+  checkUnread();
 }
+
+if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
 </script>
 </body>
 </html>
