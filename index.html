@@ -459,19 +459,28 @@ function addFab(fn) {
 // ── Notifications ──
 async function subscribeNotifs() {
   await checkUnread();
-  const channel = sb.channel('notifs-'+me.id)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:`recipient_id=eq.${me.id}`},
-      () => { checkUnread(); })
+  const rid = me.role === 'student' ? me.student_id : me.id;
+  if(!rid) return;
+  const channel = sb.channel('notifs-'+rid)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:`recipient_id=eq.${rid}`},
+      () => { checkUnread(); showToastNotif(); })
     .subscribe();
 }
+
+function showToastNotif() {
+  toast('🔔 Новое уведомление!');
+}
 async function checkUnread() {
+  // Ученик идентифицируется по student_id, остальные по auth id
+  const rid = me.role === 'student' ? me.student_id : me.id;
+  if (!rid) return;
   const { count } = await sb.from('notifications').select('*',{count:'exact',head:true})
-    .eq('recipient_id', me.id).eq('read', false);
+    .eq('recipient_id', rid).eq('read', false);
   unreadCount = count || 0;
   const badge = document.getElementById('av-badge');
   if (badge) { badge.textContent = unreadCount > 9 ? '9+' : unreadCount; badge.style.display = unreadCount > 0 ? 'flex' : 'none'; }
-  // Dot on chat nav
-  const chatNavIdx = me.role === 'teacher' ? 4 : me.role === 'parent' ? 3 : 3;
+  // Dot on chats nav tab
+  const chatNavIdx = me.role === 'teacher' ? 4 : me.role === 'parent' ? 3 : 4;
   const dot = document.getElementById('nd'+chatNavIdx);
   if (dot) dot.classList.toggle('show', unreadCount > 0);
 }
@@ -607,19 +616,30 @@ async function tChats(el) {
 
 // ── Open Chat ──
 async function openChat(type, stuId, stuName, recipientName) {
+  // Для ученика teacher_id берём из me, для учителя/родителя тоже
+  const tid = me.role === 'teacher' ? me.id : me.teacher_id;
+  const realStuId = me.role === 'student' ? me.student_id : stuId;
   // Найти или создать чат
-  let { data: chat } = await sb.from('chats').select('*').eq('teacher_id',me.id).eq('student_id',stuId).eq('type',type).single();
+  let { data: chat } = await sb.from('chats').select('*').eq('teacher_id',tid).eq('student_id',realStuId).eq('type',type).single();
   if (!chat) {
-    const{data:nc}=await sb.from('chats').insert({teacher_id:me.id,student_id:stuId,type}).select().single();
+    const{data:nc}=await sb.from('chats').insert({teacher_id:tid,student_id:realStuId,type}).select().single();
     chat=nc;
   }
   if (!chat) { toast('Ошибка создания чата'); return; }
   activeChatId=chat.id;
   const isParent=type==='teacher_parent';
+  const isStudent = me.role === 'student';
   document.getElementById('chat-av').textContent=stuName[0].toUpperCase();
   document.getElementById('chat-av').style.background=isParent?'#16a34a':'#2563eb';
-  document.getElementById('chat-title').textContent=isParent?`Родитель (${stuName})`:`${stuName}`;
-  document.getElementById('chat-sub').textContent=isParent?'Чат с родителями':'Чат с учеником';
+  // Для ученика показываем имя учителя, для учителя — ученика
+  if(isStudent){
+    const{data:tp}=await sb.from('profiles').select('name').eq('id',me.teacher_id).single();
+    document.getElementById('chat-title').textContent=tp?.name||'Учитель';
+    document.getElementById('chat-sub').textContent='Чат с учителем';
+  } else {
+    document.getElementById('chat-title').textContent=isParent?`Родитель (${stuName})`:`${stuName}`;
+    document.getElementById('chat-sub').textContent=isParent?'Чат с родителями':'Чат с учеником';
+  }
   openM('m-chat');
   await loadChatMsgs();
   if(chatChannel) chatChannel.unsubscribe();
@@ -657,7 +677,8 @@ function renderMsgs(data) {
   const wrap=document.getElementById('chat-msgs'); if(!wrap) return;
   if(!data?.length){wrap.innerHTML=`<div style="text-align:center;color:var(--t3);font-size:13px;padding:20px">Напишите первое сообщение!</div>`;return;}
   wrap.innerHTML=data.map(m=>{
-    const mine=m.sender_id===me.id||(me.role==='student'&&m.sender_role==='student');
+    const myId = me.role === 'student' ? me.student_id : me.id;
+    const mine = m.sender_id === myId || (me.role === 'student' && m.sender_role === 'student' && m.sender_name === me.name);
     return `<div class="msg ${mine?'mine':'theirs'}">
       ${!mine?`<div class="msg-who">${m.sender_name}</div>`:''}
       <div class="msg-bbl">${m.text}</div>
@@ -671,9 +692,11 @@ async function sendMsg() {
   const inp=document.getElementById('chat-inp');
   const text=inp.value.trim(); if(!text) return;
   inp.value='';
-  const payload={sender_id:me.id,sender_role:me.role,sender_name:me.name,text};
+  // Ученик использует student_id как sender_id
+  const senderId = me.role === 'student' ? me.student_id : me.id;
+  const payload={sender_id:senderId, sender_role:me.role, sender_name:me.name, text};
   if(activeChatId) payload.chat_id=activeChatId;
-  if(lessonChatId&&!activeChatId) payload.lesson_id=lessonChatId;
+  else if(lessonChatId) payload.lesson_id=lessonChatId;
   const{error}=await sb.from('chat_messages').insert(payload);
   if(error){toast('Ошибка: '+error.message);return;}
   // Уведомление собеседнику
@@ -882,7 +905,7 @@ function buildStudent() {
     {fn:"sSc('lessons',1)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,lbl:'Уроки'},
     {fn:"sSc('cards',2)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="3"/><path d="M16 2H8M12 2v4"/></svg>`,lbl:'Карточки'},
     {fn:"sSc('words',3)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.25V19.25M12 6.25C10.83 5.48 9.25 5 7.5 5C5.75 5 4.17 5.48 3 6.25V19.25C4.17 18.48 5.75 18 7.5 18C9.25 18 10.83 18.48 12 19.25M12 6.25C13.17 5.48 14.75 5 16.5 5C18.25 5 19.83 5.48 21 6.25V19.25C19.83 18.48 18.25 18 16.5 18C14.75 18 13.17 18.48 12 19.25"/></svg>`,lbl:'Слова'},
-    {fn:"sSc('notifs',4)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>`,lbl:'Уведомления'}
+    {fn:"sSc('chats',4)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,lbl:'Чаты'}
   ]);
   sSc('home',0);
 }
@@ -892,7 +915,7 @@ function sSc(n,i) {
   else if(n==='lessons') sLessons(c);
   else if(n==='cards') sCards(c);
   else if(n==='words') sWords(c);
-  else if(n==='notifs') sNotifs(c);
+  else if(n==='chats') sChats(c);
 }
 async function sHome(el) {
   const[{data:ls},{data:ws}]=await Promise.all([
@@ -919,7 +942,8 @@ async function sHome(el) {
     </div>`:''}
   </div>`;
   // Отметить уведомления прочитанными
-  await sb.from('notifications').update({read:true}).eq('recipient_id',me.student_id).eq('read',false);
+  const rid = me.role === 'student' ? me.student_id : me.id;
+  if(rid) await sb.from('notifications').update({read:true}).eq('recipient_id',rid).eq('read',false);
   checkUnread();
 }
 async function sLessons(el) {
@@ -997,17 +1021,31 @@ async function sWords(el) {
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📖</div><p>Слов пока нет</p></div>`;return;}
   l.innerHTML=data.map(w=>`<div class="wi"><div class="ld lv${w.level}"></div><div><div class="wen">${w.word}</div><div class="wru">${w.translation}</div></div><div class="wch">${w.topic||'—'}</div></div>`).join('');
 }
-async function sNotifs(el) {
-  el.innerHTML=`<div class="page"><div class="stitle">Уведомления</div><div class="ssub">Новые задания и сообщения</div><div id="sn-list">Загрузка...</div></div>`;
-  const{data}=await sb.from('notifications').select('*').eq('recipient_id',me.student_id).order('created_at',{ascending:false}).limit(30);
-  const l=document.getElementById('sn-list');
-  if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">🔔</div><p>Уведомлений пока нет</p></div>`;return;}
-  const icons={new_homework:'📝',new_message:'💬',lesson_started:'🔴',lesson_done:'✓'};
-  l.innerHTML=data.map(n=>`<div class="notif${!n.read?' unread':''}">
-    <div class="notif-icon">${icons[n.type]||'🔔'}</div>
-    <div style="flex:1"><div class="notif-title">${n.title}</div>${n.body?`<div class="notif-body">${n.body}</div>`:''}<div class="notif-time">${fd(n.created_at)}</div></div>
+async function sChats(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Чаты</div><div class="ssub">Переписка с учителем</div><div id="sc-list">Загрузка...</div></div>`;
+  const l=document.getElementById('sc-list');
+  if(!me.teacher_id){l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет учителя</p></div>`;return;}
+  // Загружаем профиль учителя
+  const{data:tp}=await sb.from('profiles').select('id,name').eq('id',me.teacher_id).single();
+  const tname=tp?.name||'Учитель';
+  l.innerHTML=`
+    <div class="chitem" onclick="openChat('teacher_student','${me.student_id}','${me.name}','${me.name}')">
+      <div class="chav" style="background:var(--a)">${tname[0].toUpperCase()}</div>
+      <div style="flex:1"><div class="chname">👨‍🏫 ${tname}</div><div class="chlast">Личный чат с учителем</div></div>
+      ${chev()}
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--t2);margin:16px 0 8px">📋 Чаты по урокам</div>
+    <div id="sc-lessons">Загрузка...</div>`;
+  const{data:ls}=await sb.from('lessons').select('id,title,date').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(10);
+  const ll=document.getElementById('sc-lessons');
+  if(!ls?.length){ll.innerHTML=`<p style="font-size:13px;color:var(--t3)">Уроков пока нет</p>`;return;}
+  ll.innerHTML=ls.map(l_=>`<div class="chitem" onclick="openLessonChat('${l_.id}','${l_.title.replace(/'/g,"\'")}')">
+    <div class="chav" style="background:var(--o);width:40px;height:40px;font-size:14px">📚</div>
+    <div style="flex:1"><div class="chname">${l_.title}</div><div class="chlast">${fd(l_.date)}</div></div>
+    ${chev()}
   </div>`).join('');
-  await sb.from('notifications').update({read:true}).eq('recipient_id',me.student_id);
+  // mark notifs read
+  await sb.from('notifications').update({read:true}).eq('recipient_id',me.student_id).eq('read',false);
   checkUnread();
 }
 
@@ -1096,17 +1134,40 @@ async function pChats(el) {
   const{data:ls}=await sb.from('lessons').select('teacher_id').limit(1);
   const tid=ls?.[0]?.teacher_id;
   if(!tid){document.getElementById('pc-list').innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет активных уроков</p></div>`;return;}
-  const{data:tp}=await sb.from('profiles').select('id,name').eq('id',tid).single();
-  const{data:stus}=await sb.from('students').select('*').eq('teacher_id',tid);
+  const[{data:tp},{data:stus}]=await Promise.all([
+    sb.from('profiles').select('id,name').eq('id',tid).single(),
+    sb.from('students').select('*').eq('teacher_id',tid)
+  ]);
   const l=document.getElementById('pc-list');
   if(!stus?.length){l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет учеников</p></div>`;return;}
-  l.innerHTML=stus.map(s=>`<div class="chitem" onclick="openChat('teacher_parent','${s.id}','${s.name}','Учитель')">
-    <div class="chav" style="background:#16a34a">${tp?.name?.[0]||'У'}</div>
-    <div style="flex:1"><div class="chname">👨‍🏫 ${tp?.name||'Учитель'}</div><div class="chlast">Переписка по ${s.name}</div></div>
+  // Родитель видит один чат с учителем по каждому ребёнку
+  l.innerHTML=stus.map(s=>`<div class="chitem" onclick="openParentChat('${tid}','${s.id}','${s.name}','${tp?.name||"Учитель"}')">
+    <div class="chav" style="background:#16a34a">${tp?.name?.[0]?.toUpperCase()||'У'}</div>
+    <div style="flex:1"><div class="chname">👨‍🏫 ${tp?.name||'Учитель'}</div><div class="chlast">Переписка по ученику: ${s.name}</div></div>
     ${chev()}
   </div>`).join('');
   await sb.from('notifications').update({read:true}).eq('recipient_id',me.id).eq('read',false);
   checkUnread();
+}
+
+async function openParentChat(tid, stuId, stuName, tname) {
+  let { data: chat } = await sb.from('chats').select('*').eq('teacher_id',tid).eq('student_id',stuId).eq('type','teacher_parent').single();
+  if (!chat) {
+    const{data:nc}=await sb.from('chats').insert({teacher_id:tid,student_id:stuId,type:'teacher_parent'}).select().single();
+    chat=nc;
+  }
+  if (!chat) { toast('Ошибка создания чата'); return; }
+  activeChatId=chat.id; lessonChatId=null;
+  document.getElementById('chat-av').textContent=tname[0].toUpperCase();
+  document.getElementById('chat-av').style.background='#16a34a';
+  document.getElementById('chat-title').textContent=tname;
+  document.getElementById('chat-sub').textContent='Переписка по: '+stuName;
+  openM('m-chat');
+  await loadChatMsgs();
+  if(chatChannel) chatChannel.unsubscribe();
+  chatChannel=sb.channel('ch-'+chat.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:`chat_id=eq.${chat.id}`},()=>loadChatMsgs())
+    .subscribe();
 }
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
