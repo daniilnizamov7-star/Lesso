@@ -219,6 +219,10 @@
   <div class="fg"><label class="fl">Дата</label><input class="fi" type="date" id="li-date"></div>
   <div class="fg"><label class="fl">Ссылка Zoom</label><input class="fi" type="url" id="li-zoom" placeholder="https://zoom.us/j/..."></div>
   <div class="fg"><label class="fl">Домашнее задание</label><textarea class="fta" id="li-hw" placeholder="Выучить слова..."></textarea></div>
+  <div id="li-hw-photo-wrap" style="display:none;margin-bottom:14px">
+    <div class="fl" style="margin-bottom:6px">📷 Фото ДЗ от ученика</div>
+    <a id="li-hw-photo-link" href="" target="_blank"><img id="li-hw-photo-img" src="" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1.5px solid #bbf7d0"></a>
+  </div>
   <div class="fg"><label class="fl">Оценка</label>
     <select class="fs" id="li-grade"><option value="">— не ставить —</option><option value="5">5 — Отлично</option><option value="4">4 — Хорошо</option><option value="3">3 — Удовл.</option><option value="2">2 — Плохо</option></select>
   </div>
@@ -923,6 +927,7 @@ async function openAddLesson() {
   document.getElementById('mlt').textContent='Новый урок';
   ['li-title','li-zoom','li-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('li-hw').value='';
+  const _wrap=document.getElementById('li-hw-photo-wrap'); if(_wrap) _wrap.style.display='none';
   document.getElementById('li-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('li-grade').value='';
   document.getElementById('li-mats').innerHTML='';
@@ -942,6 +947,12 @@ async function openLesson(id) {
   document.getElementById('li-date').value=l.date;
   document.getElementById('li-zoom').value=l.zoom_link||'';
   document.getElementById('li-hw').value=l.homework||'';
+  // hw photo
+  const wrap=document.getElementById('li-hw-photo-wrap');
+  const img=document.getElementById('li-hw-photo-img');
+  const lnk=document.getElementById('li-hw-photo-link');
+  if(l.hw_photo&&wrap&&img&&lnk){wrap.style.display='block';img.src=l.hw_photo;lnk.href=l.hw_photo;}
+  else if(wrap) wrap.style.display='none';
   document.getElementById('li-notes').value=l.notes||'';
   document.getElementById('li-grade').value=l.grade||'';
   const p=document.getElementById('li-paid'); p.classList.toggle('on',l.paid); p.dataset.lid=id; p.dataset.paid=l.paid?'1':'0';
@@ -1083,8 +1094,59 @@ async function saveWord() {
 }
 
 // ── HOMEWORK DONE ──
-async function markHwDone(lessonId) {
-  const{error}=await sb.from('lessons').update({hw_done:true}).eq('id',lessonId);
+function markHwDone(lessonId) {
+  // Показываем модалку с опцией прикрепить фото
+  const mo=document.createElement('div');
+  mo.className='mo open'; mo.id='m-hwdone';
+  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px">📝 Домашнее задание</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Можешь прикрепить фото выполненного задания</div>
+    <div id="hw-preview" style="margin-bottom:12px"></div>
+    <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1.5px dashed var(--b);border-radius:12px;cursor:pointer;margin-bottom:16px">
+      <span style="font-size:22px">📷</span>
+      <div><div style="font-weight:600;font-size:14px">Прикрепить фото</div><div style="font-size:12px;color:var(--t2)">Необязательно</div></div>
+      <input type="file" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoSelect(this,'${lessonId}')">
+    </label>
+    <button class="btn bp" style="width:100%;margin-bottom:8px" onclick="submitHwDone('${lessonId}')">✅ Отметить как выполнено</button>
+    <button class="btn bs" style="width:100%" onclick="document.getElementById('m-hwdone')?.remove()">Отмена</button>
+  </div>`;
+  document.body.appendChild(mo);
+  mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
+}
+
+let hwPhotoFile=null;
+function hwPhotoSelect(input, lessonId) {
+  const file=input.files[0]; if(!file) return;
+  hwPhotoFile=file;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const prev=document.getElementById('hw-preview');
+    if(prev) prev.innerHTML=`<img src="${e.target.result}" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-bottom:4px">
+      <div style="font-size:12px;color:var(--g);font-weight:600">✓ Фото выбрано</div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitHwDone(lessonId) {
+  const btn=document.querySelector('#m-hwdone .btn.bp');
+  if(btn){btn.disabled=true;btn.textContent='Сохраняем...';}
+  let photoUrl=null;
+  if(hwPhotoFile){
+    const ext=hwPhotoFile.name.split('.').pop();
+    const path=`hw/${lessonId}_${Date.now()}.${ext}`;
+    const{data:up,error:ue}=await sb.storage.from('lesso-files').upload(path,hwPhotoFile,{upsert:true});
+    if(!ue){
+      const{data:pub}=sb.storage.from('lesso-files').getPublicUrl(path);
+      photoUrl=pub?.publicUrl||null;
+    }
+  }
+  const upd={hw_done:true};
+  if(photoUrl) upd.hw_photo=photoUrl;
+  const{error}=await sb.from('lessons').update(upd).eq('id',lessonId);
+  document.getElementById('m-hwdone')?.remove();
+  hwPhotoFile=null;
   if(error){toast('Ошибка 😢');return;}
   toast('Отлично! ДЗ отмечено ✅');
   if(me.role==='student') sSc('home',0);
@@ -1162,13 +1224,11 @@ async function sHome(el) {
       <div class="sbox blue"><div class="sv">${ws?.length||0}</div><div class="sl">Всего слов</div></div>
       <div class="sbox green"><div class="sv">${known}</div><div class="sl">Знаю хорошо</div></div>
     </div>
-    ${last?.homework?`<div class="card" style="border-color:#fbbf24;background:#fffbeb">
+    ${last?.homework && !last.hw_done ?`<div class="card" style="border-color:#fbbf24;background:#fffbeb">
       <div class="clbl">📝 Домашнее задание</div>
       <div style="font-weight:600;font-size:15px">${last.homework}</div>
       <div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(last.date)}</div>
-      ${last.hw_done
-        ? `<div style="margin-top:10px;font-size:13px;color:#16a34a;font-weight:700">✅ Выполнено</div>`
-        : `<button class="btn bp bsm" style="margin-top:10px" onclick="markHwDone('${last.id}')">Сделал ✓</button>`}
+      <button class="btn bp bsm" style="margin-top:10px" onclick="markHwDone('${last.id}')">Сделал ✓</button>
     </div>`:''}
     ${toRev>0?`<div class="card" style="display:flex;align-items:center;justify-content:space-between">
       <div><div style="font-weight:700">Повторить слова</div><div style="font-size:13px;color:var(--t2)">${toRev} карточек ждут</div></div>
