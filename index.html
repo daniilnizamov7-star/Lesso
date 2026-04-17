@@ -713,8 +713,6 @@ async function tChats(el) {
       </div>`).join('');
     document.getElementById('tc-list').appendChild(lessonDiv);
   }
-  // Уведомления прочитаны при открытии чатов
-  await sb.from('notifications').update({read:true}).eq('recipient_id',me.id).eq('read',false);
   checkUnread();
 }
 
@@ -1113,9 +1111,6 @@ async function sHome(el) {
       <button class="btn bp bsm" onclick="sSc('cards',2)">Начать →</button>
     </div>`:''}
   </div>`;
-  // Отметить уведомления прочитанными
-  const rid = me.role === 'student' ? me.student_id : me.id;
-  if(rid) await sb.from('notifications').update({read:true}).eq('recipient_id',rid).eq('read',false);
   checkUnread();
 }
 async function sLessons(el) {
@@ -1216,8 +1211,6 @@ async function sChats(el) {
     <div style="flex:1"><div class="chname">${l_.title}</div><div class="chlast">${fd(l_.date)}</div></div>
     ${chev()}
   </div>`).join('');
-  // mark notifs read
-  await sb.from('notifications').update({read:true}).eq('recipient_id',me.student_id).eq('read',false);
   checkUnread();
 }
 
@@ -1328,7 +1321,6 @@ async function pChats(el) {
     ${chev()}
   </div>`;
   }).join('');
-  await sb.from('notifications').update({read:true}).eq('recipient_id',me.id).eq('read',false);
   checkUnread();
 }
 
