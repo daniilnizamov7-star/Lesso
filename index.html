@@ -414,43 +414,55 @@ async function doAuth() {
     if (res.error) { pg('pg-auth'); err.textContent = res.error.message.includes('Invalid') ? 'Неверный email или пароль' : res.error.message; err.classList.add('show'); document.getElementById('abtn').textContent = 'Войти'; return; }
     uid = res.data.user.id;
   }
-  const { data: p } = await sb.from('profiles').select('*').eq('id', uid).single();
-  me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code };
+  const { data: p, error: pErr } = await sb.from('profiles').select('*').eq('id', uid).single();
+  if (pErr || !p) {
+    // Профиль не найден — пробуем ещё раз через 800мс (Supabase иногда лагает после upsert)
+    await new Promise(r => setTimeout(r, 800));
+    const { data: p2 } = await sb.from('profiles').select('*').eq('id', uid).single();
+    if (!p2) {
+      pg('pg-auth');
+      err.textContent = 'Ошибка загрузки профиля. Попробуйте войти снова.';
+      err.classList.add('show');
+      document.getElementById('abtn').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
+      return;
+    }
+    me = { role: p2.role, name: p2.name, id: uid, teacher_code: p2.teacher_code };
+  } else {
+    me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code };
+  }
   launchApp();
 }
 
 // ── Student Login ──
 let selTeacherId = null;
 async function showTeachers() {
-  pg('pg-load');
-  const { data: ts } = await sb.from('profiles').select('id,name,teacher_code').eq('role','teacher');
+  // Показываем форму входа по коду учителя + PIN (без списка всех учителей)
   pg('pg-teachers');
   document.getElementById('pg-teachers').innerHTML = `<div class="auth-pg"><div class="panel">
     <button class="pback" onclick="renderRoles()">${backSvg()} Назад</button>
-    <div class="ptitle">Выбери учителя</div><div class="psub">Нажми на своего учителя</div>
-    ${!ts?.length ? '<p style="color:var(--t2);font-size:14px">Учителей пока нет</p>' :
-      ts.map(t => `<div class="titem" onclick="showPin('${t.id}','${t.name}')">
-        <div class="sav">${t.name[0].toUpperCase()}</div>
-        <div><div class="rname">${t.name}</div><div class="rdesc">Код: ${t.teacher_code||'—'}</div></div>${chev()}
-      </div>`).join('')}
+    <div class="ptitle">Привет! 👋</div>
+    <div class="psub">Введи код учителя и свой PIN</div>
+    <div class="err" id="perr"></div>
+    <div class="fg" style="margin-bottom:12px">
+      <label class="fl">Код учителя</label>
+      <input class="fi" id="s-tcode" placeholder="Например: DAN1" maxlength="8" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div class="fg" style="margin-bottom:4px">
+      <label class="fl">Твой PIN-код</label>
+      <div class="pin-wrap" style="margin:8px 0 0">
+        <input class="pd" type="tel" maxlength="1" id="p0" oninput="pi(this,0)">
+        <input class="pd" type="tel" maxlength="1" id="p1" oninput="pi(this,1)">
+        <input class="pd" type="tel" maxlength="1" id="p2" oninput="pi(this,2)">
+        <input class="pd" type="tel" maxlength="1" id="p3" oninput="pi(this,3)">
+      </div>
+    </div>
+    <button class="btn bp" style="margin-top:16px" onclick="doPin()">Войти</button>
   </div></div>`;
+  setTimeout(() => document.getElementById('s-tcode')?.focus(), 100);
 }
 function showPin(tid, tname) {
-  selTeacherId = tid; pg('pg-pin');
-  document.getElementById('pg-pin').innerHTML = `<div class="auth-pg"><div class="panel">
-    <button class="pback" onclick="showTeachers()">${backSvg()} Назад</button>
-    <div class="ptitle">Привет! 👋</div>
-    <div class="psub">Учитель: <strong>${tname}</strong><br>Введи свой PIN-код</div>
-    <div class="err" id="perr"></div>
-    <div class="pin-wrap">
-      <input class="pd" type="tel" maxlength="1" id="p0" oninput="pi(this,0)">
-      <input class="pd" type="tel" maxlength="1" id="p1" oninput="pi(this,1)">
-      <input class="pd" type="tel" maxlength="1" id="p2" oninput="pi(this,2)">
-      <input class="pd" type="tel" maxlength="1" id="p3" oninput="pi(this,3)">
-    </div>
-    <button class="btn bp" onclick="doPin()">Войти</button>
-  </div></div>`;
-  setTimeout(() => document.getElementById('p0')?.focus(), 100);
+  // Оставляем для обратной совместимости, но больше не используется
+  showTeachers();
 }
 function pi(el, idx) {
   el.value = el.value.toString().slice(-1);
@@ -458,15 +470,20 @@ function pi(el, idx) {
   if (idx === 3 && el.value) doPin();
 }
 async function doPin() {
-  const pin = [0,1,2,3].map(i => document.getElementById('p'+i)?.value||'').join('');
-  if (pin.length < 4) { perr('Введи все 4 цифры'); return; }
+  const tcode = (document.getElementById('s-tcode')?.value||'').trim().toUpperCase();
+  const pin   = [0,1,2,3].map(i => document.getElementById('p'+i)?.value||'').join('');
+  if (!tcode) { perr('Введи код учителя'); return; }
+  if (pin.length < 4) { perr('Введи все 4 цифры PIN'); return; }
   pg('pg-load');
-  const { data: stu } = await sb.from('students').select('*').eq('teacher_id', selTeacherId).eq('pin', pin).single();
-  if (!stu) { showPin(selTeacherId,''); perr('Неверный PIN-код'); return; }
-  if (stu.active === false) { showPin(selTeacherId,''); perr('Доступ заблокирован. Обратитесь к учителю.'); return; }
-  // Ученик работает как anon — без входа в auth
-  me = { role: 'student', name: stu.name, id: stu.id, student_id: stu.id, teacher_id: selTeacherId };
-  console.log('me after login:', JSON.stringify(me));
+  // Ищем учителя по коду
+  const { data: teacher } = await sb.from('profiles').select('id,name').eq('teacher_code', tcode).eq('role','teacher').single();
+  if (!teacher) { pg('pg-teachers'); perr('Учитель с таким кодом не найден'); return; }
+  selTeacherId = teacher.id;
+  // Ищем ученика по PIN у этого учителя
+  const { data: stu } = await sb.from('students').select('*').eq('teacher_id', teacher.id).eq('pin', pin).single();
+  if (!stu) { pg('pg-teachers'); perr('Неверный PIN-код'); return; }
+  if (stu.active === false) { pg('pg-teachers'); perr('Доступ заблокирован. Обратитесь к учителю.'); return; }
+  me = { role: 'student', name: stu.name, id: stu.id, student_id: stu.id, teacher_id: teacher.id };
   launchApp();
 }
 function perr(m) { const e = document.getElementById('perr'); if(e){e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000);} }
@@ -532,7 +549,7 @@ async function clearAllNotifs(rid) {
   unreadCount=0;
   const badge=document.getElementById('av-badge');
   if(badge) badge.style.display='none';
-  const chatNavIdx = me.role==='teacher'?4:me.role==='parent'?3:4;
+  const chatNavIdx = me.role==='teacher'?5:me.role==='parent'?3:4;
   const dot=document.getElementById('nd'+chatNavIdx);
   if(dot) dot.classList.remove('show');
 }
@@ -1642,7 +1659,7 @@ async function pHome(el) {
   const grades=(ls||[]).filter(l=>l.grade).map(l=>l.grade);
   const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1):'—';
   const unpaid=(ls||[]).filter(l=>!l.paid).length;
-  const last=ls?.[0];
+  const lastWithHw=(ls||[]).find(l=>l.homework); // последний урок с ДЗ
   const nextLesson=(ls||[]).find(l=>l.status==='planned'||l.status==='active');
   el.innerHTML=`<div class="page"><div class="stitle">Прогресс ученика 📊</div><div class="ssub">Обзор обучения</div>
     <div class="srow">
@@ -1657,7 +1674,7 @@ async function pHome(el) {
       <div style="font-size:13px;color:var(--t2)">${fd(nextLesson.date)}</div>
     </div>`:''}
     ${unpaid>0?`<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Не оплачено уроков: ${unpaid}</div></div>`:''}
-    ${last?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)"><div class="clbl">📝 Текущее ДЗ</div><div style="font-weight:600;font-size:15px">${last.homework}</div><div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(last.date)}</div><div style="margin-top:8px">${last.hw_done?'<span style="color:#16a34a;font-weight:700;font-size:13px">✅ Ребёнок отметил как выполнено</span>':'<span style="color:#f59e0b;font-weight:600;font-size:13px">⏳ Ещё не выполнено</span>'}</div></div>`:''}
+    ${lastWithHw?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)"><div class="clbl">📝 Текущее ДЗ</div><div style="font-weight:600;font-size:15px">${lastWithHw.homework}</div><div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(lastWithHw.date)}</div><div style="margin-top:8px">${lastWithHw.hw_done?'<span style="color:#16a34a;font-weight:700;font-size:13px">✅ Ребёнок отметил как выполнено</span>':'<span style="color:#f59e0b;font-weight:600;font-size:13px">⏳ Ещё не выполнено</span>'}</div></div>`:''}
   </div>`;
 }
 async function pLessons(el) {
@@ -1730,7 +1747,9 @@ async function pChats(el) {
   const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t]));
   l.innerHTML=myStus.map(s=>{
     const tp=tMap[s.teacher_id];
-    return`<div class="chitem" onclick="openParentChat('${s.teacher_id}','${s.id}','${s.name}','${tp?.name||"Учитель"}')">
+    const safeStuName=s.name.replace(/'/g,"\'").replace(/"/g,'&quot;');
+    const safeTname=(tp?.name||'Учитель').replace(/'/g,"\'").replace(/"/g,'&quot;');
+    return`<div class="chitem" onclick="openParentChat('${s.teacher_id}','${s.id}','${safeStuName}','${safeTname}')">
     <div class="chav" style="background:#16a34a">${tp?.name?.[0]?.toUpperCase()||'У'}</div>
     <div style="flex:1"><div class="chname">👨‍🏫 ${tp?.name||'Учитель'}</div><div class="chlast">Переписка по ученику: ${s.name}</div></div>
     ${chev()}
@@ -1799,6 +1818,11 @@ async function doLinkChild() {
 }
 
 async function openParentChat(tid, stuId, stuName, tname) {
+  // Проверяем что этот ученик реально привязан к текущему родителю
+  const{data:stuCheck}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',stuId).single();
+  if(!stuCheck || (stuCheck.parent_user_id !== me.id && stuCheck.parent_user_id2 !== me.id)){
+    toast('Нет доступа к этому ученику'); return;
+  }
   let { data: chat } = await sb.from('chats').select('*').eq('teacher_id',tid).eq('student_id',stuId).eq('type','teacher_parent').single();
   if (!chat) {
     const{data:nc}=await sb.from('chats').insert({teacher_id:tid,student_id:stuId,type:'teacher_parent'}).select().single();
