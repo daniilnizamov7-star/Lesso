@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Lesso · Отзывы</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:system-ui,sans-serif;background:#f8f9fc;color:#0f1520;padding:20px}
+    h1{font-size:22px;font-weight:800;margin-bottom:20px}
+    .card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+    .meta{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
+    .role{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#eff4ff;color:#2563eb}
+    .name{font-weight:700;font-size:14px}
+    .stars{color:#f59e0b;font-size:16px}
+    .date{font-size:11px;color:#9aa0b0;margin-left:auto}
+    .text{font-size:14px;line-height:1.5;color:#0f1520;margin-bottom:10px}
+    .status{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:10px}
+    .new{background:#fef2f2;color:#dc2626}
+    .read{background:#f0fdf4;color:#16a34a}
+    .reply-box{width:100%;border:1.5px solid #e8eaf0;border-radius:8px;padding:8px 10px;font-family:inherit;font-size:13px;resize:none;min-height:60px;margin-bottom:8px}
+    .btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit}
+    .bp{background:#2563eb;color:#fff}
+    .bs{background:#f1f3f8;color:#5a6478}
+    .reply-shown{font-size:13px;color:#16a34a;background:#f0fdf4;padding:8px 10px;border-radius:8px;margin-bottom:8px}
+    .empty{text-align:center;padding:60px 0;color:#9aa0b0}
+    .filter{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+    .ftag{padding:6px 14px;border-radius:20px;border:1.5px solid #e8eaf0;background:#fff;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit}
+    .ftag.active{background:#2563eb;color:#fff;border-color:#2563eb}
+  </style>
+</head>
+<body>
+<h1>💬 Отзывы Lesso</h1>
+<div class="filter">
+  <button class="ftag active" onclick="loadFeedback('all',this)">Все</button>
+  <button class="ftag" onclick="loadFeedback('new',this)">Новые</button>
+  <button class="ftag" onclick="loadFeedback('read',this)">Прочитанные</button>
+</div>
+<div id="list"><div class="empty">Загрузка...</div></div>
+
+<script>
+const SU = 'https://yiqipulgofoschkccaxr.supabase.co';
+const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
+const sb = supabase.createClient(SU, SK);
+
+let currentFilter = 'all';
+
+async function loadFeedback(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.ftag').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+
+  let q = sb.from('feedback').select('*').order('created_at', {ascending: false});
+  if(filter !== 'all') q = q.eq('status', filter);
+  const { data, error } = await q;
+
+  const list = document.getElementById('list');
+  if(error || !data?.length) { list.innerHTML = '<div class="empty">Отзывов нет</div>'; return; }
+
+  list.innerHTML = data.map(f => `
+    <div class="card" id="fc-${f.id}">
+      <div class="meta">
+        <span class="role">${f.role === 'teacher' ? 'Учитель' : 'Родитель'}</span>
+        <span class="name">${f.name || '—'}</span>
+        ${f.rating ? `<span class="stars">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>` : ''}
+        <span class="date">${new Date(f.created_at).toLocaleString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
+      </div>
+      <div class="text">${f.text}</div>
+      <span class="status ${f.status}">${f.status === 'new' ? 'Новый' : 'Прочитан'}</span>
+      ${f.reply ? `<div class="reply-shown">✉️ Ответ: ${f.reply}</div>` : ''}
+      <div>
+        ${f.status === 'new' ? `<button class="btn bs" style="margin-right:8px;margin-bottom:8px" onclick="markRead('${f.id}')">✓ Прочитан</button>` : ''}
+        <button class="btn bs" onclick="toggleReply('${f.id}')">Ответить</button>
+      </div>
+      <div id="reply-${f.id}" style="display:none;margin-top:10px">
+        <textarea class="reply-box" id="rt-${f.id}" placeholder="Ваш ответ...">${f.reply||''}</textarea>
+        <button class="btn bp" onclick="saveReply('${f.id}')">Сохранить ответ</button>
+      </div>
+    </div>
+  `).join('');
+
+  // Помечаем новые как прочитанные автоматически
+  const newIds = data.filter(f => f.status === 'new').map(f => f.id);
+  if(newIds.length) {
+    await sb.from('feedback').update({status:'read'}).in('id', newIds);
+  }
+}
+
+function toggleReply(id) {
+  const el = document.getElementById('reply-'+id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function markRead(id) {
+  await sb.from('feedback').update({status:'read'}).eq('id', id);
+  loadFeedback(currentFilter);
+}
+
+async function saveReply(id) {
+  const reply = document.getElementById('rt-'+id)?.value.trim();
+  if(!reply) return;
+  await sb.from('feedback').update({reply, status:'read'}).eq('id', id);
+  loadFeedback(currentFilter);
+}
+
+loadFeedback('all');
+</script>
+</body>
+</html>
