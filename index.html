@@ -340,6 +340,9 @@ function backSvg() { return `<svg width="16" height="16" fill="none" stroke="cur
     const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
     if (p) { me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code }; subscribeToPush(session.user.id, session.access_token); launchApp(); return; }
   }
+  // Восстанавливаем сессию ученика
+  const stuSess = sessionStorage.getItem('stu_session');
+  if (stuSess) { try { me = JSON.parse(stuSess); launchApp(); return; } catch(e) { sessionStorage.removeItem('stu_session'); } }
   renderRoles();
 })();
 
@@ -500,6 +503,8 @@ async function doPin() {
   if (!stu) { pg('pg-teachers'); perr('Неверный PIN-код'); return; }
   if (stu.active === false) { pg('pg-teachers'); perr('Доступ заблокирован. Обратитесь к учителю.'); return; }
   me = { role: 'student', name: stu.name, id: stu.id, student_id: stu.id, teacher_id: teacher.id };
+  sessionStorage.setItem('stu_session', JSON.stringify(me));
+  subscribeToPush(stu.id, null);
   launchApp();
 }
 function perr(m) { const e = document.getElementById('perr'); if(e){e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000);} }
@@ -1907,8 +1912,13 @@ async function subscribeToPush(userId, sessionToken) {
     const fcmToken = await fbGetToken(fbMessaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: fbSwReg });
     if (!fcmToken) { console.warn('Push: FCM токен не получен'); return; }
 
+    const isStudent = me.role === 'student';
     const authToken = sessionToken || SK;
-    const res = await fetch(`${SU}/rest/v1/push_tokens?on_conflict=user_id,fcm_token`, {
+    const tokenPayload = isStudent
+      ? [{ student_id: userId, fcm_token: fcmToken }]
+      : [{ user_id: userId, fcm_token: fcmToken }];
+    const conflictCol = isStudent ? 'student_id,fcm_token' : 'user_id,fcm_token';
+    const res = await fetch(`${SU}/rest/v1/push_tokens?on_conflict=${conflictCol}`, {
       method: 'POST',
       headers: {
         'apikey': SK,
@@ -1916,7 +1926,7 @@ async function subscribeToPush(userId, sessionToken) {
         'Content-Type': 'application/json',
         'Prefer': 'resolution=merge-duplicates,return=minimal'
       },
-      body: JSON.stringify([{ user_id: userId, fcm_token: fcmToken }])
+      body: JSON.stringify(tokenPayload)
     });
     if (!res.ok) { console.error('Push: ошибка сохранения токена:', await res.text()); return; }
     console.log('Push: подписка оформлена');
