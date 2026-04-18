@@ -611,7 +611,7 @@ async function checkUnread() {
     badge.style.display = unreadCount > 0 ? 'flex' : 'none';
   }
   // Красная точка на вкладке Чаты
-  const chatNavIdx = me.role === 'teacher' ? 4 : me.role === 'parent' ? 3 : 4;
+  const chatNavIdx = me.role === 'teacher' ? 5 : me.role === 'parent' ? 3 : 4;
   const dot = document.getElementById('nd'+chatNavIdx);
   if (dot) dot.classList.toggle('show', unreadCount > 0);
 }
@@ -627,7 +627,8 @@ function buildTeacher() {
     {fn:"tSc('students',1)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>`,lbl:'Ученики'},
     {fn:"tSc('lessons',2)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,lbl:'Уроки'},
     {fn:"tSc('words',3)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.25V19.25M12 6.25C10.83 5.48 9.25 5 7.5 5C5.75 5 4.17 5.48 3 6.25V19.25C4.17 18.48 5.75 18 7.5 18C9.25 18 10.83 18.48 12 19.25M12 6.25C13.17 5.48 14.75 5 16.5 5C18.25 5 19.83 5.48 21 6.25V19.25C19.83 18.48 18.25 18 16.5 18C14.75 18 13.17 18.48 12 19.25"/></svg>`,lbl:'Слова'},
-    {fn:"tSc('chats',4)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,lbl:'Чаты'}
+    {fn:"tSc('stats',4)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 20h18M7 20V10M11 20V4M15 20V14M19 20V8"/></svg>`,lbl:'Аналитика'},
+    {fn:"tSc('chats',5)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,lbl:'Чаты'}
   ]);
   tSc('home',0);
 }
@@ -638,6 +639,7 @@ function tSc(n,i) {
   else if(n==='students') tStudents(c);
   else if(n==='lessons') tLessons(c);
   else if(n==='words') tWords(c);
+  else if(n==='stats') tStats(c);
   else if(n==='chats') tChats(c);
 }
 
@@ -740,6 +742,193 @@ function renderW(f) {
 }
 
 // ── Teacher Chats ──
+
+// ── TEACHER STATS ──
+async function tStats(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Статистика 📊</div><div class="ssub">Аналитика по ученикам</div><div id="ts-loading" style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
+
+  const [{data:students},{data:lessons}] = await Promise.all([
+    sb.from('students').select('*').eq('teacher_id', me.id),
+    sb.from('lessons').select('*').eq('teacher_id', me.id).order('date',{ascending:false})
+  ]);
+  const stuIds = (students||[]).map(s=>s.id);
+  const {data:words} = stuIds.length
+    ? await sb.from('words').select('level,student_record_id').in('student_record_id', stuIds)
+    : {data:[]};
+
+  const stus = students || [];
+  const lsns = lessons || [];
+  const wds  = words || [];
+
+  if(!stus.length) {
+    el.innerHTML=`<div class="page"><div class="stitle">Статистика 📊</div><div class="empty" style="margin-top:40px"><div class="ei">📊</div><p>Добавьте учеников<br>чтобы видеть статистику</p></div></div>`;
+    return;
+  }
+
+  // Общие цифры
+  const totalLessons = lsns.length;
+  const doneLessons  = lsns.filter(l=>l.status==='done').length;
+  const paidLessons  = lsns.filter(l=>l.paid).length;
+  const unpaidLessons= lsns.filter(l=>!l.paid && l.status==='done').length;
+  const hwTotal      = lsns.filter(l=>l.homework).length;
+  const hwDone       = lsns.filter(l=>l.hw_done).length;
+  const grades       = lsns.filter(l=>l.grade).map(l=>l.grade);
+  const avgGrade     = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
+  const wordsTotal   = wds.length;
+  const wordsKnown   = wds.filter(w=>w.level===3).length;
+
+  // Статистика по ученикам
+  const stuMap = {};
+  stus.forEach(s => {
+    stuMap[s.id] = {
+      name: s.name,
+      subject: s.subject||'—',
+      active: s.active !== false,
+      lessons: [], words: [], grades: []
+    };
+  });
+  lsns.forEach(l => {
+    if(l.student_id && stuMap[l.student_id]) {
+      stuMap[l.student_id].lessons.push(l);
+      if(l.grade) stuMap[l.student_id].grades.push(l.grade);
+    }
+  });
+  wds.forEach(w => {
+    if(w.student_record_id && stuMap[w.student_record_id])
+      stuMap[w.student_record_id].words.push(w);
+  });
+
+  // Активность по месяцам (последние 6)
+  const months = [];
+  for(let i=5;i>=0;i--) {
+    const d = new Date(); d.setMonth(d.getMonth()-i);
+    months.push({
+      key: d.toISOString().slice(0,7),
+      label: d.toLocaleDateString('ru',{month:'short'}),
+      count: 0
+    });
+  }
+  lsns.forEach(l => {
+    const mk = l.date?.slice(0,7);
+    const m  = months.find(m=>m.key===mk);
+    if(m) m.count++;
+  });
+  const maxM = Math.max(...months.map(m=>m.count), 1);
+
+  // Рейтинг учеников по прогрессу (слов знает % + средняя оценка)
+  const ranked = Object.values(stuMap).map(s => {
+    const wKnown = s.words.filter(w=>w.level===3).length;
+    const wTotal = s.words.length;
+    const avg    = s.grades.length ? (s.grades.reduce((a,b)=>a+b,0)/s.grades.length) : 0;
+    const score  = (wTotal ? wKnown/wTotal*50 : 0) + (avg/5*50);
+    return {...s, wKnown, wTotal, avg: avg?avg.toFixed(1):'—', score: Math.round(score)};
+  }).sort((a,b)=>b.score-a.score);
+
+  // Строим HTML
+  el.innerHTML=`<div class="page">
+    <div class="stitle">Статистика 📊</div>
+    <div class="ssub">Аналитика по ученикам</div>
+
+    <!-- Общие карточки -->
+    <div class="srow">
+      <div class="sbox blue"><div class="sv">${totalLessons}</div><div class="sl">Всего уроков</div></div>
+      <div class="sbox green"><div class="sv">${stus.length}</div><div class="sl">Учеников</div></div>
+    </div>
+    <div class="srow">
+      <div class="sbox orange"><div class="sv">${avgGrade}</div><div class="sl">Средняя оценка</div></div>
+      <div class="sbox ${unpaidLessons>0?'orange':'green'}"><div class="sv">${unpaidLessons}</div><div class="sl">Не оплачено</div></div>
+    </div>
+
+    <!-- Активность по месяцам -->
+    <div class="card">
+      <div class="clbl">📅 Уроков по месяцам</div>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:80px;margin-top:8px">
+        ${months.map(m=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="font-size:11px;font-weight:700;color:var(--a)">${m.count||''}</div>
+          <div style="width:100%;border-radius:6px 6px 0 0;height:${Math.round(m.count/maxM*60)+4}px;min-height:4px;background:${m.count?'var(--a)':'var(--b)'}"></div>
+          <div style="font-size:10px;color:var(--t3);font-weight:600">${m.label}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- ДЗ -->
+    <div class="card">
+      <div class="clbl">📝 Домашние задания</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px">
+            <span style="color:var(--g)">✅ Сдано: ${hwDone}</span>
+            <span style="color:var(--t3)">Всего: ${hwTotal}</span>
+          </div>
+          <div class="pb"><div class="pbf" style="width:${hwTotal?Math.round(hwDone/hwTotal*100):0}%;background:var(--g)"></div></div>
+        </div>
+        <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:900;color:var(--g);min-width:44px;text-align:right">${hwTotal?Math.round(hwDone/hwTotal*100):0}%</div>
+      </div>
+    </div>
+
+    <!-- Оплата -->
+    <div class="card">
+      <div class="clbl">💰 Оплата уроков</div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <div style="flex:1;background:var(--gl);border-radius:var(--rs);padding:12px;text-align:center">
+          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--g)">${paidLessons}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--g)">Оплачено</div>
+        </div>
+        <div style="flex:1;background:var(--rl);border-radius:var(--rs);padding:12px;text-align:center">
+          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--r)">${unpaidLessons}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--r)">Не оплачено</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Слова -->
+    <div class="card">
+      <div class="clbl">📖 Словарный запас</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px">
+            <span style="color:var(--a)">Знает хорошо: ${wordsKnown}</span>
+            <span style="color:var(--t3)">Всего: ${wordsTotal}</span>
+          </div>
+          <div class="pb"><div class="pbf" style="width:${wordsTotal?Math.round(wordsKnown/wordsTotal*100):0}%"></div></div>
+        </div>
+        <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:900;color:var(--a);min-width:44px;text-align:right">${wordsTotal?Math.round(wordsKnown/wordsTotal*100):0}%</div>
+      </div>
+    </div>
+
+    <!-- Рейтинг учеников -->
+    <div class="card">
+      <div class="clbl">🏆 По ученикам</div>
+      ${ranked.map((s,i)=>{
+        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+        const wPct  = s.wTotal ? Math.round(s.wKnown/s.wTotal*100) : 0;
+        return `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--b);${i===0?'border-top:none;margin-top:8px;padding-top:0':''}" >
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div class="sav" style="width:38px;height:38px;font-size:16px;${!s.active?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:14px">${medal} ${s.name.replace(/</g,'&lt;').replace(/>/g,'&gt;')}${!s.active?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div>
+              <div style="font-size:12px;color:var(--t2)">${s.subject}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:${s.avg!=='—'?'var(--a)':'var(--t3)'}">${s.avg!=='—'?s.avg:'—'}</div>
+              <div style="font-size:10px;color:var(--t3);font-weight:600">ср. оценка</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <span class="bdg bb">📅 ${s.lessons.length} уроков</span>
+            <span class="bdg ${s.words.length?'bgg':'bgr'}">📖 ${s.words.length} слов</span>
+            <span class="bdg ${wPct>=70?'bgg':wPct>=40?'bo':'bgr'}">✓ ${wPct}% знает</span>
+            ${s.lessons.filter(l=>!l.paid&&l.status==='done').length>0?`<span class="bdg br">💰 ${s.lessons.filter(l=>!l.paid&&l.status==='done').length} не оплачено</span>`:''}
+          </div>
+          <div class="pb"><div class="pbf" style="width:${s.score}%;background:${s.score>=70?'var(--g)':s.score>=40?'var(--o)':'var(--r)'}"></div></div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div style="height:80px"></div>
+  </div>`;
+}
+
 async function tChats(el) {
   document.getElementById('fab')?.remove();
   el.innerHTML=`<div class="page"><div class="stitle">Чаты</div><div class="ssub">Сообщения с учениками и родителями</div><div id="tc-list">Загрузка...</div></div>`;
