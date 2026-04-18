@@ -1089,6 +1089,20 @@ function renderMsgs(data) {
   requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
 }
 
+
+async function pushToUsers(userIds, title, body) {
+  if (!userIds || !userIds.length) return;
+  try {
+    await fetch(`${SU}/functions/v1/send-push`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SK}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ user_ids: userIds, title, body })
+    });
+  } catch(e) { console.warn('Push send error:', e); }
+}
 async function sendMsg() {
   const inp=document.getElementById('chat-inp');
   const text=inp.value.trim(); if(!text) return;
@@ -1115,17 +1129,17 @@ async function sendMsg() {
     if(me.role==='student'){
       // Ученик → уведомление учителю
       const tid=me.teacher_id;
-      if(tid) await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId});
+      if(tid) { await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId}); pushToUsers([tid], me.name+' написал в уроке', text); }
     } else if(me.role==='teacher'){
       // Учитель → уведомление ученику по этому уроку
       const{data:les}=await sb.from('lessons').select('student_id').eq('id',lessonChatId).single();
-      if(les?.student_id) await sb.from('notifications').insert({recipient_id:les.student_id,type:'new_message',title:'Учитель написал в уроке',body:text,lesson_id:lessonChatId});
+      if(les?.student_id) { await sb.from('notifications').insert({recipient_id:les.student_id,type:'new_message',title:'Учитель написал в уроке',body:text,lesson_id:lessonChatId}); pushToUsers([les.student_id], 'Учитель написал в уроке', text); }
     }
   }
   // Уведомление от ученика в личном чате
   if(activeChatId && me.role==='student'){
     const tid=me.teacher_id;
-    if(tid) await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' пишет',body:text});
+    if(tid) { await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' пишет',body:text}); pushToUsers([tid], me.name+' пишет', text); }
   }
 
   // Обновляем last_message и отправляем уведомление
@@ -1140,20 +1154,22 @@ async function sendMsg() {
           const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',chat.student_id).single();
           const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
           for(const pid of pids) await sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель пишет ('+stu.name+')',body:text});
+          pushToUsers(pids, 'Учитель пишет ('+stu.name+')', text);
         } else {
           // Учитель → ученику: уведомляем student_id + обоих родителей
           await sb.from('notifications').insert({recipient_id:chat.student_id,type:'new_message',title:'Учитель пишет',body:text});
           const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',chat.student_id).single();
           const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
           for(const pid of pids) await sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель написал '+stu.name,body:text});
+          pushToUsers([chat.student_id,...pids], 'Учитель пишет', text);
         }
       } else if(me.role==='student'){
         // Ученик → учителю
-        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:me.name+' пишет',body:text});
+        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:me.name+' пишет',body:text}); pushToUsers([chat.teacher_id], me.name+' пишет', text);
       } else if(me.role==='parent'){
         // Родитель → учителю
         const{data:stu}=await sb.from('students').select('name').eq('id',chat.student_id).single();
-        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:'Родитель ('+( stu?.name||'')+') пишет',body:text});
+        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:'Родитель ('+( stu?.name||'')+') пишет',body:text}); pushToUsers([chat.teacher_id], 'Родитель ('+(stu?.name||'')+') пишет', text);
       }
     }
   }
@@ -1251,15 +1267,19 @@ async function saveLesson() {
     if(fd) await sb.from('materials').insert({lesson_id:lid,teacher_id:me.id,name:fd.name,file_url:fd.url,file_type:fd.type,file_size:fd.size});
     pendFile=null;
   }
-  // Notify on homework
   if(stuId){
-    // Уведомляем ученика о новом уроке
-    await sb.from('notifications').insert({recipient_id:stuId,type:'lesson_created',title:'Новый урок: '+title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
-    // Уведомляем родителя если привязан
     const{data:stuRec}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',stuId).single();
     const parentIds=[stuRec?.parent_user_id,stuRec?.parent_user_id2].filter(Boolean);
-    for(const pid of parentIds){
-      await sb.from('notifications').insert({recipient_id:pid,type:'lesson_created',title:'Новый урок у '+payload.title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
+    if(!editLessonId){
+      // Новый урок — уведомляем ученика и родителей
+      await sb.from('notifications').insert({recipient_id:stuId,type:'lesson_created',title:'Новый урок: '+title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
+      for(const pid of parentIds) await sb.from('notifications').insert({recipient_id:pid,type:'lesson_created',title:'Новый урок: '+title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
+      pushToUsers([stuId,...parentIds], 'Новый урок: '+title, date+(payload.homework?' · ДЗ: '+payload.homework:''));
+    } else if(payload.grade){
+      // Редактирование с оценкой — уведомляем ученика и родителей
+      await sb.from('notifications').insert({recipient_id:stuId,type:'grade',title:'Оценка за урок: '+title,body:'Оценка: '+payload.grade,lesson_id:lid});
+      for(const pid of parentIds) await sb.from('notifications').insert({recipient_id:pid,type:'grade',title:'Оценка за урок: '+title,body:'Оценка: '+payload.grade,lesson_id:lid});
+      pushToUsers([stuId,...parentIds], 'Новая оценка: '+payload.grade, title);
     }
   }
   closeM('m-lesson'); toast('Урок сохранён ✓'); tSc('lessons',2);
@@ -1431,6 +1451,7 @@ async function submitHwDone(lessonId) {
       title:'ДЗ выполнено: '+me.name,
       body:(lesson.title||'Урок')+(photoUrl?' (с фото)':'')
     });
+    pushToUsers([lesson.teacher_id], 'ДЗ выполнено: '+me.name, (lesson.title||'Урок')+(photoUrl?' (с фото)':''));
   }
   // Уведомляем обоих родителей
   if(lesson?.student_id){
