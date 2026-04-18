@@ -266,6 +266,7 @@
   <div class="fg"><label class="fl">Имя</label><input class="fi" id="si-name" placeholder="Вадим"></div>
   <div class="fg"><label class="fl">Предмет</label><input class="fi" id="si-subj" placeholder="Английский..."></div>
   <div class="fg"><label class="fl">PIN-код (4 цифры)</label><input class="fi" id="si-pin" type="number" placeholder="1234"></div>
+  <div style="margin-top:4px;margin-bottom:14px;font-size:12px;color:var(--t2);line-height:1.5">👨‍👩‍👦 Родители привязываются сами через «Привязать ребёнка» в своём кабинете. PIN можно передать маме и папе — каждый привяжется отдельно.</div>
   <div class="brow"><button class="btn bs" onclick="closeM('m-stu')">Отмена</button><button class="btn bp" onclick="saveStu()">Сохранить</button></div>
   <button class="btn bd" id="si-delbtn" style="display:none;margin-top:8px" onclick="delStu()">Удалить ученика</button>
 </div></div>
@@ -344,21 +345,36 @@ let authRole = '', authMode = 'login';
 function showAuth(role) {
   authRole = role; authMode = 'login';
   pg('pg-auth');
+  renderAuthForm();
+}
+function renderAuthForm() {
+  const isTeacher = authRole === 'teacher';
+  const isReg = authMode === 'register';
   document.getElementById('pg-auth').innerHTML = `<div class="auth-pg"><div class="panel">
     <button class="pback" onclick="renderRoles()">${backSvg()} Назад</button>
-    <div class="ptitle">${role === 'teacher' ? 'Учитель' : 'Родитель'}</div>
-    <div class="psub">Войдите в аккаунт</div>
+    <div class="ptitle">${isTeacher ? 'Учитель' : 'Родитель'}</div>
+    <div class="psub">${isReg ? 'Создайте аккаунт' : 'Войдите в аккаунт'}</div>
     <div class="err" id="aerr"></div>
     <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="aem" placeholder="example@mail.ru"></div>
     <div class="fg"><label class="fl">Пароль</label><input class="fi" type="password" id="apw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doAuth()"></div>
-    <button class="btn bp" id="abtn" onclick="doAuth()">Войти</button>
-    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--t2)">Нет аккаунта? <a style="color:var(--a);font-weight:700;cursor:pointer" onclick="togAuth()">Зарегистрироваться</a></div>
+    ${isTeacher && isReg ? `<div class="fg" id="fg-tcode">
+      <label class="fl">Ваш код (придумайте сами)</label>
+      <input class="fi" id="atcode" placeholder="Например: DAN1" maxlength="8" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+      <div style="font-size:11px;color:var(--t2);margin-top:5px">Этот код ученики и родители будут использовать для входа. Только буквы и цифры.</div>
+    </div>` : ''}
+    ${isTeacher && isReg ? `<div class="fg">
+      <label class="fl">Ваше имя</label>
+      <input class="fi" id="aname" placeholder="Как вас зовут?">
+    </div>` : ''}
+    <button class="btn bp" id="abtn" onclick="doAuth()">${isReg ? 'Зарегистрироваться' : 'Войти'}</button>
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--t2)">
+      ${isReg ? 'Уже есть аккаунт?' : 'Нет аккаунта?'} <a style="color:var(--a);font-weight:700;cursor:pointer" onclick="togAuth()">${isReg ? 'Войти' : 'Зарегистрироваться'}</a>
+    </div>
   </div></div>`;
 }
 function togAuth() {
   authMode = authMode === 'login' ? 'register' : 'login';
-  document.getElementById('abtn').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
-  document.querySelector('#pg-auth a').textContent = authMode === 'login' ? 'Зарегистрироваться' : 'Уже есть аккаунт';
+  renderAuthForm();
 }
 async function doAuth() {
   const em = document.getElementById('aem').value.trim();
@@ -370,11 +386,29 @@ async function doAuth() {
   pg('pg-load');
   let res, uid;
   if (authMode === 'register') {
+    // Для учителя — проверяем код
+    let teacherCode = null;
+    if (authRole === 'teacher') {
+      teacherCode = (document.getElementById('atcode')?.value || '').trim().toUpperCase();
+      if (!teacherCode || teacherCode.length < 2) {
+        pg('pg-auth'); err.textContent = 'Придумайте код (минимум 2 символа)'; err.classList.add('show'); document.getElementById('abtn').textContent = 'Зарегистрироваться'; return;
+      }
+      if (!/^[A-Z0-9]+$/.test(teacherCode)) {
+        pg('pg-auth'); err.textContent = 'Код — только буквы и цифры (без пробелов)'; err.classList.add('show'); document.getElementById('abtn').textContent = 'Зарегистрироваться'; return;
+      }
+      // Проверяем уникальность кода
+      const { data: existing } = await sb.from('profiles').select('id').eq('teacher_code', teacherCode).eq('role', 'teacher');
+      if (existing?.length) {
+        pg('pg-auth'); err.textContent = 'Этот код уже занят. Придумайте другой.'; err.classList.add('show'); document.getElementById('abtn').textContent = 'Зарегистрироваться'; return;
+      }
+    }
     res = await sb.auth.signUp({ email: em, password: pw });
     if (res.error) { pg('pg-auth'); err.textContent = res.error.message; err.classList.add('show'); document.getElementById('abtn').textContent = 'Зарегистрироваться'; return; }
     uid = res.data.user.id;
-    const code = authRole === 'teacher' ? Math.random().toString(36).substring(2,6).toUpperCase() : null;
-    await sb.from('profiles').upsert({ id: uid, role: authRole, name: em.split('@')[0], teacher_code: code });
+    const displayName = authRole === 'teacher'
+      ? (document.getElementById('aname')?.value.trim() || em.split('@')[0])
+      : em.split('@')[0];
+    await sb.from('profiles').upsert({ id: uid, role: authRole, name: displayName, teacher_code: teacherCode });
   } else {
     res = await sb.auth.signInWithPassword({ email: em, password: pw });
     if (res.error) { pg('pg-auth'); err.textContent = res.error.message.includes('Invalid') ? 'Неверный email или пароль' : res.error.message; err.classList.add('show'); document.getElementById('abtn').textContent = 'Войти'; return; }
@@ -880,14 +914,16 @@ async function sendMsg() {
       const isParentChat = chat.type === 'teacher_parent';
       if(me.role==='teacher'){
         if(isParentChat){
-          // Учитель → родителю: уведомляем parent_user_id
-          const{data:stu}=await sb.from('students').select('parent_user_id,name').eq('id',chat.student_id).single();
-          if(stu?.parent_user_id) await sb.from('notifications').insert({recipient_id:stu.parent_user_id,type:'new_message',title:'Учитель пишет ('+stu.name+')',body:text});
+          // Учитель → родителю: уведомляем обоих родителей
+          const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',chat.student_id).single();
+          const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
+          for(const pid of pids) await sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель пишет ('+stu.name+')',body:text});
         } else {
-          // Учитель → ученику: уведомляем student_id + родителя
+          // Учитель → ученику: уведомляем student_id + обоих родителей
           await sb.from('notifications').insert({recipient_id:chat.student_id,type:'new_message',title:'Учитель пишет',body:text});
-          const{data:stu}=await sb.from('students').select('parent_user_id,name').eq('id',chat.student_id).single();
-          if(stu?.parent_user_id) await sb.from('notifications').insert({recipient_id:stu.parent_user_id,type:'new_message',title:'Учитель написал '+stu.name,body:text});
+          const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',chat.student_id).single();
+          const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
+          for(const pid of pids) await sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель написал '+stu.name,body:text});
         }
       } else if(me.role==='student'){
         // Ученик → учителю
@@ -998,9 +1034,10 @@ async function saveLesson() {
     // Уведомляем ученика о новом уроке
     await sb.from('notifications').insert({recipient_id:stuId,type:'lesson_created',title:'Новый урок: '+title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
     // Уведомляем родителя если привязан
-    const{data:stuRec}=await sb.from('students').select('parent_user_id').eq('id',stuId).single();
-    if(stuRec?.parent_user_id){
-      await sb.from('notifications').insert({recipient_id:stuRec.parent_user_id,type:'lesson_created',title:'Новый урок у '+payload.title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
+    const{data:stuRec}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',stuId).single();
+    const parentIds=[stuRec?.parent_user_id,stuRec?.parent_user_id2].filter(Boolean);
+    for(const pid of parentIds){
+      await sb.from('notifications').insert({recipient_id:pid,type:'lesson_created',title:'Новый урок у '+payload.title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
     }
   }
   closeM('m-lesson'); toast('Урок сохранён ✓'); tSc('lessons',2);
@@ -1164,7 +1201,7 @@ async function submitHwDone(lessonId) {
   hwPhotoFile=null;
   if(error){toast('Ошибка 😢');return;}
   // Уведомляем учителя
-  const{data:lesson}=await sb.from('lessons').select('teacher_id,title').eq('id',lessonId).single();
+  const{data:lesson}=await sb.from('lessons').select('teacher_id,title,student_id').eq('id',lessonId).single();
   if(lesson?.teacher_id){
     await sb.from('notifications').insert({
       recipient_id:lesson.teacher_id,
@@ -1172,6 +1209,14 @@ async function submitHwDone(lessonId) {
       title:'ДЗ выполнено: '+me.name,
       body:(lesson.title||'Урок')+(photoUrl?' (с фото)':'')
     });
+  }
+  // Уведомляем обоих родителей
+  if(lesson?.student_id){
+    const{data:stuRec}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',lesson.student_id).single();
+    const pids=[stuRec?.parent_user_id,stuRec?.parent_user_id2].filter(Boolean);
+    for(const pid of pids){
+      await sb.from('notifications').insert({recipient_id:pid,type:'homework',title:'ДЗ выполнено: '+me.name,body:(lesson.title||'Урок')+(photoUrl?' (с фото)':'')});
+    }
   }
   toast('Отлично! ДЗ отмечено ✅');
   if(me.role==='student') setTimeout(()=>sSc('home',0),400);
@@ -1393,8 +1438,12 @@ function pSc(n,i) {
 }
 async function pHome(el) {
   addFab(()=>openLinkChild());
-  const{data:myStus}=await sb.from('students').select('id').eq('parent_user_id',me.id);
-  const stuIds=(myStus||[]).map(s=>s.id);
+  const[{data:myStus1},{data:myStus2}]=await Promise.all([
+    sb.from('students').select('id').eq('parent_user_id',me.id),
+    sb.from('students').select('id').eq('parent_user_id2',me.id)
+  ]);
+  const allIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
+  const stuIds=allIds;
   if(!stuIds.length){el.innerHTML=`<div class="page"><div class="stitle">Прогресс ученика 📊</div><div class="ssub">Обзор обучения</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
   const[{data:ls},{data:ws}]=await Promise.all([
     sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}),
@@ -1423,8 +1472,11 @@ async function pHome(el) {
   </div>`;
 }
 async function pLessons(el) {
-  const{data:myStus}=await sb.from('students').select('id').eq('parent_user_id',me.id);
-  const stuIds=(myStus||[]).map(s=>s.id);
+  const[{data:myStus1},{data:myStus2}]=await Promise.all([
+    sb.from('students').select('id').eq('parent_user_id',me.id),
+    sb.from('students').select('id').eq('parent_user_id2',me.id)
+  ]);
+  const stuIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
   const{data}=stuIds.length?await sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}):{data:[]};
   el.innerHTML=`<div class="page"><div class="stitle">История уроков</div><div class="ssub">Все занятия</div><div id="pl-list"></div><div style="height:80px"></div></div>`;
   const l=document.getElementById('pl-list');
@@ -1444,8 +1496,11 @@ async function pLessons(el) {
   </div>`).join('');
 }
 async function pProgress(el) {
-  const{data:myStus}=await sb.from('students').select('id').eq('parent_user_id',me.id);
-  const stuIds=(myStus||[]).map(s=>s.id);
+  const[{data:myStus1},{data:myStus2}]=await Promise.all([
+    sb.from('students').select('id').eq('parent_user_id',me.id),
+    sb.from('students').select('id').eq('parent_user_id2',me.id)
+  ]);
+  const stuIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
   const{data:ws}=stuIds.length?await sb.from('words').select('level,topic').in('student_record_id',stuIds):{data:[]};
   const lv=[0,0,0,0],tm={};
   (ws||[]).forEach(w=>{lv[w.level]++;if(!tm[w.topic])tm[w.topic]={t:0,k:0};tm[w.topic].t++;if(w.level===3)tm[w.topic].k++;});
@@ -1469,8 +1524,13 @@ async function pProgress(el) {
 }
 async function pChats(el) {
   el.innerHTML=`<div class="page"><div class="stitle">Чат с учителем</div><div class="ssub">Сообщения и вопросы</div><div id="pc-list">Загрузка...</div></div>`;
-  // Берём только учеников, привязанных к этому родителю
-  const{data:myStus}=await sb.from('students').select('*').eq('parent_user_id',me.id);
+  // Берём только учеников, привязанных к этому родителю (оба слота)
+  const[{data:myStus1},{data:myStus2}]=await Promise.all([
+    sb.from('students').select('*').eq('parent_user_id',me.id),
+    sb.from('students').select('*').eq('parent_user_id2',me.id)
+  ]);
+  const seen=new Set(); const myStus=[];
+  for(const s of [...(myStus1||[]),...(myStus2||[])]){ if(!seen.has(s.id)){seen.add(s.id);myStus.push(s);} }
   const l=document.getElementById('pc-list');
   if(!myStus?.length){
     l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет привязанных учеников</p></div>`;
@@ -1529,9 +1589,20 @@ async function doLinkChild() {
   // Ищем ученика у этого учителя по PIN
   const{data:stu}=await sb.from('students').select('*').eq('teacher_id',teacher.id).eq('pin',pin).single();
   if(!stu){ err.textContent='Неверный PIN ученика'; err.classList.add('show'); return; }
-  if(stu.parent_user_id && stu.parent_user_id !== me.id){ err.textContent='Этот ученик уже привязан к другому родителю'; err.classList.add('show'); return; }
-  // Привязываем
-  const{error}=await sb.from('students').update({parent_user_id:me.id}).eq('id',stu.id);
+  // Проверяем: уже привязан к этому родителю?
+  if(stu.parent_user_id === me.id || stu.parent_user_id2 === me.id){
+    err.textContent='Вы уже привязаны к этому ученику'; err.classList.add('show'); return;
+  }
+  // Привязываем: сначала первый слот, потом второй
+  let updateField = null;
+  if(!stu.parent_user_id) {
+    updateField = 'parent_user_id';
+  } else if(!stu.parent_user_id2) {
+    updateField = 'parent_user_id2';
+  } else {
+    err.textContent='У этого ученика уже привязаны 2 родителя'; err.classList.add('show'); return;
+  }
+  const{error}=await sb.from('students').update({[updateField]:me.id}).eq('id',stu.id);
   if(error){ err.textContent='Ошибка: '+error.message; err.classList.add('show'); return; }
   document.getElementById('m-link-child')?.remove();
   toast('✅ '+stu.name+' привязан!');
