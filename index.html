@@ -26,6 +26,21 @@
     });
   </script>
   <title>Lesso</title>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
+    const app = initializeApp({
+      apiKey: "AIzaSyBpU-blJhG8Jy6LgVk30PBem-FC2gU7d1Y",
+      authDomain: "lesso-app-41e45.firebaseapp.com",
+      projectId: "lesso-app-41e45",
+      storageBucket: "lesso-app-41e45.firebasestorage.app",
+      messagingSenderId: "117464511883",
+      appId: "1:117464511883:web:a6df8d18538e50a324ab8e"
+    });
+    window._fbMessaging = getMessaging(app);
+    window._fbGetToken = getToken;
+    window._fbOnMessage = onMessage;
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
   <style>
@@ -323,7 +338,7 @@ function backSvg() { return `<svg width="16" height="16" fill="none" stroke="cur
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-    if (p) { me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code }; launchApp(); return; }
+    if (p) { me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code }; subscribeToPush(session.user.id, session.access_token); launchApp(); return; }
   }
   renderRoles();
 })();
@@ -430,6 +445,7 @@ async function doAuth() {
   } else {
     me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code };
   }
+  subscribeToPush(uid, res.data.session?.access_token);
   launchApp();
 }
 
@@ -1843,6 +1859,68 @@ async function openParentChat(tid, stuId, stuName, tname) {
 }
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+
+// ── Push уведомления ──
+const VAPID_KEY = 'BNCSoLkkfhzVKEN1OCwONn3yOYOHkOxJ3qRhsJ9SYlnu7txmbubdONc9VvmFEWtMefuOAQi7ZlU4utgnGAPMrdc';
+
+async function subscribeToPush(userId, sessionToken) {
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+
+    const swReady = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('SW timeout')), 5000))
+    ]);
+
+    let fbGetToken = null, fbMessaging = null;
+    for (let i = 0; i < 3; i++) {
+      if (window._fbGetToken && window._fbMessaging) {
+        fbGetToken = window._fbGetToken;
+        fbMessaging = window._fbMessaging;
+        break;
+      }
+      await new Promise(r => setTimeout(r, 1000));
+    }
+    if (!fbGetToken || !fbMessaging) { console.warn('Push: Firebase не загрузился'); return; }
+
+    const fcmToken = await fbGetToken(fbMessaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReady });
+    if (!fcmToken) { console.warn('Push: FCM токен не получен'); return; }
+
+    const authToken = sessionToken || SUPABASE_ANON_KEY;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/push_tokens`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ user_id: userId, fcm_token: fcmToken })
+    });
+    if (!res.ok) { console.error('Push: ошибка сохранения токена:', await res.text()); return; }
+    console.log('Push: подписка оформлена');
+
+    if (window._fbOnMessage) {
+      window._fbOnMessage(fbMessaging, (payload) => {
+        showPushToast(payload.notification?.title || 'Lesso', payload.notification?.body || '');
+      });
+    }
+  } catch (err) { console.error('Push ошибка:', err); }
+}
+
+function showPushToast(title, body) {
+  const old = document.getElementById('push-toast');
+  if (old) old.remove();
+  const t = document.createElement('div');
+  t.id = 'push-toast';
+  t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#1e293b;color:#fff;padding:14px 18px;border-radius:12px;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:14px;line-height:1.5;cursor:pointer';
+  t.innerHTML = `<strong style="display:block;margin-bottom:4px">${title}</strong>${body ? `<span style="opacity:.85">${body}</span>` : ''}`;
+  t.onclick = () => t.remove();
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 5000);
+}
 </script>
 </body>
 </html>
