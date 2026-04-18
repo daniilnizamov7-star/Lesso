@@ -1908,15 +1908,15 @@ async function subscribeToPush(userId, sessionToken) {
     if (!fcmToken) { console.warn('Push: FCM токен не получен'); return; }
 
     const authToken = sessionToken || SK;
-    const res = await fetch(`${SU}/rest/v1/push_tokens`, {
+    const res = await fetch(`${SU}/rest/v1/push_tokens?on_conflict=user_id,fcm_token`, {
       method: 'POST',
       headers: {
         'apikey': SK,
         'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
       },
-      body: JSON.stringify({ user_id: userId, fcm_token: fcmToken })
+      body: JSON.stringify([{ user_id: userId, fcm_token: fcmToken }])
     });
     if (!res.ok) { console.error('Push: ошибка сохранения токена:', await res.text()); return; }
     console.log('Push: подписка оформлена');
