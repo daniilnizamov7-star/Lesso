@@ -1886,11 +1886,11 @@ async function subscribeToPush(userId, sessionToken) {
     const fcmToken = await fbGetToken(fbMessaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: fbSwReg });
     if (!fcmToken) { console.warn('Push: FCM токен не получен'); return; }
 
-    const authToken = sessionToken || SUPABASE_ANON_KEY;
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/push_tokens`, {
+    const authToken = sessionToken || SK;
+    const res = await fetch(`${SU}/rest/v1/push_tokens`, {
       method: 'POST',
       headers: {
-        'apikey': SUPABASE_ANON_KEY,
+        'apikey': SK,
         'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json',
         'Prefer': 'resolution=merge-duplicates'
