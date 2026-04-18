@@ -1861,7 +1861,7 @@ async function openParentChat(tid, stuId, stuName, tname) {
 if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
 
 // ── Push уведомления ──
-const VAPID_KEY = 'BNCSoLkkfhzVKEN1OCwONn3yOYOHkOxJ3qRhsJ9SYlnu7txmbubdONc9VvmFEWtMefuOAQi7ZlU4utgnGAPMrdc';
+const VAPID_KEY = 'BNCSoLkkfhzVKEN10CwONn3yOYOHkOxJ3qRhsJ9SYlnu7txmbubdONc9VvmFEWtMefuOAQi7ZlU4utgnGAPMrdc';
 
 async function subscribeToPush(userId, sessionToken) {
   if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
