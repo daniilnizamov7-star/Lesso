@@ -1869,10 +1869,8 @@ async function subscribeToPush(userId, sessionToken) {
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return;
 
-    const swReady = await Promise.race([
-      navigator.serviceWorker.ready,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('SW timeout')), 5000))
-    ]);
+    // FCM требует отдельный SW — регистрируем firebase-messaging-sw.js
+    const fbSwReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
 
     let fbGetToken = null, fbMessaging = null;
     for (let i = 0; i < 3; i++) {
@@ -1885,7 +1883,7 @@ async function subscribeToPush(userId, sessionToken) {
     }
     if (!fbGetToken || !fbMessaging) { console.warn('Push: Firebase не загрузился'); return; }
 
-    const fcmToken = await fbGetToken(fbMessaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReady });
+    const fcmToken = await fbGetToken(fbMessaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: fbSwReg });
     if (!fcmToken) { console.warn('Push: FCM токен не получен'); return; }
 
     const authToken = sessionToken || SUPABASE_ANON_KEY;
