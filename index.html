@@ -576,6 +576,16 @@ async function sendFeedback() {
   toast('Спасибо за отзыв! 🙏');
 }
 
+
+async function remindLesson(lessonId, lessonTitle, stuId) {
+  // Получаем данные ученика и родителей
+  const { data: stu } = await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id', stuId).single();
+  if (!stu) { toast('Ученик не найден'); return; }
+  const recipients = [stuId, stu.parent_user_id, stu.parent_user_id2].filter(Boolean);
+  await pushToUsers(recipients, '🔔 Напоминание об уроке', `Урок "${lessonTitle}" — не забудь подготовиться!`);
+  toast('Напоминание отправлено 🔔');
+}
+
 async function doLogout() {
   if (me.role === 'teacher' || me.role === 'parent') await sb.auth.signOut();
   me = null; selTeacherId = null;
@@ -796,6 +806,7 @@ async function tLessons(el) {
       ${l_.status==='active'?'<span class="bdg br">🔴 Идёт</span>':l_.status==='done'?'<span class="bdg bgg">✓ Завершён</span>':''}
       ${l_.paid?'<span class="bdg bgg">Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
       ${l_.homework?`<span class="bdg bo">📝 ДЗ</span>${l_.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}
+      ${l_.status!=='done'&&l_.student_id?`<button class="bdg" style="background:var(--al);color:var(--a);border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px" onclick="event.stopPropagation();remindLesson('${l_.id}','${(l_.title||'').replace(/'/g,"\'")}','${l_.student_id}')">🔔 Напомнить</button>`:''}
     </div>
   </div>`).join('');
 }
