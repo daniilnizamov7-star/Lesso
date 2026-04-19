@@ -863,7 +863,7 @@ function renderW(f) {
 
 // ── TEACHER STATS ──
 async function tStats(el) {
-  el.innerHTML=`<div class="page"><div class="stitle">Статистика 📊</div><div class="ssub">Аналитика по ученикам</div><div id="ts-loading" style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
+  el.innerHTML=`<div class="page"><div class="stitle">Статистика 📊</div><div class="ssub">Аналитика по ученикам</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
 
   const [{data:students},{data:lessons}] = await Promise.all([
     sb.from('students').select('*').eq('teacher_id', me.id),
@@ -884,31 +884,39 @@ async function tStats(el) {
   }
 
   // Общие цифры
-  const totalLessons = lsns.length;
-  const doneLessons  = lsns.filter(l=>l.status==='done').length;
-  const paidLessons  = lsns.filter(l=>l.paid).length;
-  const unpaidLessons= lsns.filter(l=>!l.paid && l.status==='done').length;
-  const hwTotal      = lsns.filter(l=>l.homework).length;
-  const hwDone       = lsns.filter(l=>l.hw_done).length;
-  const grades       = lsns.filter(l=>l.grade).map(l=>l.grade);
-  const avgGrade     = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
-  const wordsTotal   = wds.length;
-  const wordsKnown   = wds.filter(w=>w.level===3).length;
+  const totalLessons  = lsns.length;
+  const doneLessons   = lsns.filter(l=>l.status==='done').length;
+  const paidLessons   = lsns.filter(l=>l.paid).length;
+  const unpaidLessons = lsns.filter(l=>!l.paid && l.status==='done').length;
+  const hwTotal       = lsns.filter(l=>l.homework).length;
+  const hwDone        = lsns.filter(l=>l.hw_done).length;
+  const grades        = lsns.filter(l=>l.grade).map(l=>+l.grade);
+  const avgGrade      = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
+  const wordsTotal    = wds.length;
+  const wordsKnown    = wds.filter(w=>w.level===3).length;
+
+  // Посещаемость (attendance) — отменённые = не done, не planned
+  const cancelLessons = lsns.filter(l=>l.status==='cancelled').length;
+  const attendRate = doneLessons+cancelLessons > 0
+    ? Math.round(doneLessons/(doneLessons+cancelLessons)*100) : (doneLessons>0?100:0);
 
   // Статистика по ученикам
   const stuMap = {};
   stus.forEach(s => {
     stuMap[s.id] = {
+      id: s.id,
       name: s.name,
       subject: s.subject||'—',
       active: s.active !== false,
+      parent_user_id: s.parent_user_id,
+      parent_user_id2: s.parent_user_id2,
       lessons: [], words: [], grades: []
     };
   });
   lsns.forEach(l => {
     if(l.student_id && stuMap[l.student_id]) {
       stuMap[l.student_id].lessons.push(l);
-      if(l.grade) stuMap[l.student_id].grades.push(l.grade);
+      if(l.grade) stuMap[l.student_id].grades.push(+l.grade);
     }
   });
   wds.forEach(w => {
@@ -920,26 +928,30 @@ async function tStats(el) {
   const months = [];
   for(let i=5;i>=0;i--) {
     const d = new Date(); d.setMonth(d.getMonth()-i);
-    months.push({
-      key: d.toISOString().slice(0,7),
-      label: d.toLocaleDateString('ru',{month:'short'}),
-      count: 0
-    });
+    months.push({ key: d.toISOString().slice(0,7), label: d.toLocaleDateString('ru',{month:'short'}), count: 0, done: 0 });
   }
   lsns.forEach(l => {
     const mk = l.date?.slice(0,7);
     const m  = months.find(m=>m.key===mk);
-    if(m) m.count++;
+    if(m) { m.count++; if(l.status==='done') m.done++; }
   });
   const maxM = Math.max(...months.map(m=>m.count), 1);
 
-  // Рейтинг учеников по прогрессу (слов знает % + средняя оценка)
+  // Детальный прогресс по ученикам
   const ranked = Object.values(stuMap).map(s => {
-    const wKnown = s.words.filter(w=>w.level===3).length;
-    const wTotal = s.words.length;
-    const avg    = s.grades.length ? (s.grades.reduce((a,b)=>a+b,0)/s.grades.length) : 0;
-    const score  = (wTotal ? wKnown/wTotal*50 : 0) + (avg/5*50);
-    return {...s, wKnown, wTotal, avg: avg?avg.toFixed(1):'—', score: Math.round(score)};
+    const wKnown    = s.words.filter(w=>w.level===3).length;
+    const wTotal    = s.words.length;
+    const avg       = s.grades.length ? s.grades.reduce((a,b)=>a+b,0)/s.grades.length : 0;
+    const doneL     = s.lessons.filter(l=>l.status==='done').length;
+    const cancelL   = s.lessons.filter(l=>l.status==='cancelled').length;
+    const attendPct = doneL+cancelL>0 ? Math.round(doneL/(doneL+cancelL)*100) : (doneL>0?100:0);
+    const hwT       = s.lessons.filter(l=>l.homework).length;
+    const hwD       = s.lessons.filter(l=>l.hw_done).length;
+    const unpaid    = s.lessons.filter(l=>!l.paid&&l.status==='done').length;
+    const score     = (wTotal ? wKnown/wTotal*40 : 0) + (avg/5*40) + (attendPct/100*20);
+    // Последние 5 оценок для mini-graph
+    const lastGrades = s.lessons.filter(l=>l.grade).slice(0,5).map(l=>+l.grade).reverse();
+    return {...s, wKnown, wTotal, avg: avg?avg.toFixed(1):'—', attendPct, hwT, hwD, unpaid, score: Math.round(score), lastGrades};
   }).sort((a,b)=>b.score-a.score);
 
   // Строим HTML
@@ -957,15 +969,47 @@ async function tStats(el) {
       <div class="sbox ${unpaidLessons>0?'orange':'green'}"><div class="sv">${unpaidLessons}</div><div class="sl">Не оплачено</div></div>
     </div>
 
+    <!-- Посещаемость (общая) -->
+    <div class="card">
+      <div class="clbl">📋 Посещаемость</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-top:10px">
+        <div style="position:relative;width:72px;height:72px;flex-shrink:0">
+          <svg width="72" height="72" viewBox="0 0 72 72" style="transform:rotate(-90deg)">
+            <circle cx="36" cy="36" r="28" fill="none" stroke="var(--b)" stroke-width="8"/>
+            <circle cx="36" cy="36" r="28" fill="none" stroke="${attendRate>=80?'var(--g)':attendRate>=60?'var(--o)':'var(--r)'}" stroke-width="8"
+              stroke-dasharray="${Math.round(2*Math.PI*28*attendRate/100)} ${Math.round(2*Math.PI*28*(100-attendRate)/100)}"
+              stroke-linecap="round"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:17px;font-weight:900;color:${attendRate>=80?'var(--g)':attendRate>=60?'var(--o)':'var(--r)'}">${attendRate}%</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:6px">Завершено: <strong>${doneLessons}</strong> из <strong>${doneLessons+cancelLessons}</strong> уроков</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span class="bdg bgg">✓ Проведено: ${doneLessons}</span>
+            ${cancelLessons>0?`<span class="bdg br">✗ Отменено: ${cancelLessons}</span>`:''}
+            <span class="bdg bgr">📅 Запланировано: ${lsns.filter(l=>l.status==='planned'||!l.status).length}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Активность по месяцам -->
     <div class="card">
       <div class="clbl">📅 Уроков по месяцам</div>
       <div style="display:flex;align-items:flex-end;gap:8px;height:80px;margin-top:8px">
         ${months.map(m=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
           <div style="font-size:11px;font-weight:700;color:var(--a)">${m.count||''}</div>
-          <div style="width:100%;border-radius:6px 6px 0 0;height:${Math.round(m.count/maxM*60)+4}px;min-height:4px;background:${m.count?'var(--a)':'var(--b)'}"></div>
+          <div style="width:100%;border-radius:6px 6px 0 0;overflow:hidden">
+            <div style="height:${Math.round(m.done/maxM*56)+2}px;min-height:${m.done?2:0}px;background:var(--g);border-radius:4px 4px 0 0"></div>
+            <div style="height:${Math.round((m.count-m.done)/maxM*56)}px;min-height:${(m.count-m.done)>0?2:0}px;background:var(--al)"></div>
+            ${!m.count?`<div style="height:4px;background:var(--b);border-radius:4px 4px 0 0"></div>`:''}
+          </div>
           <div style="font-size:10px;color:var(--t3);font-weight:600">${m.label}</div>
         </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:var(--g)"></div>Завершено</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:var(--al)"></div>Запланировано</div>
       </div>
     </div>
 
@@ -992,9 +1036,9 @@ async function tStats(el) {
           <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--g)">${paidLessons}</div>
           <div style="font-size:11px;font-weight:700;color:var(--g)">Оплачено</div>
         </div>
-        <div style="flex:1;background:var(--rl);border-radius:var(--rs);padding:12px;text-align:center">
-          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--r)">${unpaidLessons}</div>
-          <div style="font-size:11px;font-weight:700;color:var(--r)">Не оплачено</div>
+        <div style="flex:1;background:${unpaidLessons>0?'var(--rl)':'var(--bg)'};border-radius:var(--rs);padding:12px;text-align:center">
+          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:${unpaidLessons>0?'var(--r)':'var(--t3)'}">${unpaidLessons}</div>
+          <div style="font-size:11px;font-weight:700;color:${unpaidLessons>0?'var(--r)':'var(--t3)'}">Не оплачено</div>
         </div>
       </div>
     </div>
@@ -1005,7 +1049,7 @@ async function tStats(el) {
       <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
         <div style="flex:1">
           <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px">
-            <span style="color:var(--a)">Знает хорошо: ${wordsKnown}</span>
+            <span style="color:var(--a)">Знают хорошо: ${wordsKnown}</span>
             <span style="color:var(--t3)">Всего: ${wordsTotal}</span>
           </div>
           <div class="pb"><div class="pbf" style="width:${wordsTotal?Math.round(wordsKnown/wordsTotal*100):0}%"></div></div>
@@ -1014,37 +1058,157 @@ async function tStats(el) {
       </div>
     </div>
 
-    <!-- Рейтинг учеников -->
+    <!-- Прогресс по каждому ученику -->
     <div class="card">
-      <div class="clbl">🏆 По ученикам</div>
+      <div class="clbl">🏆 Прогресс учеников</div>
       ${ranked.map((s,i)=>{
-        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-        const wPct  = s.wTotal ? Math.round(s.wKnown/s.wTotal*100) : 0;
-        return `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--b);${i===0?'border-top:none;margin-top:8px;padding-top:0':''}" >
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-            <div class="sav" style="width:38px;height:38px;font-size:16px;${!s.active?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
-            <div style="flex:1">
-              <div style="font-weight:700;font-size:14px">${medal} ${s.name.replace(/</g,'&lt;').replace(/>/g,'&gt;')}${!s.active?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div>
-              <div style="font-size:12px;color:var(--t2)">${s.subject}</div>
+        const medal   = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+        const wPct    = s.wTotal ? Math.round(s.wKnown/s.wTotal*100) : 0;
+        const hwPct   = s.hwT ? Math.round(s.hwD/s.hwT*100) : 0;
+        const attClr  = s.attendPct>=80?'var(--g)':s.attendPct>=60?'var(--o)':'var(--r)';
+        const scoreClr= s.score>=70?'var(--g)':s.score>=40?'var(--o)':'var(--r)';
+        // Мини-график последних оценок
+        const miniGr = s.lastGrades.length >= 2
+          ? `<div style="display:flex;align-items:flex-end;gap:3px;height:24px;margin-left:auto">
+              ${s.lastGrades.map(g=>`<div style="width:12px;border-radius:2px 2px 0 0;height:${Math.round(g/5*22)+2}px;background:${g>=4?'var(--g)':g===3?'var(--o)':'var(--r)'}"></div>`).join('')}
+            </div>` : '';
+        return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--b);${i===0?'border-top:none;margin-top:6px;padding-top:0':''}">
+          <!-- Шапка ученика -->
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="toggleStuDetail('sd-${s.id}',this)">
+            <div class="sav" style="width:38px;height:38px;font-size:16px;flex-shrink:0;${!s.active?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px">${medal} ${s.name.replace(/</g,'&lt;').replace(/>/g,'&gt;')}${!s.active?'<span style="color:#ef4444;font-size:10px">заблокирован</span>':''}</div>
+              <div style="font-size:12px;color:var(--t2)">${s.subject} · ${s.lessons.length} уроков</div>
             </div>
-            <div style="text-align:right">
+            ${miniGr}
+            <svg style="color:var(--t3);flex-shrink:0;transition:transform .2s" id="sd-arrow-${s.id}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+          <!-- Краткие метрики -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+            <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
               <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:${s.avg!=='—'?'var(--a)':'var(--t3)'}">${s.avg!=='—'?s.avg:'—'}</div>
-              <div style="font-size:10px;color:var(--t3);font-weight:600">ср. оценка</div>
+              <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">ср. оценка</div>
+            </div>
+            <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
+              <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:${attClr}">${s.attendPct}%</div>
+              <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">посещ.</div>
+            </div>
+            <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
+              <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:var(--a)">${wPct}%</div>
+              <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">слов знает</div>
             </div>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-            <span class="bdg bb">📅 ${s.lessons.length} уроков</span>
-            <span class="bdg ${s.words.length?'bgg':'bgr'}">📖 ${s.words.length} слов</span>
-            <span class="bdg ${wPct>=70?'bgg':wPct>=40?'bo':'bgr'}">✓ ${wPct}% знает</span>
-            ${s.lessons.filter(l=>!l.paid&&l.status==='done').length>0?`<span class="bdg br">💰 ${s.lessons.filter(l=>!l.paid&&l.status==='done').length} не оплачено</span>`:''}
+          <!-- Общий прогресс-бар -->
+          <div class="pb" style="margin-bottom:8px"><div class="pbf" style="width:${s.score}%;background:${scoreClr}"></div></div>
+          <!-- Детали (раскрывающиеся) -->
+          <div id="sd-${s.id}" style="display:none;margin-top:10px">
+            <!-- Посещаемость детально -->
+            <div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📋 Посещаемость</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                <span class="bdg bgg">✓ Проведено: ${s.lessons.filter(l=>l.status==='done').length}</span>
+                <span class="bdg bgr">📅 Запланировано: ${s.lessons.filter(l=>l.status==='planned'||!l.status).length}</span>
+                ${s.lessons.filter(l=>l.status==='cancelled').length>0?`<span class="bdg br">✗ Отменено: ${s.lessons.filter(l=>l.status==='cancelled').length}</span>`:''}
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="pb" style="flex:1;margin:0"><div class="pbf" style="width:${s.attendPct}%;background:${attClr}"></div></div>
+                <div style="font-weight:700;font-size:13px;color:${attClr};min-width:36px;text-align:right">${s.attendPct}%</div>
+              </div>
+            </div>
+            <!-- ДЗ детально -->
+            <div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📝 Домашние задания</div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="pb" style="flex:1;margin:0"><div class="pbf" style="width:${hwPct}%;background:var(--g)"></div></div>
+                <div style="font-weight:700;font-size:13px;color:var(--g);min-width:36px;text-align:right">${s.hwD}/${s.hwT}</div>
+              </div>
+            </div>
+            <!-- История оценок -->
+            ${s.lastGrades.length ? `<div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📈 Последние оценки</div>
+              <div style="display:flex;align-items:flex-end;gap:6px;height:48px">
+                ${s.lastGrades.map((g,gi)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+                  <div style="font-size:11px;font-weight:800;color:${g>=4?'var(--g)':g===3?'var(--o)':'var(--r)'}">${g}</div>
+                  <div style="width:100%;border-radius:4px 4px 0 0;height:${Math.round(g/5*34)+4}px;background:${g>=4?'var(--g)':g===3?'var(--o)':'var(--r)'}"></div>
+                </div>`).join('')}
+              </div>
+            </div>` : ''}
+            <!-- Оплата -->
+            ${s.unpaid>0?`<div style="background:var(--rl);border-radius:var(--rs);padding:10px;margin-bottom:8px;font-size:13px;font-weight:600;color:var(--r)">💰 Задолженность: ${s.unpaid} урок(а) не оплачено</div>`:''}
+            <!-- Слова -->
+            <div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📖 Словарный запас</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+                <span class="bdg bgg">✓ Знает: ${s.wKnown}</span>
+                <span class="bdg bgr">Всего: ${s.wTotal}</span>
+              </div>
+              ${s.wTotal?`<div class="pb" style="margin:0"><div class="pbf" style="width:${wPct}%"></div></div>`:'<div style="font-size:12px;color:var(--t3)">Слов не добавлено</div>'}
+            </div>
+            <!-- Кнопка отчёта родителю -->
+            ${s.parent_user_id||s.parent_user_id2 ? `<button class="btn bs bsm" style="width:100%;font-size:13px" onclick="sendWeeklyReport('${s.id}','${s.name.replace(/'/g,"\\'")}')">
+              📩 Отправить отчёт родителю
+            </button>` : ''}
           </div>
-          <div class="pb"><div class="pbf" style="width:${s.score}%;background:${s.score>=70?'var(--g)':s.score>=40?'var(--o)':'var(--r)'}"></div></div>
         </div>`;
       }).join('')}
     </div>
 
     <div style="height:80px"></div>
   </div>`;
+}
+
+function toggleStuDetail(id, header) {
+  const el = document.getElementById(id);
+  const arrow = document.getElementById('sd-arrow-'+id.replace('sd-',''));
+  if(!el) return;
+  const open = el.style.display === 'block';
+  el.style.display = open ? 'none' : 'block';
+  if(arrow) arrow.style.transform = open ? '' : 'rotate(90deg)';
+}
+
+async function sendWeeklyReport(stuId, stuName) {
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Отправляем...';
+  try {
+    // Данные ученика из stuMap (уже загружены)
+    const {data:stu} = await sb.from('students').select('*').eq('id',stuId).single();
+    const {data:lessons} = await sb.from('lessons').select('*').eq('teacher_id',me.id).eq('student_id',stuId).order('date',{ascending:false}).limit(30);
+    const {data:words} = await sb.from('words').select('level').eq('student_record_id',stuId);
+
+    const ls = lessons || [];
+    const done = ls.filter(l=>l.status==='done').length;
+    const total = ls.length;
+    const cancelled = ls.filter(l=>l.status==='cancelled').length;
+    const attendPct = done+cancelled > 0 ? Math.round(done/(done+cancelled)*100) : 0;
+    const grades = ls.filter(l=>l.grade).map(l=>+l.grade);
+    const avg = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : 'нет';
+    const wTotal = (words||[]).length;
+    const wKnown = (words||[]).filter(w=>w.level===3).length;
+    const hwT = ls.filter(l=>l.homework).length;
+    const hwD = ls.filter(l=>l.hw_done).length;
+    const lastLesson = ls.find(l=>l.status==='done');
+    const nextLesson = ls.find(l=>!l.status||l.status==='planned');
+
+    const title = `📊 Еженедельный отчёт — ${stuName}`;
+    const body = `Посещаемость: ${attendPct}% (${done}/${done+cancelled})\nСредняя оценка: ${avg}\nДЗ: ${hwD}/${hwT}\nСловарь: ${wKnown}/${wTotal} слов усвоено${lastLesson?`\nПоследний урок: ${lastLesson.title}`:''} ${nextLesson?`\nСледующий: ${nextLesson.title} (${nextLesson.date||''})` : ''}`;
+
+    const pids = [stu?.parent_user_id, stu?.parent_user_id2].filter(Boolean);
+    for(const pid of pids) {
+      await sb.from('notifications').insert({recipient_id:pid, type:'weekly_report', title, body});
+    }
+    if(pids.length) {
+      await fetch(`${SU}/functions/v1/send-push`,{
+        method:'POST',
+        headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},
+        body: JSON.stringify({user_ids:pids, title, body})
+      }).catch(()=>{});
+    }
+    toast('📩 Отчёт отправлен родителю!');
+  } catch(e) {
+    toast('Ошибка отправки: '+e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '📩 Отправить отчёт родителю';
+  }
 }
 
 async function tChats(el) {
