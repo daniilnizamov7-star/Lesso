@@ -232,6 +232,7 @@
   <div class="fg"><label class="fl">Ученик</label><select class="fs" id="li-stu"></select></div>
   <div class="fg"><label class="fl">Тема урока</label><input class="fi" id="li-title" placeholder="Past Simple, числа..."></div>
   <div class="fg"><label class="fl">Дата</label><input class="fi" type="date" id="li-date"></div>
+  <div class="fg"><label class="fl">Время урока</label><input class="fi" type="time" id="li-time" placeholder="10:00"></div>
   <div class="fg"><label class="fl">Ссылка Zoom</label><input class="fi" type="url" id="li-zoom" placeholder="https://zoom.us/j/..."></div>
   <div class="fg"><label class="fl">Домашнее задание</label><textarea class="fta" id="li-hw" placeholder="Выучить слова..."></textarea></div>
   <div id="li-hw-photo-wrap" style="display:none;margin-bottom:14px">
@@ -800,7 +801,7 @@ async function tLessons(el) {
   const l=document.getElementById('tl-list');
   if(!ls?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
   l.innerHTML=ls.map(l_=>`<div class="lc" onclick="openLesson('${l_.id}')">
-    <div class="lct"><div><div class="lcti">${l_.title}</div><div class="lcm">${fd(l_.date)}${l_.student_id&&sm[l_.student_id]?' · '+sm[l_.student_id]:''}</div></div>
+    <div class="lct"><div><div class="lcti">${l_.title}</div><div class="lcm">${fd(l_.date)}${l_.time?' · '+l_.time:''} ${l_.student_id&&sm[l_.student_id]?' · '+sm[l_.student_id]:''}</div></div>
     ${l_.grade?`<div class="grade g${l_.grade}">${l_.grade}</div>`:''}</div>
     <div class="lcf">
       ${l_.status==='active'?'<span class="bdg br">🔴 Идёт</span>':l_.status==='done'?'<span class="bdg bgg">✓ Завершён</span>':''}
@@ -1279,7 +1280,7 @@ async function popStuSelect(selId) {
 async function openAddLesson() {
   editLessonId=null;
   document.getElementById('mlt').textContent='Новый урок';
-  ['li-title','li-zoom','li-notes'].forEach(id=>document.getElementById(id).value='');
+  ['li-title','li-zoom','li-notes','li-time'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('li-hw').value='';
   const _wrap=document.getElementById('li-hw-photo-wrap'); if(_wrap) _wrap.style.display='none';
   document.getElementById('li-date').value=new Date().toISOString().split('T')[0];
@@ -1299,6 +1300,7 @@ async function openLesson(id) {
   document.getElementById('mlt').textContent='Урок';
   document.getElementById('li-title').value=l.title;
   document.getElementById('li-date').value=l.date;
+  document.getElementById('li-time').value=l.time||'';
   document.getElementById('li-zoom').value=l.zoom_link||'';
   document.getElementById('li-hw').value=l.homework||'';
   // hw photo
@@ -1321,7 +1323,8 @@ async function saveLesson() {
   const date=document.getElementById('li-date').value;
   if(!title||!date){toast('Заполни название и дату');return;}
   const stuId=document.getElementById('li-stu')?.value||null;
-  const payload={title,date,teacher_id:me.id,student_id:stuId,zoom_link:document.getElementById('li-zoom').value.trim()||null,homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
+  const lessonTime=document.getElementById('li-time').value||null;
+  const payload={title,date,time:lessonTime,teacher_id:me.id,student_id:stuId,zoom_link:document.getElementById('li-zoom').value.trim()||null,homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
   let error, lid=editLessonId;
   if(editLessonId){({error}=await sb.from('lessons').update(payload).eq('id',editLessonId));}
   else{const r=await sb.from('lessons').insert({...payload,status:'planned'}).select('id').single();error=r.error;lid=r.data?.id;}
