@@ -579,9 +579,7 @@ async function sendFeedback() {
 
 
 async function remindLesson(lessonId, lessonTitle, stuId) {
-  console.log('remindLesson called:', { lessonId, lessonTitle, stuId });
-  const { data: stu, error: stuErr } = await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id', stuId).single();
-  console.log('stu result:', { stu, stuErr });
+  const { data: stu } = await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id', stuId).single();
   if (!stu) { toast('Ученик не найден'); return; }
   const msg = `Урок "${lessonTitle}" — не забудь подготовиться!`;
   const title = '🔔 Напоминание об уроке';
@@ -604,8 +602,7 @@ async function remindLesson(lessonId, lessonTitle, stuId) {
       body: JSON.stringify({ user_ids: parentRecipients, title, body: msg })
     }).catch(()=>{}));
   }
-  const results = await Promise.all(promises);
-  console.log('push results:', results);
+  await Promise.all(promises);
   toast('Напоминание отправлено 🔔');
 }
 
