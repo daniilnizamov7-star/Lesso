@@ -579,11 +579,30 @@ async function sendFeedback() {
 
 
 async function remindLesson(lessonId, lessonTitle, stuId) {
-  // Получаем данные ученика и родителей
   const { data: stu } = await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id', stuId).single();
   if (!stu) { toast('Ученик не найден'); return; }
-  const recipients = [stuId, stu.parent_user_id, stu.parent_user_id2].filter(Boolean);
-  await pushToUsers(recipients, '🔔 Напоминание об уроке', `Урок "${lessonTitle}" — не забудь подготовиться!`);
+  const msg = `Урок "${lessonTitle}" — не забудь подготовиться!`;
+  const title = '🔔 Напоминание об уроке';
+  // Ученик — по student_id
+  const stuRecipients = [stuId].filter(Boolean);
+  // Родители — по user_id (auth.users)
+  const parentRecipients = [stu.parent_user_id, stu.parent_user_id2].filter(Boolean);
+  const promises = [];
+  if (stuRecipients.length) {
+    promises.push(fetch(`${SU}/functions/v1/send-push`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SK}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ student_ids: stuRecipients, title, body: msg })
+    }).catch(()=>{}));
+  }
+  if (parentRecipients.length) {
+    promises.push(fetch(`${SU}/functions/v1/send-push`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SK}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_ids: parentRecipients, title, body: msg })
+    }).catch(()=>{}));
+  }
+  await Promise.all(promises);
   toast('Напоминание отправлено 🔔');
 }
 
