@@ -1330,9 +1330,11 @@ function renderMsgs(data) {
   const myId = me.role === 'student' ? me.student_id : me.id;
   wrap.innerHTML=data.map(m=>{
     const mine = m.sender_id === myId || (me.role==='student' && m.sender_role==='student' && m.sender_name===me.name);
+    const safeText = (m.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const safeName = (m.sender_name||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     return `<div class="msg ${mine?'mine':'theirs'}">
-      ${!mine?`<div class="msg-who">${m.sender_name}</div>`:''}
-      <div class="msg-bbl">${m.text}</div>
+      ${!mine?`<div class="msg-who">${safeName}</div>`:''}
+      <div class="msg-bbl">${safeText}</div>
       <div class="msg-time">${ft(m.created_at)}</div>
     </div>`;
   }).join('');
@@ -1776,7 +1778,6 @@ function sSc(n,i) {
   else if(n==='chats') sChats(c);
 }
 async function sHome(el) {
-  console.log('sHome: teacher_id='+me.teacher_id+' student_id='+me.student_id);
   const[{data:ls},{data:ws}]=await Promise.all([
     sb.from('lessons').select('id,title,date,homework,hw_done,hw_photo,zoom_link,grade,status').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(10),
     sb.from('words').select('level').eq('student_record_id',me.student_id)
@@ -2196,7 +2197,9 @@ function showPushToast(title, body) {
   const t = document.createElement('div');
   t.id = 'push-toast';
   t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#1e293b;color:#fff;padding:14px 18px;border-radius:12px;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:14px;line-height:1.5;cursor:pointer';
-  t.innerHTML = `<strong style="display:block;margin-bottom:4px">${title}</strong>${body ? `<span style="opacity:.85">${body}</span>` : ''}`;
+  const safeTitle=(title||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safeBody=(body||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  t.innerHTML = `<strong style="display:block;margin-bottom:4px">${safeTitle}</strong>${safeBody ? `<span style="opacity:.85">${safeBody}</span>` : ''}` ;
   t.onclick = () => t.remove();
   document.body.appendChild(t);
   setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 5000);
