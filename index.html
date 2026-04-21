@@ -204,8 +204,9 @@
     .sname_{font-weight:700;font-size:15px}.smeta_{font-size:12px;color:var(--t2);margin-top:2px}
     .spinb{margin-left:auto;background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--t2);font-family:'Fraunces',serif}
     .mitem{display:flex;align-items:center;gap:12px;background:var(--w);border:1px solid var(--b);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh)}
-    .mico{width:38px;height:38px;border-radius:10px;background:var(--rl);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
-    .mname_{font-weight:600;font-size:14px}.msize_{font-size:12px;color:var(--t2)}
+    .mico{width:38px;height:38px;border-radius:10px;background:var(--al);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+    .mname_{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.msize_{font-size:12px;color:var(--t2)}
+    .mopen{flex-shrink:0;background:var(--al);color:var(--a);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;font-family:inherit}
     .titem{background:var(--w);border:1.5px solid var(--b);border-radius:var(--rd);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;box-shadow:var(--sh);margin-bottom:10px}
     .titem:hover{border-color:var(--a)}
     .empty{text-align:center;padding:48px 20px;color:var(--t2)}
@@ -1433,7 +1434,7 @@ function onFileSelect(input) {
   const sz=f.size>1024*1024?(f.size/1024/1024).toFixed(1)+' МБ':Math.round(f.size/1024)+' КБ';
   document.getElementById('li-fprev').innerHTML=`<div class="mitem">
     <div class="mico">${f.type.includes('pdf')?'📄':f.type.includes('image')?'🖼️':'📎'}</div>
-    <div style="flex:1"><div class="mname_">${f.name}</div><div class="msize_">${sz}</div></div>
+    <div style="flex:1;min-width:0;overflow:hidden"><div class="mname_">${f.name}</div><div class="msize_">${sz}</div></div>
     <button onclick="pendFile=null;document.getElementById('li-fprev').innerHTML='';document.getElementById('li-file').value=''" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:20px">×</button>
   </div>`;
 }
@@ -1450,8 +1451,8 @@ async function loadLessonMats(lid) {
   const w=document.getElementById('li-mats'); if(!w) return;
   w.innerHTML=(data||[]).map(m=>`<div class="mitem">
     <div class="mico">${m.file_type==='pdf'?'📄':m.file_type?.match(/jpg|png|jpeg/)?'🖼️':'📎'}</div>
-    <div style="flex:1"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
-    <a href="${m.file_url}" target="_blank" style="background:var(--al);color:var(--a);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none">Открыть</a>
+    <div style="flex:1;min-width:0;overflow:hidden"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
+    <a href="${m.file_url}" target="_blank" class="mopen">Открыть</a>
   </div>`).join('');
 }
 async function popStuSelect(selId) {
@@ -1837,8 +1838,8 @@ async function togMats(lid) {
   if(!data?.length){w.innerHTML='<div style="font-size:13px;color:var(--t3);padding:8px">Материалов пока нет</div>';return;}
   w.innerHTML=data.map(m=>`<div class="mitem">
     <div class="mico">${m.file_type==='pdf'?'📄':m.file_type?.match(/jpg|png|jpeg/)?'🖼️':'📎'}</div>
-    <div style="flex:1"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
-    <a href="${m.file_url}" target="_blank" style="background:var(--al);color:var(--a);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none">Открыть</a>
+    <div style="flex:1;min-width:0;overflow:hidden"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
+    <a href="${m.file_url}" target="_blank" class="mopen">Открыть</a>
   </div>`).join('');
 }
 let rQ=[],rIdx=0,cFlip=false;
