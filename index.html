@@ -342,8 +342,8 @@ function backSvg() { return `<svg width="16" height="16" fill="none" stroke="cur
     if (p) { me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code }; subscribeToPush(session.user.id, session.access_token); launchApp(); return; }
   }
   // Восстанавливаем сессию ученика
-  const stuSess = sessionStorage.getItem('stu_session');
-  if (stuSess) { try { me = JSON.parse(stuSess); launchApp(); return; } catch(e) { sessionStorage.removeItem('stu_session'); } }
+  const stuSess = localStorage.getItem('stu_session');
+  if (stuSess) { try { me = JSON.parse(stuSess); launchApp(); return; } catch(e) { localStorage.removeItem('stu_session'); } }
   renderRoles();
 })();
 
@@ -504,7 +504,7 @@ async function doPin() {
   if (!stu) { pg('pg-teachers'); perr('Неверный PIN-код'); return; }
   if (stu.active === false) { pg('pg-teachers'); perr('Доступ заблокирован. Обратитесь к учителю.'); return; }
   me = { role: 'student', name: stu.name, id: stu.id, student_id: stu.id, teacher_id: teacher.id };
-  sessionStorage.setItem('stu_session', JSON.stringify(me));
+  localStorage.setItem('stu_session', JSON.stringify(me));
   subscribeToPush(stu.id, null);
   launchApp();
 }
@@ -608,6 +608,7 @@ async function remindLesson(lessonId, lessonTitle, stuId) {
 
 async function doLogout() {
   if (me.role === 'teacher' || me.role === 'parent') await sb.auth.signOut();
+  localStorage.removeItem('stu_session');
   me = null; selTeacherId = null;
   renderRoles();
 }
