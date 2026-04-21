@@ -1472,6 +1472,28 @@ async function popStuSelect(selId) {
   window._stuZoomMap = Object.fromEntries((data||[]).map(st=>[st.id,{zoom_id:st.zoom_id,zoom_pass:st.zoom_pass}]));
   autoFillZoom(selId);
 }
+function zoomHref(link) {
+  // Извлекаем confno и pwd из https ссылки и строим zoommtg:// для прямого открытия без пароля
+  if(!link) return link;
+  try {
+    const m = link.match(/zoom\.us\/j\/(\d+)/);
+    const p = link.match(/[?&]pwd=([^&]+)/);
+    if(m) {
+      const confno = m[1];
+      const pwd = p ? p[1] : null;
+      return `zoommtg://zoom.us/join?confno=${confno}${pwd?'&pwd='+pwd:''}`;
+    }
+  } catch(e){}
+  return link;
+}
+function openZoom(link) {
+  if(!link) return;
+  // Пробуем zoommtg:// — если Zoom установлен откроется сразу без пароля
+  const deep = zoomHref(link);
+  window.location.href = deep;
+  // Fallback через 2.5с — если Zoom не установлен открываем браузер
+  setTimeout(() => { window.open(link, '_blank', 'noopener'); }, 2500);
+}
 function autoFillZoom(stuId) {
   if(!stuId||!window._stuZoomMap) return;
   const z=window._stuZoomMap[stuId];
@@ -1534,7 +1556,7 @@ async function saveLesson() {
   if(!title||!date){toast('Заполни название и дату');return;}
   const stuId=document.getElementById('li-stu')?.value||null;
   const lessonTime=document.getElementById('li-time').value||null;
-  const payload={title,date,time:lessonTime,teacher_id:me.id,student_id:stuId,zoom_link:(()=>{const z=document.getElementById('li-zoom').value.trim();return z&&(z.startsWith('https://')||z.startsWith('http://'))?z:null})(),homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
+  const payload={title,date,time:lessonTime,teacher_id:me.id,student_id:stuId,zoom_link:(()=>{const z=document.getElementById('li-zoom').value.trim();return z&&(z.startsWith('https://')||z.startsWith('http://')||z.startsWith('zoommtg://'))?z:null})(),homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
   let error, lid=editLessonId;
   if(editLessonId){({error}=await sb.from('lessons').update(payload).eq('id',editLessonId));}
   else{const r=await sb.from('lessons').insert({...payload,status:'planned'}).select('id').single();error=r.error;lid=r.data?.id;}
@@ -1827,7 +1849,7 @@ async function sHome(el) {
       <div style="font-size:13px;color:var(--t2);margin-bottom:8px">${fd(next.date)}</div>
       ${next.zoom_link?`<div style="margin-top:10px">
         ${next.zoom_pass_hint?`<div style="font-size:12px;color:var(--a);font-weight:600;margin-bottom:6px">Код доступа: <strong>${next.zoom_pass_hint}</strong></div>`:''}
-        <a href="${next.zoom_link}" target="_blank" rel="noopener noreferrer" class="btn bp" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>Подключиться к Zoom</a>
+        <button onclick="openZoom('${next.zoom_link}')" class="btn bp" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>Подключиться к Zoom</button>
       </div>`:''}
     </div>`:''}
     ${pending?`<div class="card" style="border-color:#fbbf24;background:#fffbeb">
@@ -1860,7 +1882,7 @@ async function sLessons(el) {
         : `<button class="bdg bgg" style="cursor:pointer;border:none;font-size:12px" onclick="markHwDone('${ls.id}')">Сделал ✓</button>`
       }</div>`:''}
     <div class="lcf" style="margin-top:10px">
-      ${ls.zoom_link?`<div style="display:flex;flex-direction:column;gap:4px">${ls.zoom_pass_hint?`<div style="font-size:11px;font-weight:700;color:var(--a);background:var(--al);padding:4px 10px;border-radius:8px;display:inline-block">🔑 Код доступа: ${ls.zoom_pass_hint}</div>`:''}    <a href="${ls.zoom_link}" target="_blank" rel="noopener noreferrer" class="btn bp bsm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> Подключиться к Zoom</a></div>`:''}
+      ${ls.zoom_link?`<div style="display:flex;flex-direction:column;gap:4px">${ls.zoom_pass_hint?`<div style="font-size:11px;font-weight:700;color:var(--a);background:var(--al);padding:4px 10px;border-radius:8px;display:inline-block">🔑 Код доступа: ${ls.zoom_pass_hint}</div>`:''}    <button onclick="openZoom('${ls.zoom_link}')" class="btn bp bsm" style="display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> Подключиться к Zoom</button></div>`:''}
       <button class="bdg bgr" style="cursor:pointer;border:none" onclick="openLessonChat('${ls.id}','${ls.title.replace(/'/g,"\\'")}')">💬 Чат</button>
       <button class="bdg bb" style="cursor:pointer;border:none" onclick="togMats('${ls.id}')">📎 Материалы</button>
     </div>
