@@ -1803,13 +1803,14 @@ function sSc(n,i) {
   else if(n==='chats') sChats(c);
 }
 async function sHome(el) {
-  const[{data:ls},{data:ws},{data:stuData}]=await Promise.all([
+  const[{data:ls},{data:ws}]=await Promise.all([
     sb.from('lessons').select('id,title,date,homework,hw_done,hw_photo,zoom_link,grade,status').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(10),
-    sb.from('words').select('level').eq('student_record_id',me.student_id),
-    sb.from('students').select('zoom_id,zoom_pass').eq('id',me.student_id).single()
+    sb.from('words').select('level').eq('student_record_id',me.student_id)
   ]);
-  // Добавляем zoom_pass_hint к ближайшему уроку
-  if(ls) ls.forEach(l=>{ if(l.zoom_link&&stuData?.zoom_pass) l.zoom_pass_hint=stuData.zoom_pass; });
+  // zoom_pass подгружаем отдельно — чтобы не ломать главную если колонки ещё нет
+  let homeZoomPass=null;
+  try{ const{data:sd}=await sb.from('students').select('zoom_pass').eq('id',me.student_id).single(); homeZoomPass=sd?.zoom_pass||null; }catch(e){}
+  if(ls) ls.forEach(l=>{ if(l.zoom_link&&homeZoomPass) l.zoom_pass_hint=homeZoomPass; });
   const known=(ws||[]).filter(w=>w.level===3).length;
   const toRev=(ws||[]).filter(w=>w.level<3).length;
   const pending=(ls||[]).find(l=>l.homework && !l.hw_done);
@@ -1843,11 +1844,11 @@ async function sHome(el) {
   checkUnread();
 }
 async function sLessons(el) {
-  const[{data},{data:stuData2}]=await Promise.all([
-    sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}),
-    sb.from('students').select('zoom_pass').eq('id',me.student_id).single()
-  ]);
-  if(data) data.forEach(l=>{ if(l.zoom_link&&stuData2?.zoom_pass) l.zoom_pass_hint=stuData2.zoom_pass; });
+  const{data}=await sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false});
+  // zoom_pass подгружаем отдельно — чтобы не ломать уроки если колонки ещё нет
+  let stuZoomPass=null;
+  try{ const{data:sd}=await sb.from('students').select('zoom_pass').eq('id',me.student_id).single(); stuZoomPass=sd?.zoom_pass||null; }catch(e){}
+  if(data) data.forEach(l=>{ if(l.zoom_link&&stuZoomPass) l.zoom_pass_hint=stuZoomPass; });
   el.innerHTML=`<div class="page"><div class="stitle">Мои уроки</div><div class="ssub">История занятий</div><div id="sl-list"></div><div style="height:80px"></div></div>`;
   const l=document.getElementById('sl-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
