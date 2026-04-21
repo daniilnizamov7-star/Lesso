@@ -471,15 +471,15 @@ async function showTeachers() {
     <div class="err" id="perr"></div>
     <div class="fg" style="margin-bottom:12px">
       <label class="fl">Код учителя</label>
-      <input class="fi" id="s-tcode" placeholder="Например: DAN1" maxlength="8" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+      <input class="fi" id="s-tcode" autocomplete="off" placeholder="Например: DAN1" maxlength="8" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
     </div>
     <div class="fg" style="margin-bottom:4px">
       <label class="fl">Твой PIN-код</label>
       <div class="pin-wrap" style="margin:8px 0 0">
-        <input class="pd" type="tel" maxlength="1" id="p0" oninput="pi(this,0)">
-        <input class="pd" type="tel" maxlength="1" id="p1" oninput="pi(this,1)">
-        <input class="pd" type="tel" maxlength="1" id="p2" oninput="pi(this,2)">
-        <input class="pd" type="tel" maxlength="1" id="p3" oninput="pi(this,3)">
+        <input class="pd" type="password" inputmode="numeric" maxlength="1" id="p0" oninput="pi(this,0)" autocomplete="off">
+        <input class="pd" type="password" inputmode="numeric" maxlength="1" id="p1" oninput="pi(this,1)" autocomplete="off">
+        <input class="pd" type="password" inputmode="numeric" maxlength="1" id="p2" oninput="pi(this,2)" autocomplete="off">
+        <input class="pd" type="password" inputmode="numeric" maxlength="1" id="p3" oninput="pi(this,3)" autocomplete="off">
       </div>
     </div>
     <button class="btn bp" style="margin-top:16px" onclick="doPin()">Войти</button>
@@ -1481,7 +1481,7 @@ function autoFillZoom(stuId) {
   if(z.zoom_id) {
     // Формируем zoom ссылку из ID
     const zid=z.zoom_id.replace(/\s/g,'');
-    if(zf&&!zf.value) zf.value=`https://zoom.us/j/${zid}${z.zoom_pass?'?pwd=':''}`;
+    if(zf&&!zf.value) zf.value=`https://zoom.us/j/${zid}${z.zoom_pass?'?pwd='+encodeURIComponent(z.zoom_pass):''}`;
     if(zh) { zh.style.display='flex'; zh.innerHTML=`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> ID: <strong>${z.zoom_id}</strong>&nbsp;&nbsp;Код: <strong>${z.zoom_pass||'—'}</strong>`; }
   }
 }
