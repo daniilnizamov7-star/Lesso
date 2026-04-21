@@ -2034,16 +2034,35 @@ async function pHome(el) {
 }
 async function pLessons(el) {
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
-    sb.from('students').select('id').eq('parent_user_id',me.id),
-    sb.from('students').select('id').eq('parent_user_id2',me.id)
+    sb.from('students').select('id,name,subject,teacher_id').eq('parent_user_id',me.id),
+    sb.from('students').select('id,name,subject,teacher_id').eq('parent_user_id2',me.id)
   ]);
-  const stuIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
+  const seen=new Set(); const allStus=[];
+  for(const s of [...(myStus1||[]),...(myStus2||[])]){ if(!seen.has(s.id)){seen.add(s.id);allStus.push(s);} }
+  const stuIds=allStus.map(s=>s.id);
+  const stuMap=Object.fromEntries(allStus.map(s=>[s.id,s]));
   const{data}=stuIds.length?await sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}):{data:[]};
+  const teacherIds=[...new Set(allStus.map(s=>s.teacher_id).filter(Boolean))];
+  const{data:teachers}=teacherIds.length?await sb.from('profiles').select('id,name').in('id',teacherIds):{data:[]};
+  const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t.name]));
   el.innerHTML=`<div class="page"><div class="stitle">История уроков</div><div class="ssub">Все занятия</div><div id="pl-list"></div><div style="height:80px"></div></div>`;
   const l=document.getElementById('pl-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
-  l.innerHTML=data.map(ls=>`<div class="lc">
-    <div class="lct"><div><div class="lcti">${ls.title}</div><div class="lcm">${fd(ls.date)}</div></div>${ls.grade?`<div class="grade g${ls.grade}">${ls.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
+  l.innerHTML=data.map(ls=>{
+    const stu=stuMap[ls.student_id];
+    const stuName=stu?.name||'';
+    const subject=stu?.subject||'';
+    const tName=stu?.teacher_id?tMap[stu.teacher_id]||'':'';
+    return `<div class="lc">
+    <div class="lct"><div>
+      <div class="lcti">${ls.title}</div>
+      <div class="lcm">${fd(ls.date)}${ls.time?' · '+ls.time:''}</div>
+      ${stuName||subject||tName?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">
+        ${stuName?`<span class="bdg bb">🧒 ${stuName}</span>`:''}
+        ${subject?`<span class="bdg bgr">${subject}</span>`:''}
+        ${tName?`<span class="bdg bgg">👨‍🏫 ${tName}</span>`:''}
+      </div>`:''}
+    </div>${ls.grade?`<div class="grade g${ls.grade}">${ls.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
     <div class="lcf">
       ${ls.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
       ${ls.homework?`<span class="bdg bo">📝 ДЗ</span>${ls.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}
@@ -2054,7 +2073,7 @@ async function pLessons(el) {
       <button class="bdg bb" style="cursor:pointer;border:none" onclick="togMats('${ls.id}')">📎 Материалы</button>
     </div>
     <div id="mat-${ls.id}" style="display:none;margin-top:8px"></div>
-  </div>`).join('');
+  </div>`;}).join('');
 }
 async function pProgress(el) {
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
