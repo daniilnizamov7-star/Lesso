@@ -230,11 +230,11 @@
 <!-- Modals -->
 <div class="mo" id="m-lesson"><div class="modal">
   <div class="mh"></div><div class="mt" id="mlt">Урок</div>
-  <div class="fg"><label class="fl">Ученик</label><select class="fs" id="li-stu"></select></div>
+  <div class="fg"><label class="fl">Ученик</label><select class="fs" id="li-stu" onchange="autoFillZoom(this.value)"></select></div>
   <div class="fg"><label class="fl">Тема урока</label><input class="fi" id="li-title" placeholder="Past Simple, числа..."></div>
   <div class="fg"><label class="fl">Дата</label><input class="fi" type="date" id="li-date"></div>
   <div class="fg"><label class="fl">Время урока</label><input class="fi" type="time" id="li-time" placeholder="10:00"></div>
-  <div class="fg"><label class="fl">Ссылка Zoom</label><input class="fi" type="url" id="li-zoom" placeholder="https://zoom.us/j/..."></div>
+  <div class="fg"><label class="fl">Ссылка Zoom</label><input class="fi" type="url" id="li-zoom" placeholder="https://zoom.us/j/..." oninput="document.getElementById('li-zoom-hint').style.display='none'"><div id="li-zoom-hint" style="display:none;align-items:center;gap:6px;margin-top:6px;font-size:12px;font-weight:600;color:var(--a);background:var(--al);border-radius:8px;padding:8px 10px"></div></div>
   <div class="fg"><label class="fl">Домашнее задание</label><textarea class="fta" id="li-hw" placeholder="Выучить слова..."></textarea></div>
   <div id="li-hw-photo-wrap" style="display:none;margin-bottom:14px">
     <div class="fl" style="margin-bottom:6px">📷 Фото ДЗ от ученика</div>
@@ -284,6 +284,11 @@
   <div class="fg"><label class="fl">Предмет</label><input class="fi" id="si-subj" placeholder="Английский..."></div>
   <div class="fg"><label class="fl">PIN-код (4 цифры)</label><input class="fi" id="si-pin" type="number" placeholder="1234"></div>
   <div style="margin-top:4px;margin-bottom:14px;font-size:12px;color:var(--t2);line-height:1.5">👨‍👩‍👦 Родители привязываются сами через «Привязать ребёнка» в своём кабинете. PIN можно передать маме и папе — каждый привяжется отдельно.</div>
+  <div style="background:var(--al);border-radius:var(--rs);padding:12px;margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;color:var(--a);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🎥 Zoom конференция</div>
+    <div class="fg" style="margin-bottom:10px"><label class="fl">ID конференции</label><input class="fi" id="si-zoom-id" placeholder="718 1849 4557" style="background:var(--w)"></div>
+    <div class="fg" style="margin-bottom:0"><label class="fl">Код доступа</label><input class="fi" id="si-zoom-pass" placeholder="7tfiYp" style="background:var(--w)"></div>
+  </div>
   <div class="brow"><button class="btn bs" onclick="closeM('m-stu')">Отмена</button><button class="btn bp" onclick="saveStu()">Сохранить</button></div>
   <button class="btn bd" id="si-delbtn" style="display:none;margin-top:8px" onclick="delStu()">Удалить ученика</button>
 </div></div>
@@ -1458,16 +1463,34 @@ async function loadLessonMats(lid) {
   </div>`).join('');
 }
 async function popStuSelect(selId) {
-  const{data}=await sb.from('students').select('id,name').eq('teacher_id',me.id);
+  const{data}=await sb.from('students').select('id,name,zoom_id,zoom_pass').eq('teacher_id',me.id);
   const s=document.getElementById('li-stu'); if(!s) return;
   s.innerHTML=(data||[]).map(st=>`<option value="${st.id}"${st.id===selId?' selected':''}>${st.name}</option>`).join('')||'<option value="">Нет учеников</option>';
   // Word modal student select
   const ws=document.getElementById('wi-stu'); if(ws) ws.innerHTML=s.innerHTML;
+  // Автоподстановка Zoom для выбранного ученика
+  window._stuZoomMap = Object.fromEntries((data||[]).map(st=>[st.id,{zoom_id:st.zoom_id,zoom_pass:st.zoom_pass}]));
+  autoFillZoom(selId);
+}
+function autoFillZoom(stuId) {
+  if(!stuId||!window._stuZoomMap) return;
+  const z=window._stuZoomMap[stuId];
+  if(!z) return;
+  const zf=document.getElementById('li-zoom');
+  const zh=document.getElementById('li-zoom-hint');
+  if(z.zoom_id) {
+    // Формируем zoom ссылку из ID
+    const zid=z.zoom_id.replace(/\s/g,'');
+    if(zf&&!zf.value) zf.value=`https://zoom.us/j/${zid}${z.zoom_pass?'?pwd=':''}`;
+    if(zh) { zh.style.display='flex'; zh.innerHTML=`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> ID: <strong>${z.zoom_id}</strong>&nbsp;&nbsp;Код: <strong>${z.zoom_pass||'—'}</strong>`; }
+  }
 }
 async function openAddLesson() {
   editLessonId=null;
   document.getElementById('mlt').textContent='Новый урок';
   ['li-title','li-zoom','li-notes','li-time'].forEach(id=>document.getElementById(id).value='');
+  // Сбрасываем zoom-подсказку
+  const zhint=document.getElementById('li-zoom-hint'); if(zhint) zhint.style.display='none';
   document.getElementById('li-hw').value='';
   const _wrap=document.getElementById('li-hw-photo-wrap'); if(_wrap) _wrap.style.display='none';
   document.getElementById('li-date').value=new Date().toISOString().split('T')[0];
@@ -1573,7 +1596,7 @@ async function togStatus(btn) {
 function openAddStu() {
   editStuId=null;
   document.getElementById('mstu-t').textContent='Новый ученик';
-  ['si-name','si-subj','si-pin'].forEach(id=>document.getElementById(id).value='');
+  ['si-name','si-subj','si-pin','si-zoom-id','si-zoom-pass'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('si-delbtn').style.display='none';
   openM('m-stu');
 }
@@ -1584,6 +1607,8 @@ async function openEditStu(id) {
   document.getElementById('si-name').value=s.name;
   document.getElementById('si-subj').value=s.subject||'';
   document.getElementById('si-pin').value=s.pin||'';
+  document.getElementById('si-zoom-id').value=s.zoom_id||'';
+  document.getElementById('si-zoom-pass').value=s.zoom_pass||'';
   document.getElementById('si-delbtn').style.display='block';
   // active toggle
   let ab=document.getElementById('si-active-row');
@@ -1613,7 +1638,7 @@ async function saveStu() {
   }
   const{data:ex}=await sb.from('students').select('id').eq('teacher_id',me.id).eq('pin',pin).neq('id',editStuId||'00000000-0000-0000-0000-000000000000');
   if(ex?.length){toast('Такой PIN уже занят');return;}
-  const payload={name,pin,subject:document.getElementById('si-subj').value.trim()||'Английский',teacher_id:me.id};
+  const payload={name,pin,subject:document.getElementById('si-subj').value.trim()||'Английский',teacher_id:me.id,zoom_id:document.getElementById('si-zoom-id').value.trim()||null,zoom_pass:document.getElementById('si-zoom-pass').value.trim()||null};
   const{error}=editStuId?await sb.from('students').update(payload).eq('id',editStuId):await sb.from('students').insert(payload);
   if(error){toast('Ошибка: '+error.message);return;}
   closeM('m-stu'); toast('Ученик сохранён ✓'); tSc('students',1);
@@ -1778,10 +1803,13 @@ function sSc(n,i) {
   else if(n==='chats') sChats(c);
 }
 async function sHome(el) {
-  const[{data:ls},{data:ws}]=await Promise.all([
+  const[{data:ls},{data:ws},{data:stuData}]=await Promise.all([
     sb.from('lessons').select('id,title,date,homework,hw_done,hw_photo,zoom_link,grade,status').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(10),
-    sb.from('words').select('level').eq('student_record_id',me.student_id)
+    sb.from('words').select('level').eq('student_record_id',me.student_id),
+    sb.from('students').select('zoom_id,zoom_pass').eq('id',me.student_id).single()
   ]);
+  // Добавляем zoom_pass_hint к ближайшему уроку
+  if(ls) ls.forEach(l=>{ if(l.zoom_link&&stuData?.zoom_pass) l.zoom_pass_hint=stuData.zoom_pass; });
   const known=(ws||[]).filter(w=>w.level===3).length;
   const toRev=(ws||[]).filter(w=>w.level<3).length;
   const pending=(ls||[]).find(l=>l.homework && !l.hw_done);
@@ -1796,7 +1824,10 @@ async function sHome(el) {
       <div class="clbl">📅 Следующий урок</div>
       <div style="font-weight:700;font-size:15px;margin-bottom:4px">${next.title}</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:8px">${fd(next.date)}</div>
-      ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" rel="noopener noreferrer" class="btn bp" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin-top:4px"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> Подключиться к Zoom</a>`:''}
+      ${next.zoom_link?`<div style="margin-top:10px">
+        ${next.zoom_pass_hint?`<div style="font-size:12px;color:var(--a);font-weight:600;margin-bottom:6px">Код доступа: <strong>${next.zoom_pass_hint}</strong></div>`:''}
+        <a href="${next.zoom_link}" target="_blank" rel="noopener noreferrer" class="btn bp" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>Подключиться к Zoom</a>
+      </div>`:''}
     </div>`:''}
     ${pending?`<div class="card" style="border-color:#fbbf24;background:#fffbeb">
       <div class="clbl">📝 Домашнее задание</div>
@@ -1812,7 +1843,11 @@ async function sHome(el) {
   checkUnread();
 }
 async function sLessons(el) {
-  const{data}=await sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false});
+  const[{data},{data:stuData2}]=await Promise.all([
+    sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}),
+    sb.from('students').select('zoom_pass').eq('id',me.student_id).single()
+  ]);
+  if(data) data.forEach(l=>{ if(l.zoom_link&&stuData2?.zoom_pass) l.zoom_pass_hint=stuData2.zoom_pass; });
   el.innerHTML=`<div class="page"><div class="stitle">Мои уроки</div><div class="ssub">История занятий</div><div id="sl-list"></div><div style="height:80px"></div></div>`;
   const l=document.getElementById('sl-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
@@ -1824,7 +1859,7 @@ async function sLessons(el) {
         : `<button class="bdg bgg" style="cursor:pointer;border:none;font-size:12px" onclick="markHwDone('${ls.id}')">Сделал ✓</button>`
       }</div>`:''}
     <div class="lcf" style="margin-top:10px">
-      ${ls.zoom_link?`<a href="${ls.zoom_link}" target="_blank" rel="noopener noreferrer" class="btn bp bsm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> Подключиться к Zoom</a>`:''}
+      ${ls.zoom_link?`<div style="display:flex;flex-direction:column;gap:4px">${ls.zoom_pass_hint?`<div style="font-size:11px;font-weight:700;color:var(--a);background:var(--al);padding:4px 10px;border-radius:8px;display:inline-block">🔑 Код доступа: ${ls.zoom_pass_hint}</div>`:''}    <a href="${ls.zoom_link}" target="_blank" rel="noopener noreferrer" class="btn bp bsm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> Подключиться к Zoom</a></div>`:''}
       <button class="bdg bgr" style="cursor:pointer;border:none" onclick="openLessonChat('${ls.id}','${ls.title.replace(/'/g,"\\'")}')">💬 Чат</button>
       <button class="bdg bb" style="cursor:pointer;border:none" onclick="togMats('${ls.id}')">📎 Материалы</button>
     </div>
