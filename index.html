@@ -238,7 +238,7 @@
   <div class="fg"><label class="fl">Домашнее задание</label><textarea class="fta" id="li-hw" placeholder="Выучить слова..."></textarea></div>
   <div id="li-hw-photo-wrap" style="display:none;margin-bottom:14px">
     <div class="fl" style="margin-bottom:6px">📷 Фото ДЗ от ученика</div>
-    <a id="li-hw-photo-link" href="" target="_blank"><img id="li-hw-photo-img" src="" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1.5px solid #bbf7d0"></a>
+    <a id="li-hw-photo-link" href="" target="_blank" rel="noopener noreferrer"><img id="li-hw-photo-img" src="" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1.5px solid #bbf7d0"></a>
   </div>
   <div class="fg"><label class="fl">Оценка</label>
     <select class="fs" id="li-grade"><option value="">— не ставить —</option><option value="5">5 — Отлично</option><option value="4">4 — Хорошо</option><option value="3">3 — Удовл.</option><option value="2">2 — Плохо</option></select>
@@ -783,7 +783,7 @@ async function tHome(el) {
       <div style="font-size:13px;color:var(--t2);margin-bottom:10px">${fd(next.date)}${next.student_id&&sm[next.student_id]?' · '+sm[next.student_id]:''}</div>
       <div style="display:flex;gap:8px">
         ${next.status!=='done'?`<button class="btn bp bsm" onclick="openLesson('${next.id}')">Открыть →</button>`:''}
-        ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" class="btn bs bsm">🎥 Zoom</a>`:''}
+        ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" rel="noopener noreferrer" class="btn bs bsm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> Zoom</a>`:''}
       </div>`;
   }
   const r=document.getElementById('th-r');
@@ -1454,7 +1454,7 @@ async function loadLessonMats(lid) {
   w.innerHTML=(data||[]).map(m=>`<div class="mitem">
     <div class="mico">${m.file_type==='pdf'?'📄':m.file_type?.match(/jpg|png|jpeg/)?'🖼️':'📎'}</div>
     <div style="flex:1;min-width:0;overflow:hidden"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
-    <a href="${m.file_url}" target="_blank" class="mopen">Открыть</a>
+    <a href="${m.file_url}" target="_blank" rel="noopener noreferrer" class="mopen">Открыть</a>
   </div>`).join('');
 }
 async function popStuSelect(selId) {
@@ -1511,7 +1511,7 @@ async function saveLesson() {
   if(!title||!date){toast('Заполни название и дату');return;}
   const stuId=document.getElementById('li-stu')?.value||null;
   const lessonTime=document.getElementById('li-time').value||null;
-  const payload={title,date,time:lessonTime,teacher_id:me.id,student_id:stuId,zoom_link:document.getElementById('li-zoom').value.trim()||null,homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
+  const payload={title,date,time:lessonTime,teacher_id:me.id,student_id:stuId,zoom_link:(()=>{const z=document.getElementById('li-zoom').value.trim();return z&&(z.startsWith('https://')||z.startsWith('http://'))?z:null})(),homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
   let error, lid=editLessonId;
   if(editLessonId){({error}=await sb.from('lessons').update(payload).eq('id',editLessonId));}
   else{const r=await sb.from('lessons').insert({...payload,status:'planned'}).select('id').single();error=r.error;lid=r.data?.id;}
@@ -1796,7 +1796,7 @@ async function sHome(el) {
       <div class="clbl">📅 Следующий урок</div>
       <div style="font-weight:700;font-size:15px;margin-bottom:4px">${next.title}</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:8px">${fd(next.date)}</div>
-      ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" class="btn bp bsm" style="display:inline-block">🎥 Zoom</a>`:''}
+      ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" rel="noopener noreferrer" class="btn bp" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin-top:4px"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> Подключиться к Zoom</a>`:''}
     </div>`:''}
     ${pending?`<div class="card" style="border-color:#fbbf24;background:#fffbeb">
       <div class="clbl">📝 Домашнее задание</div>
@@ -1824,7 +1824,7 @@ async function sLessons(el) {
         : `<button class="bdg bgg" style="cursor:pointer;border:none;font-size:12px" onclick="markHwDone('${ls.id}')">Сделал ✓</button>`
       }</div>`:''}
     <div class="lcf" style="margin-top:10px">
-      ${ls.zoom_link?`<a href="${ls.zoom_link}" target="_blank" class="bdg bb">🎥 Zoom</a>`:''}
+      ${ls.zoom_link?`<a href="${ls.zoom_link}" target="_blank" rel="noopener noreferrer" class="btn bp bsm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> Подключиться к Zoom</a>`:''}
       <button class="bdg bgr" style="cursor:pointer;border:none" onclick="openLessonChat('${ls.id}','${ls.title.replace(/'/g,"\\'")}')">💬 Чат</button>
       <button class="bdg bb" style="cursor:pointer;border:none" onclick="togMats('${ls.id}')">📎 Материалы</button>
     </div>
@@ -1840,7 +1840,7 @@ async function togMats(lid) {
   w.innerHTML=data.map(m=>`<div class="mitem">
     <div class="mico">${m.file_type==='pdf'?'📄':m.file_type?.match(/jpg|png|jpeg/)?'🖼️':'📎'}</div>
     <div style="flex:1;min-width:0;overflow:hidden"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
-    <a href="${m.file_url}" target="_blank" class="mopen">Открыть</a>
+    <a href="${m.file_url}" target="_blank" rel="noopener noreferrer" class="mopen">Открыть</a>
   </div>`).join('');
 }
 let rQ=[],rIdx=0,cFlip=false;
@@ -1941,7 +1941,10 @@ async function pHome(el) {
   ]);
   const allIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
   const stuIds=allIds;
-  if(!stuIds.length){el.innerHTML=`<div class="page"><div class="stitle">Прогресс ученика 📊</div><div class="ssub">Обзор обучения</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
+  if(!stuIds.length){// Получаем имена детей для заголовка
+  const{data:stuNames}=await sb.from('students').select('name').in('id',stuIds);
+  const childrenLabel=(stuNames||[]).map(s=>s.name).join(', ')||'ученика';
+  el.innerHTML=`<div class="page"><div class="stitle">Прогресс: ${childrenLabel} 📊</div><div class="ssub">Обзор обучения</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
   const[{data:ls},{data:ws}]=await Promise.all([
     sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}),
     sb.from('words').select('level').in('student_record_id',stuIds)
@@ -1952,7 +1955,10 @@ async function pHome(el) {
   const unpaid=(ls||[]).filter(l=>!l.paid).length;
   const lastWithHw=(ls||[]).find(l=>l.homework); // последний урок с ДЗ
   const nextLesson=(ls||[]).find(l=>l.status==='planned'||l.status==='active');
-  el.innerHTML=`<div class="page"><div class="stitle">Прогресс ученика 📊</div><div class="ssub">Обзор обучения</div>
+  // Получаем имена детей для заголовка
+  const{data:stuNames}=await sb.from('students').select('name').in('id',stuIds);
+  const childrenLabel=(stuNames||[]).map(s=>s.name).join(', ')||'ученика';
+  el.innerHTML=`<div class="page"><div class="stitle">Прогресс: ${childrenLabel} 📊</div><div class="ssub">Обзор обучения</div>
     <div class="srow">
       <div class="sbox blue"><div class="sv">${ls?.length||0}</div><div class="sl">Уроков</div></div>
       <div class="sbox green"><div class="sv">${avg}</div><div class="sl">Средняя оценка</div></div>
