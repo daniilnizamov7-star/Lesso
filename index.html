@@ -476,10 +476,10 @@ async function showTeachers() {
     <div class="fg" style="margin-bottom:4px">
       <label class="fl">Твой PIN-код</label>
       <div class="pin-wrap" style="margin:8px 0 0">
-        <input class="pd" type="password" inputmode="numeric" maxlength="1" id="p0" oninput="pi(this,0)" autocomplete="off">
-        <input class="pd" type="password" inputmode="numeric" maxlength="1" id="p1" oninput="pi(this,1)" autocomplete="off">
-        <input class="pd" type="password" inputmode="numeric" maxlength="1" id="p2" oninput="pi(this,2)" autocomplete="off">
-        <input class="pd" type="password" inputmode="numeric" maxlength="1" id="p3" oninput="pi(this,3)" autocomplete="off">
+        <input class="pd" type="tel" inputmode="numeric" maxlength="1" id="p0" oninput="pi(this,0)" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+        <input class="pd" type="tel" inputmode="numeric" maxlength="1" id="p1" oninput="pi(this,1)" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+        <input class="pd" type="tel" inputmode="numeric" maxlength="1" id="p2" oninput="pi(this,2)" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+        <input class="pd" type="tel" inputmode="numeric" maxlength="1" id="p3" oninput="pi(this,3)" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
       </div>
     </div>
     <button class="btn bp" style="margin-top:16px" onclick="doPin()">Войти</button>
