@@ -190,6 +190,12 @@
     .pl{font-size:13px;color:var(--t2);font-weight:600}
     .tog{width:44px;height:24px;border-radius:12px;background:var(--b);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
     .tog.on{background:var(--g)}
+    .pay-progress{background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--b)}
+    .pay-counter{font-family:'Fraunces',serif;font-size:28px;font-weight:900;line-height:1}
+    .pay-bar{height:8px;background:var(--b);border-radius:4px;overflow:hidden;margin:8px 0}
+    .pay-fill{height:100%;border-radius:4px;transition:width .4s}
+    .pay-hist-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b)}
+    .pay-hist-item:last-child{border-bottom:none}
     .tog::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
     .tog.on::after{transform:translateX(20px)}
     .lrow{display:flex;gap:8px}
@@ -289,6 +295,10 @@
     <div class="fg" style="margin-bottom:10px"><label class="fl">ID конференции</label><input class="fi" id="si-zoom-id" placeholder="718 1849 4557" style="background:var(--w)"></div>
     <div class="fg" style="margin-bottom:0"><label class="fl">Код доступа</label><input class="fi" id="si-zoom-pass" placeholder="7tfiYp" style="background:var(--w)"></div>
   </div>
+  <div style="background:var(--gl);border-radius:var(--rs);padding:12px;margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💰 Пакет уроков</div>
+    <div class="fg" style="margin-bottom:10px"><label class="fl">Цена одного урока (₽)</label><input class="fi" id="si-price" type="number" placeholder="1000" min="0" style="background:var(--w)"></div>
+  </div>
   <div class="brow"><button class="btn bs" onclick="closeM('m-stu')">Отмена</button><button class="btn bp" onclick="saveStu()">Сохранить</button></div>
   <button class="btn bd" id="si-delbtn" style="display:none;margin-top:8px" onclick="delStu()">Удалить ученика</button>
 </div></div>
@@ -305,6 +315,17 @@
     <input class="cinp" id="chat-inp" placeholder="Написать..." onkeydown="if(event.key==='Enter')sendMsg()">
     <button class="csend" onclick="sendMsg()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg></button>
   </div>
+</div></div>
+
+<div class="mo" id="m-pay"><div class="modal">
+  <div class="mtitle">💰 Пополнение баланса</div>
+  <div class="ssub" id="mp-name" style="margin-bottom:16px"></div>
+  <div class="fg"><label class="fl">Количество уроков</label><input class="fi" id="mp-count" type="number" placeholder="10" min="1" max="100"></div>
+  <div class="fg"><label class="fl">Сумма (₽)</label><input class="fi" id="mp-amount" type="number" placeholder="10000" min="0"></div>
+  <div id="mp-price-hint" style="font-size:12px;color:var(--a);font-weight:600;margin-top:-8px;margin-bottom:12px;display:none"></div>
+  <div class="fg"><label class="fl">Комментарий (необязательно)</label><input class="fi" id="mp-note" placeholder="Оплата за апрель"></div>
+  <div class="brow"><button class="btn bs" onclick="closeM('m-pay')">Отмена</button><button class="btn bp" onclick="savePayment()">Сохранить</button></div>
+  <div id="mp-history" style="margin-top:16px"></div>
 </div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -806,14 +827,39 @@ async function tStudents(el) {
   const{data}=await sb.from('students').select('*').eq('teacher_id',me.id).order('created_at');
   const l=document.getElementById('ts-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">👨‍🎓</div><p>Учеников пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
-  l.innerHTML=data.map(s=>`<div class="scard" onclick="openEditStu('${s.id}')">
+  // Загружаем платежи для счётчиков
+  const stuIds=data.map(s=>s.id);
+  const{data:payments}=stuIds.length?await sb.from('payments').select('student_id,lessons_count,amount,created_at').in('student_id',stuIds).order('created_at',{ascending:false}):{data:[]};
+  const{data:doneLessons}=stuIds.length?await sb.from('lessons').select('student_id').eq('teacher_id',me.id).eq('status','done').in('student_id',stuIds):{data:[]};
+  // Считаем баланс по каждому ученику
+  const balMap={};
+  stuIds.forEach(id=>{ balMap[id]={paid:0,used:0}; });
+  (payments||[]).forEach(p=>{ if(balMap[p.student_id]) balMap[p.student_id].paid+=p.lessons_count||0; });
+  (doneLessons||[]).forEach(l=>{ if(balMap[l.student_id]) balMap[l.student_id].used++; });
+  l.innerHTML=data.map(s=>{
+    const bal=balMap[s.id]||{paid:0,used:0};
+    const left=Math.max(bal.paid-bal.used,0);
+    const pct=bal.paid>0?Math.round(left/bal.paid*100):0;
+    const balClr=left<=2?'var(--r)':left<=4?'var(--o)':'var(--g)';
+    return `<div class="scard" onclick="openEditStu('${s.id}')">
     <div class="sav" style="${s.active===false?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
-    <div style="flex:1"><div class="sname_">${s.name}${s.active===false?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div><div class="smeta_">${s.subject||'—'}</div></div>
-    <div style="display:flex;align-items:center;gap:8px">
+    <div style="flex:1;min-width:0">
+      <div class="sname_">${s.name}${s.active===false?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div>
+      <div class="smeta_">${s.subject||'—'}</div>
+      ${bal.paid>0?`<div style="margin-top:6px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:3px">
+          <span style="color:${balClr}">Осталось: ${left} из ${bal.paid}</span>
+          ${left<=2&&bal.paid>0?'<span style="color:var(--r);font-size:10px">⚠️ Пополнить!</span>':''}
+        </div>
+        <div class="pay-bar"><div class="pay-fill" style="width:${pct}%;background:${balClr}"></div></div>
+      </div>`:''}
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+      <button class="bdg bgg" style="cursor:pointer;border:none;font-size:12px;font-weight:700;padding:6px 10px" onclick="event.stopPropagation();openPayment('${s.id}','${s.name.replace(/'/g,"\\'")}',${ s.lesson_price||0})">💰+</button>
       <div class="spinb">PIN: ${s.pin||'—'}</div>
       <button class="bdg bo" style="cursor:pointer;border:none;font-size:13px" onclick="event.stopPropagation();sendReminder('${s.id}','${s.name.replace(/'/g,"\\'")}')">🔔</button>
     </div>
-  </div>`).join('');
+  </div>`;}).join('');
 }
 
 async function tLessons(el) {
@@ -1162,6 +1208,84 @@ async function tStats(el) {
 
     <div style="height:80px"></div>
   </div>`;
+}
+
+// ── FINANCE ──
+let _payState = {stuId:null, stuName:'', price:0};
+
+async function openPayment(stuId, stuName, price) {
+  _payState = {stuId, stuName, price};
+  document.getElementById('mp-name').textContent = stuName;
+  document.getElementById('mp-count').value = '';
+  document.getElementById('mp-amount').value = '';
+  document.getElementById('mp-note').value = '';
+  // Подсказка по цене
+  const hint = document.getElementById('mp-price-hint');
+  if(price) { hint.style.display='block'; hint.textContent=`Цена урока: ${price}₽`; }
+  else hint.style.display='none';
+  // Автоподсчёт суммы при вводе количества
+  const cnt = document.getElementById('mp-count');
+  const amt = document.getElementById('mp-amount');
+  cnt.oninput = () => { if(price && cnt.value) amt.value = parseInt(cnt.value)*price; };
+  // Загружаем историю
+  await loadPayHistory(stuId);
+  openM('m-pay');
+}
+
+async function loadPayHistory(stuId) {
+  const{data:pays}=await sb.from('payments').select('*').eq('student_id',stuId).order('created_at',{ascending:false}).limit(10);
+  const{data:done}=await sb.from('lessons').select('id').eq('student_id',stuId).eq('status','done');
+  const totalPaid=(pays||[]).reduce((a,p)=>a+(p.lessons_count||0),0);
+  const totalUsed=(done||[]).length;
+  const left=Math.max(totalPaid-totalUsed,0);
+  const balClr=left<=2?'var(--r)':left<=4?'var(--o)':'var(--g)';
+  const h=document.getElementById('mp-history');
+  if(!(pays||[]).length){h.innerHTML='<div style="font-size:13px;color:var(--t2);text-align:center;padding:12px">Пополнений ещё не было</div>';return;}
+  h.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">История платежей</div>
+    <div style="background:var(--gl);border-radius:var(--rs);padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;font-weight:700;color:var(--t)">Баланс: <span style="color:${balClr};font-family:'Fraunces',serif;font-size:20px">${left}</span> уроков</div>
+      <div style="font-size:12px;color:var(--t2)">Всего оплачено: ${totalPaid} · Проведено: ${totalUsed}</div>
+    </div>
+    ${(pays||[]).map(p=>`<div class="pay-hist-item">
+      <div style="width:36px;height:36px;background:var(--gl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💰</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px">+${p.lessons_count} уроков${p.amount?` · ${p.amount}₽`:''}</div>
+        <div style="font-size:11px;color:var(--t2)">${p.note||''} · ${new Date(p.created_at).toLocaleDateString('ru',{day:'numeric',month:'short'})}</div>
+      </div>
+    </div>`).join('')}`;
+}
+
+async function savePayment() {
+  const count=parseInt(document.getElementById('mp-count').value);
+  const amount=parseInt(document.getElementById('mp-amount').value)||0;
+  const note=document.getElementById('mp-note').value.trim();
+  if(!count||count<1){toast('Укажите количество уроков');return;}
+  const{error}=await sb.from('payments').insert({
+    student_id:_payState.stuId, teacher_id:me.id,
+    lessons_count:count, amount:amount||null, note:note||null
+  });
+  if(error){toast('Ошибка: '+error.message);return;}
+  // Уведомляем родителя
+  const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',_payState.stuId).single();
+  const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
+  const title=`💰 Оплата получена — ${_payState.stuName}`;
+  const body=`Пополнение: ${count} уроков${amount?' ('+amount+'₽)':''}${note?' · '+note:''}`;
+  for(const pid of pids){
+    await sb.from('notifications').insert({recipient_id:pid,type:'payment',title,body}).catch(()=>{});
+  }
+  if(pids.length){
+    fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:pids,title,body})}).catch(()=>{});
+  }
+  toast(`✅ Пополнено: +${count} уроков`);
+  closeM('m-pay');
+  // Обновляем список учеников
+  const c=document.getElementById('ac');
+  tStudents(c);
+  // Предупреждение если уроков мало осталось
+  const{data:allPays}=await sb.from('payments').select('lessons_count').eq('student_id',_payState.stuId);
+  const{data:allDone}=await sb.from('lessons').select('id').eq('student_id',_payState.stuId).eq('status','done');
+  const left=Math.max((allPays||[]).reduce((a,p)=>a+(p.lessons_count||0),0)-(allDone||[]).length,0);
+  if(left<=2) toast(`⚠️ Осталось ${left} уроков — скоро закончатся!`);
 }
 
 function toggleStuDetail(id, header) {
@@ -1618,7 +1742,7 @@ async function togStatus(btn) {
 function openAddStu() {
   editStuId=null;
   document.getElementById('mstu-t').textContent='Новый ученик';
-  ['si-name','si-subj','si-pin','si-zoom-id','si-zoom-pass'].forEach(id=>document.getElementById(id).value='');
+  ['si-name','si-subj','si-pin','si-zoom-id','si-zoom-pass','si-price'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('si-delbtn').style.display='none';
   openM('m-stu');
 }
@@ -1631,6 +1755,7 @@ async function openEditStu(id) {
   document.getElementById('si-pin').value=s.pin||'';
   document.getElementById('si-zoom-id').value=s.zoom_id||'';
   document.getElementById('si-zoom-pass').value=s.zoom_pass||'';
+  document.getElementById('si-price').value=s.lesson_price||'';
   document.getElementById('si-delbtn').style.display='block';
   // active toggle
   let ab=document.getElementById('si-active-row');
@@ -1660,7 +1785,7 @@ async function saveStu() {
   }
   const{data:ex}=await sb.from('students').select('id').eq('teacher_id',me.id).eq('pin',pin).neq('id',editStuId||'00000000-0000-0000-0000-000000000000');
   if(ex?.length){toast('Такой PIN уже занят');return;}
-  const payload={name,pin,subject:document.getElementById('si-subj').value.trim()||'Английский',teacher_id:me.id,zoom_id:document.getElementById('si-zoom-id').value.trim()||null,zoom_pass:document.getElementById('si-zoom-pass').value.trim()||null};
+  const payload={name,pin,subject:document.getElementById('si-subj').value.trim()||'Английский',teacher_id:me.id,zoom_id:document.getElementById('si-zoom-id').value.trim()||null,zoom_pass:document.getElementById('si-zoom-pass').value.trim()||null,lesson_price:parseInt(document.getElementById('si-price').value)||null};
   const{error}=editStuId?await sb.from('students').update(payload).eq('id',editStuId):await sb.from('students').insert(payload);
   if(error){toast('Ошибка: '+error.message);return;}
   closeM('m-stu'); toast('Ученик сохранён ✓'); tSc('students',1);
@@ -2003,19 +2128,27 @@ async function pHome(el) {
   const{data:stuNames}=await sb.from('students').select('name').in('id',stuIds);
   const childrenLabel=(stuNames||[]).map(s=>s.name).join(', ')||'ученика';
   el.innerHTML=`<div class="page"><div class="stitle">Прогресс: ${childrenLabel} 📊</div><div class="ssub">Обзор обучения</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
-  const[{data:ls},{data:ws}]=await Promise.all([
+  const[{data:ls},{data:ws},{data:stuFull},{data:payments},{data:doneLs}]=await Promise.all([
     sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}),
-    sb.from('words').select('level').in('student_record_id',stuIds)
+    sb.from('words').select('level').in('student_record_id',stuIds),
+    sb.from('students').select('id,name,lesson_price').in('id',stuIds),
+    sb.from('payments').select('*').in('student_id',stuIds).order('created_at',{ascending:false}),
+    sb.from('lessons').select('student_id').in('student_id',stuIds).eq('status','done')
   ]);
   const known=(ws||[]).filter(w=>w.level===3).length;
   const grades=(ls||[]).filter(l=>l.grade).map(l=>l.grade);
   const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1):'—';
   const unpaid=(ls||[]).filter(l=>!l.paid).length;
-  const lastWithHw=(ls||[]).find(l=>l.homework); // последний урок с ДЗ
+  const lastWithHw=(ls||[]).find(l=>l.homework);
   const nextLesson=(ls||[]).find(l=>l.status==='planned'||l.status==='active');
-  // Получаем имена детей для заголовка
-  const{data:stuNames}=await sb.from('students').select('name').in('id',stuIds);
-  const childrenLabel=(stuNames||[]).map(s=>s.name).join(', ')||'ученика';
+  // Баланс по каждому ученику
+  const balMap={};
+  stuIds.forEach(id=>balMap[id]={paid:0,used:0,name:'',price:0});
+  (stuFull||[]).forEach(s=>{if(balMap[s.id]){balMap[s.id].name=s.name;balMap[s.id].price=s.lesson_price||0;}});
+  (payments||[]).forEach(p=>{if(balMap[p.student_id])balMap[p.student_id].paid+=p.lessons_count||0;});
+  (doneLs||[]).forEach(l=>{if(balMap[l.student_id])balMap[l.student_id].used++;});
+  const childrenLabel=(stuFull||[]).map(s=>s.name).join(', ')||'ученика';
+  const stuNames=stuFull;
   el.innerHTML=`<div class="page"><div class="stitle">Прогресс: ${childrenLabel} 📊</div><div class="ssub">Обзор обучения</div>
     <div class="srow">
       <div class="sbox blue"><div class="sv">${ls?.length||0}</div><div class="sl">Уроков</div></div>
@@ -2029,6 +2162,28 @@ async function pHome(el) {
       <div style="font-size:13px;color:var(--t2)">${fd(nextLesson.date)}</div>
     </div>`:''}
     ${unpaid>0?`<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Не оплачено уроков: ${unpaid}</div></div>`:''}
+    ${stuIds.map(id=>{
+      const b=balMap[id]; if(!b||!b.paid) return '';
+      const left=Math.max(b.paid-b.used,0);
+      const pct=Math.round(left/b.paid*100);
+      const clr=left<=2?'var(--r)':left<=4?'var(--o)':'var(--g)';
+      return `<div class="card" style="border-color:${clr}20">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="clbl">💰 Баланс: ${b.name}</div>
+          ${left<=2?'<span class="bdg br">⚠️ Пополнить!</span>':''}
+        </div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div>
+            <div class="pay-counter" style="color:${clr}">${left}</div>
+            <div style="font-size:11px;color:var(--t2);font-weight:600">из ${b.paid} уроков</div>
+          </div>
+          <div style="flex:1">
+            <div class="pay-bar"><div class="pay-fill" style="width:${pct}%;background:${clr}"></div></div>
+            <div style="font-size:11px;color:var(--t2);margin-top:4px">Проведено: ${b.used} · Оплачено: ${b.paid}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
     ${lastWithHw?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)"><div class="clbl">📝 Текущее ДЗ</div><div style="font-weight:600;font-size:15px">${lastWithHw.homework}</div><div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(lastWithHw.date)}</div><div style="margin-top:8px">${lastWithHw.hw_done?'<span style="color:#16a34a;font-weight:700;font-size:13px">✅ Ребёнок отметил как выполнено</span>':'<span style="color:#f59e0b;font-weight:600;font-size:13px">⏳ Ещё не выполнено</span>'}</div></div>`:''}
   </div>`;
 }
