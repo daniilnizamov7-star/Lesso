@@ -324,7 +324,7 @@
   <div class="fg"><label class="fl">Сумма (₽)</label><input class="fi" id="mp-amount" type="number" placeholder="10000" min="0"></div>
   <div id="mp-price-hint" style="font-size:12px;color:var(--a);font-weight:600;margin-top:-8px;margin-bottom:12px;display:none"></div>
   <div class="fg"><label class="fl">Комментарий (необязательно)</label><input class="fi" id="mp-note" placeholder="Оплата за апрель"></div>
-  <div class="brow"><button class="btn bs" onclick="closeM('m-pay')">Отмена</button><button class="btn bp" onclick="savePayment()">Сохранить</button></div>
+  <div class="brow"><button class="btn bs" onclick="closeM('m-pay')">Отмена</button><button class="btn bp" id="mp-save-btn" onclick="savePayment()">Сохранить</button></div>
   <div id="mp-history" style="margin-top:16px"></div>
 </div></div>
 
@@ -855,7 +855,7 @@ async function tStudents(el) {
       </div>`:''}
     </div>
     <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-      <button class="bdg bgg" style="cursor:pointer;border:none;font-size:12px;font-weight:700;padding:6px 10px" onclick="event.stopPropagation();openPayment('${s.id}','${s.name.replace(/'/g,"\\'")}',${ s.lesson_price||0})">💰+</button>
+      <button class="btn bp bsm" style="cursor:pointer;font-size:12px;padding:7px 12px;white-space:nowrap" onclick="event.stopPropagation();openPayment('${s.id}','${s.name.replace(/'/g,"\\'")}',${ s.lesson_price||0})">💰 Оплата</button>
       <div class="spinb">PIN: ${s.pin||'—'}</div>
       <button class="bdg bo" style="cursor:pointer;border:none;font-size:13px" onclick="event.stopPropagation();sendReminder('${s.id}','${s.name.replace(/'/g,"\\'")}')">🔔</button>
     </div>
@@ -1250,16 +1250,20 @@ async function loadPayHistory(stuId) {
       <div style="width:36px;height:36px;background:var(--gl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💰</div>
       <div style="flex:1;min-width:0">
         <div style="font-weight:700;font-size:13px">+${p.lessons_count} уроков${p.amount?` · ${p.amount}₽`:''}</div>
-        <div style="font-size:11px;color:var(--t2)">${p.note||''} · ${new Date(p.created_at).toLocaleDateString('ru',{day:'numeric',month:'short'})}</div>
+        <div style="font-size:11px;color:var(--t2)">${p.note||''}${p.note?' · ':''}${new Date(p.created_at).toLocaleDateString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
       </div>
+      <button onclick="deletePayment('${p.id}')" style="background:var(--rl);color:var(--r);border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">Удалить</button>
     </div>`).join('')}`;
 }
 
 async function savePayment() {
+  const btn=document.getElementById('mp-save-btn');
+  if(btn.disabled) return;
+  btn.disabled=true; btn.textContent='Сохраняем...';
   const count=parseInt(document.getElementById('mp-count').value);
   const amount=parseInt(document.getElementById('mp-amount').value)||0;
   const note=document.getElementById('mp-note').value.trim();
-  if(!count||count<1){toast('Укажите количество уроков');return;}
+  if(!count||count<1){toast('Укажите количество уроков');btn.disabled=false;btn.textContent='Сохранить';return;}
   const{error}=await sb.from('payments').insert({
     student_id:_payState.stuId, teacher_id:me.id,
     lessons_count:count, amount:amount||null, note:note||null
@@ -1277,15 +1281,22 @@ async function savePayment() {
     fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:pids,title,body})}).catch(()=>{});
   }
   toast(`✅ Пополнено: +${count} уроков`);
+  btn.disabled=false; btn.textContent='Сохранить';
   closeM('m-pay');
-  // Обновляем список учеников
-  const c=document.getElementById('ac');
-  tStudents(c);
-  // Предупреждение если уроков мало осталось
+  tStudents(document.getElementById('ac'));
   const{data:allPays}=await sb.from('payments').select('lessons_count').eq('student_id',_payState.stuId);
   const{data:allDone}=await sb.from('lessons').select('id').eq('student_id',_payState.stuId).eq('status','done');
   const left=Math.max((allPays||[]).reduce((a,p)=>a+(p.lessons_count||0),0)-(allDone||[]).length,0);
   if(left<=2) toast(`⚠️ Осталось ${left} уроков — скоро закончатся!`);
+}
+
+async function deletePayment(payId) {
+  if(!confirm('Удалить эту запись об оплате?')) return;
+  const{error}=await sb.from('payments').delete().eq('id',payId).eq('teacher_id',me.id);
+  if(error){toast('Ошибка: '+error.message);return;}
+  toast('✅ Запись удалена');
+  await loadPayHistory(_payState.stuId);
+  tStudents(document.getElementById('ac'));
 }
 
 function toggleStuDetail(id, header) {
