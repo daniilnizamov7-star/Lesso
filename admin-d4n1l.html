@@ -201,6 +201,7 @@ function showPage(name,el){
 function fd(d){if(!d)return'—';return new Date(d).toLocaleDateString('ru',{day:'numeric',month:'short',year:'numeric'});}
 function ft(d){if(!d)return'—';return new Date(d).toLocaleDateString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escq(s){return esc(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;');} // safe for onclick attrs
 
 // ── MODAL ──
 function openModal(html){document.getElementById('modal-inner').innerHTML=html;document.getElementById('modal').classList.add('open');}
@@ -269,7 +270,7 @@ function payRow(p,done=false){
         ${done?`<span class="bdg bg">✅ ${ft(p.activated_at)}</span>`:''}
       </div>
     </div>
-    ${!done?`<button class="btn btn-g" onclick="activateParent('${p.id}','${p.user_id}','${esc(p.name)}')">✓ Активировать</button>`:''}
+    ${!done?(p.user_id?`<button class="btn btn-g" onclick="activateParent('${p.id}','${p.user_id}','${esc(p.name)}')">✓ Активировать</button>`:'<span style="color:var(--r);font-size:11px">⚠️ нет user_id</span>'):''}
   </div>`;
 }
 
@@ -328,7 +329,7 @@ function payCard(p,done){
           ${done?`<span class="bdg bg">Активировано: ${ft(p.activated_at)}</span>`:''}
         </div>
       </div>
-      ${!done?`<button class="btn btn-g" onclick="activateParent('${p.id}','${p.user_id}','${esc(p.name)}')">✓ Активировать</button>`:''}
+      ${!done?(p.user_id?`<button class="btn btn-g" onclick="activateParent('${p.id}','${p.user_id}','${esc(p.name)}')">✓ Активировать</button>`:'<span style="color:var(--r);font-size:12px;font-weight:700">⚠️ нет user_id</span>'):''}
     </div>
   </div>`;
 }
@@ -371,7 +372,7 @@ async function doActivate(reqId,userId){
   const newBalance=(prof?.balance||0)+amt;
   const[{error:e1},{error:e2}]=await Promise.all([
     sb.from('payment_requests').update({activated_at:new Date().toISOString(),activated_by:'admin'}).eq('id',reqId),
-    sb.from('profiles').update({balance:newBalance}).eq('id',userId)
+    sb.from('profiles').update({balance:newBalance,suspended:false}).eq('id',userId)
   ]);
   if(e1||e2){alert('Ошибка: '+(e1?.message||e2?.message));if(btn){btn.disabled=false;btn.textContent='✓ Активировать';}return;}
   // Уведомление родителю
@@ -405,8 +406,9 @@ async function loadParents(){
             ${(data||[]).map(p=>{
               const bal=p.balance||0;
               const isTrial=p.trial_until&&new Date(p.trial_until)>now;
-              const price=300; // упрощённо
-              const monthsLeft=bal>0?Math.floor(bal/price):0;
+              const monthsLeft1=bal>0?Math.floor(bal/300):0; // 1 ребёнок
+              const monthsLeft2=bal>0?Math.floor(bal/500):0; // 2+ детей
+              const monthsLeft=monthsLeft1; // уточняется в колонке Дети
               const isSuspended=p.suspended===true;
               const status=isSuspended?'suspended':bal>0?'active':isTrial?'trial':'expired';
               return`<tr style="${isSuspended?'opacity:.65':''}">
@@ -424,13 +426,13 @@ async function loadParents(){
                 <td style="font-size:12px;color:var(--t3)">${fd(p.created_at)}</td>
                 <td>
                   <div style="display:flex;gap:6px;flex-wrap:wrap">
-                    <button class="btn btn-g" style="padding:5px 10px;font-size:11px" onclick="addBalance('${p.id}','${esc(p.name)}',${bal})">+ Баланс</button>
-                    <button class="btn btn-s" style="padding:5px 10px;font-size:11px" onclick="viewParentChildren('${p.id}','${esc(p.name)}')">👶 Дети</button>
+                    <button class="btn btn-g" style="padding:5px 10px;font-size:11px" onclick="addBalance('${p.id}','${escq(p.name)}',${bal})">+ Баланс</button>
+                    <button class="btn btn-s" style="padding:5px 10px;font-size:11px" onclick="viewParentChildren('${p.id}','${escq(p.name)}')">👶 Дети</button>
                     ${isSuspended
-                      ?`<button class="btn btn-g" style="padding:5px 10px;font-size:11px" onclick="resumeParent('${p.id}','${esc(p.name)}')">▶ Возобновить</button>`
-                      :`<button class="btn btn-o" style="padding:5px 10px;font-size:11px" onclick="suspendParent('${p.id}','${esc(p.name)}')">⏸ Заморозить</button>`
+                      ?`<button class="btn btn-g" style="padding:5px 10px;font-size:11px" onclick="resumeParent('${p.id}','${escq(p.name)}')">▶ Возобновить</button>`
+                      :`<button class="btn btn-o" style="padding:5px 10px;font-size:11px" onclick="suspendParent('${p.id}','${escq(p.name)}')">⏸ Заморозить</button>`
                     }
-                    <button class="btn btn-r" style="padding:5px 10px;font-size:11px" onclick="deleteUser('${p.id}','${esc(p.name)}','parent')">Удалить</button>
+                    <button class="btn btn-r" style="padding:5px 10px;font-size:11px" onclick="deleteUser('${p.id}','${escq(p.name)}','parent')">Удалить</button>
                   </div>
                 </td>
               </tr>`;
@@ -482,7 +484,7 @@ async function doAddBalance(userId,currentBal){
   const btn=document.getElementById('bal-btn');
   if(btn){btn.disabled=true;btn.textContent='...';}
   const newBal=currentBal+amt;
-  const{error}=await sb.from('profiles').update({balance:newBal}).eq('id',userId);
+  const{error}=await sb.from('profiles').update({balance:newBal,suspended:false}).eq('id',userId);
   if(error){alert('Ошибка: '+error.message);if(btn){btn.disabled=false;btn.textContent='Пополнить';}return;}
   await sb.from('notifications').insert({recipient_id:userId,type:'payment_activated',title:'✅ Баланс пополнен!',body:`Пополнение: ${amt}₽. Баланс: ${newBal}₽`}).catch(()=>{});
   await fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:[userId],title:'✅ Баланс пополнен!',body:`+${amt}₽ · Баланс: ${newBal}₽`})}).catch(()=>{});
@@ -541,8 +543,8 @@ async function loadTeachers(){
               <td style="font-size:12px;color:var(--t3)">${fd(t.created_at)}</td>
               <td>
                 <div style="display:flex;gap:6px">
-                  <button class="btn btn-s" style="padding:5px 10px;font-size:11px" onclick="viewTeacherStudents('${t.id}','${esc(t.name)}')">👥 Ученики</button>
-                  <button class="btn btn-r" style="padding:5px 10px;font-size:11px" onclick="deleteUser('${t.id}','${esc(t.name)}','teacher')">Удалить</button>
+                  <button class="btn btn-s" style="padding:5px 10px;font-size:11px" onclick="viewTeacherStudents('${t.id}','${escq(t.name)}')">👥 Ученики</button>
+                  <button class="btn btn-r" style="padding:5px 10px;font-size:11px" onclick="deleteUser('${t.id}','${escq(t.name)}','teacher')">Удалить</button>
                 </div>
               </td>
             </tr>`).join('')}
