@@ -360,6 +360,20 @@ function ft(d) { return new Date(d).toLocaleTimeString('ru-RU',{hour:'2-digit',m
 function chev() { return `<svg style="margin-left:auto;color:var(--t3);flex-shrink:0" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>`; }
 function backSvg() { return `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>`; }
 
+// ── Utils ──
+function lockBtn(id, text='...') {
+  const b = typeof id === 'string' ? document.getElementById(id) : id;
+  if(!b || b.disabled) return false;
+  b._origText = b.textContent;
+  b.disabled = true; b.textContent = text;
+  return true;
+}
+function unlockBtn(id) {
+  const b = typeof id === 'string' ? document.getElementById(id) : id;
+  if(!b) return;
+  b.disabled = false; b.textContent = b._origText || b.textContent;
+}
+
 // ── Init ──
 (async () => {
   pg('pg-load');
@@ -428,7 +442,7 @@ async function doAuth() {
   const err = document.getElementById('aerr');
   err.classList.remove('show');
   if (!em || !pw) { err.textContent = 'Заполните все поля'; err.classList.add('show'); return; }
-  document.getElementById('abtn').textContent = '...';
+  if(!lockBtn('abtn','...')) return;
   pg('pg-load');
   let res, uid;
   if (authMode === 'register') {
@@ -590,6 +604,8 @@ async function sendFeedback() {
   const text = document.getElementById('fb-text')?.value.trim();
   const err = document.getElementById('fb-err');
   if(!text) { err.textContent='Напишите отзыв'; err.classList.add('show'); return; }
+  const _fbBtn=document.querySelector('#m-feedback .btn.bp');
+  if(_fbBtn&&!lockBtn(_fbBtn,'Отправляем...')) return;
   const { error } = await sb.from('feedback').insert({
     role: me.role, name: me.name, rating: fbRating||null, text
   });
@@ -1286,14 +1302,17 @@ async function savePayment() {
   if(pids.length){
     fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:pids,title,body})}).catch(()=>{});
   }
-  toast(`✅ Пополнено: +${count} уроков`);
   btn.disabled=false; btn.textContent='Сохранить';
   closeM('m-pay');
-  tStudents(document.getElementById('ac'));
-  const{data:allPays}=await sb.from('payments').select('lessons_count').eq('student_id',_payState.stuId);
-  const{data:allDone}=await sb.from('lessons').select('id').eq('student_id',_payState.stuId).eq('status','done');
-  const left=Math.max((allPays||[]).reduce((a,p)=>a+(p.lessons_count||0),0)-(allDone||[]).length,0);
-  if(left<=2) toast(`⚠️ Осталось ${left} уроков — скоро закончатся!`);
+  // Перерисовываем список после закрытия модалки — через setTimeout чтобы не конфликтовать
+  setTimeout(async () => {
+    tStudents(document.getElementById('ac'));
+    // Проверяем баланс для предупреждения
+    const{data:allPays}=await sb.from('payments').select('lessons_count').eq('student_id',_payState.stuId);
+    const{data:allDone}=await sb.from('lessons').select('id').eq('student_id',_payState.stuId).eq('status','done');
+    const left=Math.max((allPays||[]).reduce((a,p)=>a+(p.lessons_count||0),0)-(allDone||[]).length,0);
+    toast(left<=2?`⚠️ Осталось ${left} уроков — пора пополнить!`:`✅ Пополнено: +${count} уроков`);
+  }, 350);
 }
 
 async function deletePayment(payId) {
@@ -1302,7 +1321,8 @@ async function deletePayment(payId) {
   if(error){toast('Ошибка: '+error.message);return;}
   toast('✅ Запись удалена');
   await loadPayHistory(_payState.stuId);
-  tStudents(document.getElementById('ac'));
+  // Обновляем список в фоне без зависания
+  setTimeout(() => tStudents(document.getElementById('ac')), 100);
 }
 
 function toggleStuDetail(id, header) {
@@ -1695,13 +1715,15 @@ async function saveLesson() {
   const title=document.getElementById('li-title').value.trim();
   const date=document.getElementById('li-date').value;
   if(!title||!date){toast('Заполни название и дату');return;}
+  const _slBtn=document.querySelector('#m-lesson .btn.bp');
+  if(_slBtn&&!lockBtn(_slBtn,'Сохраняем...')) return;
   const stuId=document.getElementById('li-stu')?.value||null;
   const lessonTime=document.getElementById('li-time').value||null;
   const payload={title,date,time:lessonTime,teacher_id:me.id,student_id:stuId,zoom_link:(()=>{const z=document.getElementById('li-zoom').value.trim();return z&&(z.startsWith('https://')||z.startsWith('http://')||z.startsWith('zoommtg://'))?z:null})(),homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
   let error, lid=editLessonId;
   if(editLessonId){({error}=await sb.from('lessons').update(payload).eq('id',editLessonId));}
   else{const r=await sb.from('lessons').insert({...payload,status:'planned'}).select('id').single();error=r.error;lid=r.data?.id;}
-  if(error){toast('Ошибка: '+error.message);return;}
+  if(error){const _b=document.querySelector('#m-lesson .btn.bp');if(_b)unlockBtn(_b);toast('Ошибка: '+error.message);return;}
   // Upload file
   if(pendFile&&lid){
     const fd=await uploadFile(pendFile,lid);
@@ -1792,6 +1814,8 @@ async function saveStu() {
   const pin=document.getElementById('si-pin').value.toString().trim();
   if(!name){toast('Введи имя');return;}
   if(!pin||pin.length!==4||isNaN(pin)){toast('PIN — 4 цифры');return;}
+  const _ssBtn=document.querySelector('#m-stu .btn.bp');
+  if(_ssBtn&&!lockBtn(_ssBtn,'Сохраняем...')) return;
   if(!editStuId){
     const[{count},{data:prof}]=await Promise.all([
       sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
@@ -1801,11 +1825,11 @@ async function saveStu() {
     if(count>=lim){toast(`Лимит ${lim} уч. Пишите: +7 991 174-51-13`);return;}
   }
   const{data:ex}=await sb.from('students').select('id').eq('teacher_id',me.id).eq('pin',pin).neq('id',editStuId||'00000000-0000-0000-0000-000000000000');
-  if(ex?.length){toast('Такой PIN уже занят');return;}
+  if(ex?.length){const _b=document.querySelector('#m-stu .btn.bp');if(_b)unlockBtn(_b);toast('Такой PIN уже занят');return;}
   const payload={name,pin,subject:document.getElementById('si-subj').value.trim()||'Английский',teacher_id:me.id,zoom_id:document.getElementById('si-zoom-id').value.trim()||null,zoom_pass:document.getElementById('si-zoom-pass').value.trim()||null,lesson_price:parseInt(document.getElementById('si-price').value)||null};
   const{error}=editStuId?await sb.from('students').update(payload).eq('id',editStuId):await sb.from('students').insert(payload);
   if(error){toast('Ошибка: '+error.message);return;}
-  closeM('m-stu'); toast('Ученик сохранён ✓'); tSc('students',1);
+  const _b2=document.querySelector('#m-stu .btn.bp');if(_b2)unlockBtn(_b2);closeM('m-stu'); toast('Ученик сохранён ✓'); tSc('students',1);
 }
 async function delStu() {
   if(!editStuId) return;
@@ -1825,10 +1849,12 @@ async function saveWord() {
   const word=document.getElementById('wi-en').value.trim();
   const tr=document.getElementById('wi-ru').value.trim();
   if(!word||!tr){toast('Заполни слово и перевод');return;}
+  const _swBtn=document.querySelector('#m-word .btn.bp');
+  if(_swBtn&&!lockBtn(_swBtn,'...')) return;
   const sid=document.getElementById('wi-stu')?.value||null;
   const{error}=await sb.from('words').insert({word,translation:tr,topic:document.getElementById('wi-topic').value.trim()||'Разное',level:wLevel,next_review:new Date().toISOString(),student_record_id:sid});
   if(error){toast('Ошибка: '+error.message);return;}
-  closeM('m-word'); toast('Слово добавлено ✓'); tSc('words',3);
+  const _wb=document.querySelector('#m-word .btn.bp');if(_wb)unlockBtn(_wb);closeM('m-word'); toast('Слово добавлено ✓'); tSc('words',3);
 }
 
 // ── HOMEWORK DONE ──
@@ -2337,6 +2363,8 @@ async function doLinkChild() {
   const err   = document.getElementById('lc-err');
   err.classList.remove('show');
   if(!tcode || pin.length<4){ err.textContent='Заполните все поля'; err.classList.add('show'); return; }
+  const _lcBtn=document.querySelector('#m-link-child .btn.bp');
+  if(_lcBtn&&!lockBtn(_lcBtn,'Ищем...')) return;
   // Ищем учителя по коду
   const{data:teacher}=await sb.from('profiles').select('id,name').eq('teacher_code',tcode).eq('role','teacher').single();
   if(!teacher){ err.textContent='Учитель с таким кодом не найден'; err.classList.add('show'); return; }
