@@ -62,6 +62,7 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 .tab{padding:7px 16px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;color:var(--t3);border:none;background:none;font-family:inherit;transition:all .15s}
 .tab.active{background:var(--a);color:#fff}
 .stars{color:#f59e0b}
+.bp{background:rgba(168,85,247,.12);color:#a855f7}
 .empty-state{text-align:center;padding:48px 20px;color:var(--t3)}
 .empty-state .ei{font-size:40px;margin-bottom:12px}
 .search-wrap{position:relative;margin-bottom:16px}
@@ -145,6 +146,22 @@ body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(-
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
+/*
+  SQL МИГРАЦИЯ (выполнить в Supabase SQL Editor):
+  ALTER TABLE profiles ADD COLUMN IF NOT EXISTS suspended boolean DEFAULT false;
+
+  В index.html — после загрузки профиля родителя добавить проверку:
+  if(profile.suspended){
+    showScreen('suspended-screen'); // или показать overlay
+    return;
+  }
+  HTML для экрана заморозки:
+  <div id="suspended-screen" style="display:none;text-align:center;padding:60px 20px">
+    <div style="font-size:48px">⏸</div>
+    <h2>Аккаунт приостановлен</h2>
+    <p>Свяжитесь с поддержкой:<br><a href="tel:+79911745113">+7 991 174-51-13</a></p>
+  </div>
+*/
 const SU='https://yiqipulgofoschkccaxr.supabase.co';
 const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
 const ADMIN_ID='01b9a57d-63e2-4e19-9fd2-be19dc4311a0';
@@ -390,8 +407,9 @@ async function loadParents(){
               const isTrial=p.trial_until&&new Date(p.trial_until)>now;
               const price=300; // упрощённо
               const monthsLeft=bal>0?Math.floor(bal/price):0;
-              const status=bal>0?'active':isTrial?'trial':'expired';
-              return`<tr>
+              const isSuspended=p.suspended===true;
+              const status=isSuspended?'suspended':bal>0?'active':isTrial?'trial':'expired';
+              return`<tr style="${isSuspended?'opacity:.65':''}">
                 <td>
                   <div style="font-weight:700">${esc(p.name)}</div>
                   <div style="font-size:12px;color:var(--t3)">${esc(p.email||'—')}</div>
@@ -400,7 +418,7 @@ async function loadParents(){
                   <div style="font-size:16px;font-weight:800;color:${bal>0?'var(--g)':'var(--t3)'}">${bal}₽</div>
                   ${bal>0?`<div style="font-size:11px;color:var(--t3)">~${monthsLeft} мес</div>`:'<div style="font-size:11px;color:var(--t3)">нет баланса</div>'}
                 </td>
-                <td>${status==='active'?'<span class="bdg bg">✅ Активен</span>':status==='trial'?'<span class="bdg bo">⏳ Триал</span>':'<span class="bdg br">❌ Истёк</span>'}</td>
+                <td>${status==='suspended'?'<span class="bdg bp">⏸ Заморожен</span>':status==='active'?'<span class="bdg bg">✅ Активен</span>':status==='trial'?'<span class="bdg bo">⏳ Триал</span>':'<span class="bdg br">❌ Истёк</span>'}</td>
                 <td id="pch-${p.id}" style="font-size:13px;font-weight:700;color:var(--a)">...</td>
                 <td style="font-size:12px;color:var(--t3)">${p.trial_until?fd(p.trial_until):'—'}</td>
                 <td style="font-size:12px;color:var(--t3)">${fd(p.created_at)}</td>
@@ -408,6 +426,10 @@ async function loadParents(){
                   <div style="display:flex;gap:6px;flex-wrap:wrap">
                     <button class="btn btn-g" style="padding:5px 10px;font-size:11px" onclick="addBalance('${p.id}','${esc(p.name)}',${bal})">+ Баланс</button>
                     <button class="btn btn-s" style="padding:5px 10px;font-size:11px" onclick="viewParentChildren('${p.id}','${esc(p.name)}')">👶 Дети</button>
+                    ${isSuspended
+                      ?`<button class="btn btn-g" style="padding:5px 10px;font-size:11px" onclick="resumeParent('${p.id}','${esc(p.name)}')">▶ Возобновить</button>`
+                      :`<button class="btn btn-o" style="padding:5px 10px;font-size:11px" onclick="suspendParent('${p.id}','${esc(p.name)}')">⏸ Заморозить</button>`
+                    }
                     <button class="btn btn-r" style="padding:5px 10px;font-size:11px" onclick="deleteUser('${p.id}','${esc(p.name)}','parent')">Удалить</button>
                   </div>
                 </td>
@@ -606,12 +628,35 @@ async function loadLessons(){
   }catch(e){document.getElementById('main-content').innerHTML=`<div style="color:var(--r);padding:20px">Ошибка: ${e.message}</div>`;}
 }
 
+// ── SUSPEND / RESUME ──
+async function suspendParent(id,name){
+  if(!confirm(`Заморозить аккаунт "${name}"?\nРодитель увидит сообщение о блокировке и не сможет пользоваться платформой.`)) return;
+  const{error}=await sb.from('profiles').update({suspended:true}).eq('id',id);
+  if(error){alert('Ошибка: '+error.message);return;}
+  // Push-уведомление родителю
+  await sb.from('notifications').insert({recipient_id:id,type:'account_suspended',title:'⏸ Аккаунт приостановлен',body:'Ваш аккаунт временно заморожен. Свяжитесь с поддержкой: +7 991 174-51-13'}).catch(()=>{});
+  await fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:[id],title:'⏸ Аккаунт приостановлен',body:'Свяжитесь с поддержкой: +7 991 174-51-13'})}).catch(()=>{});
+  alert(`⏸ Аккаунт "${name}" заморожен`);
+  loadParents();
+}
+
+async function resumeParent(id,name){
+  if(!confirm(`Возобновить аккаунт "${name}"?`)) return;
+  const{error}=await sb.from('profiles').update({suspended:false}).eq('id',id);
+  if(error){alert('Ошибка: '+error.message);return;}
+  // Push-уведомление родителю
+  await sb.from('notifications').insert({recipient_id:id,type:'account_resumed',title:'✅ Аккаунт восстановлен',body:'Ваш аккаунт снова активен. Добро пожаловать!'}).catch(()=>{});
+  await fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:[id],title:'✅ Аккаунт восстановлен',body:'Добро пожаловать обратно!'})}).catch(()=>{});
+  alert(`✅ Аккаунт "${name}" восстановлен`);
+  loadParents();
+}
+
 // ── DELETE ──
 async function deleteUser(id,name,role){
-  if(!confirm(`Удалить ${role==='teacher'?'учителя':'родителя'} "${name}"?\nЭто действие необратимо.`)) return;
+  if(!confirm(`Удалить ${role==='teacher'?'учителя':'родителя'} "${name}"?\n\n⚠️ Это действие необратимо.\nДанные профиля будут удалены. Для полного удаления из системы (auth) нужен Service Role ключ — сделай это вручную в Supabase Dashboard → Authentication.`)) return;
   const{error}=await sb.from('profiles').delete().eq('id',id);
   if(error){alert('Ошибка: '+error.message);return;}
-  alert(`✅ ${name} удалён`);
+  alert(`✅ ${name} удалён из profiles.\n\nНе забудь удалить пользователя из Supabase → Authentication вручную, если нужно.`);
   if(role==='teacher') loadTeachers(); else loadParents();
 }
 
