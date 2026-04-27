@@ -844,20 +844,26 @@ async function tStudents(el) {
     return `<div class="scard" onclick="openEditStu('${s.id}')">
     <div class="sav" style="${s.active===false?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
     <div style="flex:1;min-width:0">
-      <div class="sname_">${s.name}${s.active===false?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div>
-      <div class="smeta_">${s.subject||'—'}</div>
-      ${bal.paid>0?`<div style="margin-top:6px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="min-width:0">
+          <div class="sname_">${s.name}${s.active===false?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div>
+          <div class="smeta_">${s.subject||'—'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+          <div class="spinb">PIN: ${s.pin||'—'}</div>
+          <button class="bdg bo" style="cursor:pointer;border:none;font-size:13px" onclick="event.stopPropagation();sendReminder('${s.id}','${s.name.replace(/'/g,"\\'")}')">🔔</button>
+        </div>
+      </div>
+      ${bal.paid>0?`<div style="margin-top:8px">
         <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:3px">
-          <span style="color:${balClr}">Осталось: ${left} из ${bal.paid}</span>
+          <span style="color:${balClr}">Осталось: ${left} из ${bal.paid} уроков</span>
           ${left<=2&&bal.paid>0?'<span style="color:var(--r);font-size:10px">⚠️ Пополнить!</span>':''}
         </div>
         <div class="pay-bar"><div class="pay-fill" style="width:${pct}%;background:${balClr}"></div></div>
       </div>`:''}
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-      <button class="btn bp bsm" style="cursor:pointer;font-size:12px;padding:7px 12px;white-space:nowrap" onclick="event.stopPropagation();openPayment('${s.id}','${s.name.replace(/'/g,"\\'")}',${ s.lesson_price||0})">💰 Оплата</button>
-      <div class="spinb">PIN: ${s.pin||'—'}</div>
-      <button class="bdg bo" style="cursor:pointer;border:none;font-size:13px" onclick="event.stopPropagation();sendReminder('${s.id}','${s.name.replace(/'/g,"\\'")}')">🔔</button>
+      <div style="margin-top:10px">
+        <button class="btn bp bsm" style="cursor:pointer;font-size:12px;padding:6px 14px" onclick="event.stopPropagation();openPayment('${s.id}','${s.name.replace(/'/g,"\\'")}',${ s.lesson_price||0})">💰 Оплата</button>
+      </div>
     </div>
   </div>`;}).join('');
 }
