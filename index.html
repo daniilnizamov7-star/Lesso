@@ -381,6 +381,8 @@ function unlockBtn(id) {
   if (session) {
     const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
     if (p) {
+      // Проверка заморозки для родителя
+      if (p.suspended && p.role === 'parent') { await sb.auth.signOut(); showSuspended(); return; }
       me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code };
       subscribeToPush(session.user.id, session.access_token);
       // Проверка оплаты для родителя
@@ -634,8 +636,10 @@ async function doAuth() {
       document.getElementById('abtn').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
       return;
     }
+    if (p2.suspended && p2.role === 'parent') { await sb.auth.signOut(); showSuspended(); return; }
     me = { role: p2.role, name: p2.name, id: uid, teacher_code: p2.teacher_code };
   } else {
+    if (p.suspended && p.role === 'parent') { await sb.auth.signOut(); showSuspended(); return; }
     me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code };
   }
   subscribeToPush(uid, res.data.session?.access_token);
@@ -802,6 +806,19 @@ async function doLogout() {
   localStorage.removeItem('stu_session');
   me = null; selTeacherId = null;
   renderRoles();
+}
+
+function showSuspended() {
+  pg('pg-roles');
+  document.getElementById('pg-roles').innerHTML = `<div class="auth-pg">
+    <div style="text-align:center;padding:0 20px;max-width:360px">
+      <div style="font-size:60px;margin-bottom:16px">⏸</div>
+      <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:900;margin-bottom:10px">Аккаунт приостановлен</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.6">Ваш доступ временно заморожен. Для восстановления свяжитесь с поддержкой:</div>
+      <a href="tel:+79911745113" style="display:block;background:var(--a);color:#fff;font-weight:700;font-size:16px;padding:14px 20px;border-radius:var(--rs);text-decoration:none;margin-bottom:10px">📞 +7 991 174-51-13</a>
+      <button onclick="renderRoles()" class="btn bs" style="width:100%;max-width:360px">← Назад</button>
+    </div>
+  </div>`;
 }
 
 // ── Nav ──
