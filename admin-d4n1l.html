@@ -382,7 +382,7 @@ async function loadParents(){
       <div class="card" style="padding:0;overflow:hidden">
         <table class="tbl" id="parents-tbl">
           <thead><tr>
-            <th>Родитель</th><th>Баланс</th><th>Статус</th><th>Триал до</th><th>Регистрация</th><th>Действия</th>
+            <th>Родитель</th><th>Баланс</th><th>Статус</th><th>Дети</th><th>Триал до</th><th>Регистрация</th><th>Действия</th>
           </tr></thead>
           <tbody>
             ${(data||[]).map(p=>{
@@ -397,10 +397,11 @@ async function loadParents(){
                   <div style="font-size:12px;color:var(--t3)">${esc(p.email||'—')}</div>
                 </td>
                 <td>
-                  <div style="font-family:'Fraunces',sans-serif;font-size:18px;font-weight:900;color:${bal>0?'var(--g)':'var(--r)'}">${bal}₽</div>
-                  ${bal>0?`<div style="font-size:11px;color:var(--t3)">~${monthsLeft} мес</div>`:''}
+                  <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:${bal>0?'var(--g)':'var(--t3)'}">${bal}₽</div>
+                  ${bal>0?`<div style="font-size:11px;color:var(--t3)">~${monthsLeft} мес</div>`:'<div style="font-size:11px;color:var(--t3)">нет баланса</div>'}
                 </td>
                 <td>${status==='active'?'<span class="bdg bg">✅ Активен</span>':status==='trial'?'<span class="bdg bo">⏳ Триал</span>':'<span class="bdg br">❌ Истёк</span>'}</td>
+                <td id="pch-${p.id}" style="font-size:13px;font-weight:700;color:var(--a)">...</td>
                 <td style="font-size:12px;color:var(--t3)">${p.trial_until?fd(p.trial_until):'—'}</td>
                 <td style="font-size:12px;color:var(--t3)">${fd(p.created_at)}</td>
                 <td>
@@ -417,6 +418,13 @@ async function loadParents(){
       </div>`;
   }catch(e){document.getElementById('main-content').innerHTML=`<div style="color:var(--r);padding:20px">Ошибка: ${e.message}</div>`;}
 }
+
+  // Загружаем кол-во детей асинхронно
+  (data||[]).forEach(async p=>{
+    const{count}=await sb.from('students').select('*',{count:'exact',head:true}).or('parent_user_id.eq.'+p.id+',parent_user_id2.eq.'+p.id);
+    const el=document.getElementById('pch-'+p.id);
+    if(el) el.innerHTML=count>0?'<span class="bdg bb">👶 '+count+'</span>':'<span style="color:var(--t3)">—</span>';
+  });
 
 async function addBalance(userId,name,currentBal){
   openModal(`<div class="modal-title">💰 Пополнение баланса: ${esc(name)}</div>
@@ -533,7 +541,7 @@ async function viewTeacherStudents(teacherId,teacherName){
 async function loadFeedback(){
   try{
     const{data}=await sb.from('feedback').select('*').order('created_at',{ascending:false});
-    await sb.from('feedback').update({read_at:new Date().toISOString()}).is('read_at',null).catch(()=>{});
+    try{ await sb.from('feedback').update({read_at:new Date().toISOString()}).is('read_at',null); }catch(e){}
     loadNotifDots();
     const m=document.getElementById('main-content');
     m.innerHTML=`
