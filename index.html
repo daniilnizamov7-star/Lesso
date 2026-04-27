@@ -334,6 +334,19 @@ const SU = 'https://yiqipulgofoschkccaxr.supabase.co';
 const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
 const sb = supabase.createClient(SU, SK);
 
+// Глобальный обработчик необработанных ошибок
+window.onerror = function(msg, src, line, col, err) {
+  console.error('Global error:', msg, err);
+  const ac = document.getElementById('ac');
+  if(ac && ac.innerHTML.includes('Загрузка')) {
+    ac.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:40px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Что-то пошло не так</div><div style="font-size:13px;color:var(--t2);margin-bottom:20px">${msg}</div><button class="btn bp bsm" onclick="location.reload()">Обновить</button></div>`;
+  }
+  return false;
+};
+window.addEventListener('unhandledrejection', e => {
+  console.error('Unhandled promise rejection:', e.reason);
+});
+
 let me = null; // {role, name, id, student_id, teacher_id, teacher_code}
 let editLessonId = null, editStuId = null;
 let activeChatId = null, chatChannel = null, lessonChatId = null;
@@ -643,6 +656,14 @@ async function doAuth() {
     me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code, email: em };
   }
   subscribeToPush(uid, res.data.session?.access_token);
+  // Проверка paywall для родителя (при входе через форму)
+  const _finalP = (p && !pErr) ? p : null;
+  if (me.role === 'parent' && _finalP) {
+    const _now = new Date();
+    const _trialOk = _finalP.trial_until && new Date(_finalP.trial_until) > _now;
+    const _hasBal = (_finalP.balance||0) > 0;
+    if (!_trialOk && !_hasBal) { showPayWall({..._finalP, email: em}); return; }
+  }
   launchApp();
 }
 
@@ -969,7 +990,7 @@ function tSc(n,i) {
   else if(n==='chats') tChats(c);
 }
 
-async function tHome(el) {
+async function tHome(el) {  try {
   el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">—</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">—</div><div class="sl">Учеников</div></div></div><div class="card" id="th-next" style="display:none"></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r">Загрузка...</div></div></div>`;
   const [{count:lc},{count:sc},{data:rc},{data:ss}]=await Promise.all([
     sb.from('lessons').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
@@ -1000,9 +1021,15 @@ async function tHome(el) {
     ${l.grade?`<div class="grade g${l.grade}">${l.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
     <div class="lcf">${l.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}${l.homework?`<span class="bdg bo">📝 ДЗ</span>${l.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}</div>
   </div>`).join('');
+
+  } catch(e) {
+    console.error('tHome error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
 
-async function tStudents(el) {
+async function tStudents(el) {  try {
   el.innerHTML=`<div class="page"><div class="shdr"><div><div class="stitle">Ученики</div><div class="ssub">Управление</div></div></div><div id="ts-list">Загрузка...</div><div style="height:80px"></div></div>`;
   addFab(()=>openAddStu());
   const{data}=await sb.from('students').select('*').eq('teacher_id',me.id).order('created_at');
@@ -1047,9 +1074,15 @@ async function tStudents(el) {
       </div>
     </div>
   </div>`;}).join('');
+
+  } catch(e) {
+    console.error('tStudents error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
 
-async function tLessons(el) {
+async function tLessons(el) {  try {
   el.innerHTML=`<div class="page"><div class="stitle">Уроки</div><div class="ssub">История и планирование</div><div id="tl-list">Загрузка...</div><div style="height:80px"></div></div>`;
   addFab(()=>openAddLesson());
   const[{data:ss},{data:ls}]=await Promise.all([
@@ -1069,10 +1102,16 @@ async function tLessons(el) {
       ${l_.status!=='done'&&l_.student_id?`<button class="bdg" style="background:var(--al);color:var(--a);border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px" onclick="event.stopPropagation();remindLesson('${l_.id}','${(l_.title||'').replace(/'/g,"\'")}','${l_.student_id}')">🔔 Напомнить</button>`:''}
     </div>
   </div>`).join('');
+
+  } catch(e) {
+    console.error('tLessons error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
 
 let allW=[], wStuId=null, wStus=[];
-async function tWords(el) {
+async function tWords(el) {  try {
   const{data:ss}=await sb.from('students').select('id,name').eq('teacher_id',me.id);
   wStus=ss||[]; wStuId=wStus[0]?.id||null;
   el.innerHTML=`<div class="page"><div class="stitle">Словарь</div><div class="ssub">Слова по ученикам</div>
@@ -1081,6 +1120,12 @@ async function tWords(el) {
     <div id="tw-list">Загрузка...</div><div style="height:80px"></div></div>`;
   addFab(()=>openAddWord());
   await loadW(wStuId);
+
+  } catch(e) {
+    console.error('tWords error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
 async function switchWStu(btn) {
   document.querySelectorAll('#wstu-tabs .fc2').forEach(b=>b.classList.remove('active'));
@@ -1102,7 +1147,7 @@ function renderW(f) {
 // ── Teacher Chats ──
 
 // ── TEACHER STATS ──
-async function tStats(el) {
+async function tStats(el) {  try {
   el.innerHTML=`<div class="page"><div class="stitle">Статистика 📊</div><div class="ssub">Аналитика по ученикам</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
 
   const [{data:students},{data:lessons}] = await Promise.all([
@@ -1395,6 +1440,12 @@ async function tStats(el) {
 
     <div style="height:80px"></div>
   </div>`;
+
+  } catch(e) {
+    console.error('tStats error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
 
 // ── FINANCE ──
@@ -1544,7 +1595,7 @@ async function sendWeeklyReport(stuId, stuName) {
   }
 }
 
-async function tChats(el) {
+async function tChats(el) {  try {
   document.getElementById('fab')?.remove();
   el.innerHTML=`<div class="page"><div class="stitle">Чаты</div><div class="ssub">Сообщения с учениками и родителями</div><div id="tc-list">Загрузка...</div></div>`;
   // Загружаем учеников учителя
@@ -1575,6 +1626,12 @@ async function tChats(el) {
     document.getElementById('tc-list').appendChild(lessonDiv);
   }
   checkUnread();
+
+  } catch(e) {
+    console.error('tChats error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
 
 // ── Open Chat ──
@@ -2151,7 +2208,7 @@ function sSc(n,i) {
   else if(n==='words') sWords(c);
   else if(n==='chats') sChats(c);
 }
-async function sHome(el) {
+async function sHome(el) {  try {
   const[{data:ls},{data:ws}]=await Promise.all([
     sb.from('lessons').select('id,title,date,homework,hw_done,hw_photo,zoom_link,grade,status').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(10),
     sb.from('words').select('level').eq('student_record_id',me.student_id)
@@ -2191,8 +2248,14 @@ async function sHome(el) {
     </div>`:''}
   </div>`;
   checkUnread();
+
+  } catch(e) {
+    console.error('sHome error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
-async function sLessons(el) {
+async function sLessons(el) {  try {
   const{data}=await sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false});
   // zoom_pass подгружаем отдельно — чтобы не ломать уроки если колонки ещё нет
   let stuZoomPass=null;
@@ -2215,6 +2278,12 @@ async function sLessons(el) {
     </div>
     <div id="mat-${ls.id}" style="display:none;margin-top:8px"></div>
   </div>`).join('');
+
+  } catch(e) {
+    console.error('sLessons error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
 async function togMats(lid) {
   const w=document.getElementById('mat-'+lid); if(!w) return;
@@ -2229,7 +2298,7 @@ async function togMats(lid) {
   </div>`).join('');
 }
 let rQ=[],rIdx=0,cFlip=false;
-async function sCards(el) {
+async function sCards(el) {  try {
   const{data}=await sb.from('words').select('*').eq('student_record_id',me.student_id);
   const now=new Date();
   rQ=(data||[]).filter(w=>w.level<3||new Date(w.next_review)<=now);
@@ -2237,6 +2306,12 @@ async function sCards(el) {
   rQ=rQ.sort(()=>Math.random()-.5).slice(0,20);
   rIdx=0; el.innerHTML=`<div class="page"><div class="stitle">Карточки</div><div id="ca"></div></div>`;
   renderCard();
+
+  } catch(e) {
+    console.error('sCards error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
 function renderCard() {
   const a=document.getElementById('ca'); if(!a) return;
@@ -2268,12 +2343,18 @@ async function markCard(knew) {
   await sb.from('words').update({level:nl,next_review:d.toISOString()}).eq('id',w.id);
   rIdx++; renderCard();
 }
-async function sWords(el) {
+async function sWords(el) {  try {
   const{data}=await sb.from('words').select('*').eq('student_record_id',me.student_id).order('level',{ascending:false});
   el.innerHTML=`<div class="page"><div class="stitle">Мои слова</div><div class="ssub">${data?.length||0} слов в словаре</div><div id="sw-list"></div><div style="height:80px"></div></div>`;
   const l=document.getElementById('sw-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📖</div><p>Слов пока нет</p></div>`;return;}
   l.innerHTML=data.map(w=>`<div class="wi"><div class="ld lv${w.level}"></div><div><div class="wen">${w.word}</div><div class="wru">${w.translation}</div></div><div class="wch">${w.topic||'—'}</div></div>`).join('');
+
+  } catch(e) {
+    console.error('sWords error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
 async function sChats(el) {
   el.innerHTML=`<div class="page"><div class="stitle">Чаты</div><div class="ssub">Переписка с учителем</div><div id="sc-list">Загрузка...</div></div>`;
@@ -2318,7 +2399,7 @@ function pSc(n,i) {
   else if(n==='progress') pProgress(c);
   else if(n==='chats') pChats(c);
 }
-async function pHome(el) {
+async function pHome(el) {  try {
   addFab(()=>openLinkChild());
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
     sb.from('students').select('id').eq('parent_user_id',me.id),
@@ -2425,8 +2506,14 @@ async function pHome(el) {
       </div>
     </div>
   </div>`;
+
+  } catch(e) {
+    console.error('pHome error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
-async function pLessons(el) {
+async function pLessons(el) {  try {
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
     sb.from('students').select('id,name,subject,teacher_id').eq('parent_user_id',me.id),
     sb.from('students').select('id,name,subject,teacher_id').eq('parent_user_id2',me.id)
@@ -2468,8 +2555,14 @@ async function pLessons(el) {
     </div>
     <div id="mat-${ls.id}" style="display:none;margin-top:8px"></div>
   </div>`;}).join('');
+
+  } catch(e) {
+    console.error('pLessons error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
-async function pProgress(el) {
+async function pProgress(el) {  try {
   el.innerHTML=`<div class="page"><div class="stitle">Прогресс 📊</div><div class="ssub">Детальная статистика</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
     sb.from('students').select('id,name,subject,teacher_id').eq('parent_user_id',me.id),
@@ -2591,8 +2684,14 @@ async function pProgress(el) {
     </div>`;
   }).join('');
   el.innerHTML=`<div class="page"><div class="stitle">Прогресс 📊</div><div class="ssub">Детальная статистика</div>${html}<div style="height:80px"></div></div>`;
+
+  } catch(e) {
+    console.error('pProgress error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
-async function pChats(el) {
+async function pChats(el) {  try {
   el.innerHTML=`<div class="page"><div class="stitle">Чат с учителем</div><div class="ssub">Сообщения и вопросы</div><div id="pc-list">Загрузка...</div></div>`;
   // Берём только учеников, привязанных к этому родителю (оба слота)
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
@@ -2620,6 +2719,12 @@ async function pChats(el) {
   </div>`;
   }).join('');
   checkUnread();
+
+  } catch(e) {
+    console.error('pChats error:', e);
+    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
+    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
+  }
 }
 
 function showPayWall(profile) {
@@ -2661,13 +2766,20 @@ function copyPayTemplate(email) {
     .catch(function(){ prompt('Скопируйте и вставьте в комментарий:', text); });
 }
 
-async function sendPayRequest(userId, email, name) {
+async function sendPayRequest(userId, email, name, fromApp=false) {
   const childCount = parseInt(prompt('Сколько детей привязано?','1'))||1;
+  if(!childCount) return; // пользователь нажал Отмена
   const amount = childCount>=2?500:300;
   const{error}=await sb.from('payment_requests').insert({user_id:userId,email,name,children_count:childCount,amount});
   if(error&&!error.message.includes('duplicate')){alert('Ошибка: '+error.message);return;}
   // Пуш администратору
   await fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:['01b9a57d-63e2-4e19-9fd2-be19dc4311a0'],title:'💰 Заявка на оплату',body:name+' · '+email+' · '+amount+'₽'})}).catch(()=>{});
+  if(fromApp) {
+    // Вызван из внутреннего экрана — просто показываем toast, не выбрасываем из приложения
+    toast('✅ Уведомление отправлено! Активируем в течение нескольких часов.');
+    return;
+  }
+  // Вызван из paywall — показываем экран подтверждения
   pg('pg-roles');
   document.getElementById('pg-roles').innerHTML=`<div class="auth-pg" style="text-align:center">
     <div style="font-size:64px;margin-bottom:16px">🎉</div>
@@ -2702,7 +2814,7 @@ async function openPayInfo() {
     <button onclick="navigator.clipboard.writeText('Lesso оплата. ${email}').then(()=>toast('📋 Скопировано!')).catch(()=>prompt('Скопируйте:','Lesso оплата. ${email}'))" style="width:100%;padding:12px;background:var(--bg);color:var(--a);border:1.5px solid var(--a);border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px">
       📋 Скопировать комментарий
     </button>
-    <button class="btn bp" style="width:100%;padding:14px;justify-content:center" onclick="document.getElementById('m-pay-info')?.remove();sendPayRequest('${me.id}','${safeEmail}','${safeName}')">
+    <button class="btn bp" style="width:100%;padding:14px;justify-content:center" onclick="document.getElementById('m-pay-info')?.remove();sendPayRequest('${me.id}','${safeEmail}','${safeName}',true)">
       ✅ Я оплатил — уведомить
     </button>
     <button class="btn bs" style="width:100%;padding:12px;margin-top:8px;cursor:pointer" onclick="document.getElementById('m-pay-info')?.remove()">Закрыть</button>
