@@ -383,14 +383,14 @@ function unlockBtn(id) {
     if (p) {
       // Проверка заморозки для родителя
       if (p.suspended && p.role === 'parent') { await sb.auth.signOut(); showSuspended(); return; }
-      me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code };
+      me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code, email: session.user.email };
       subscribeToPush(session.user.id, session.access_token);
       // Проверка оплаты для родителя
       if(p.role === 'parent') {
         const now = new Date();
         const trialOk = p.trial_until && new Date(p.trial_until) > now;
         const hasBalance = (p.balance||0) > 0;
-        if(!trialOk && !hasBalance) { showPayWall(p); return; }
+        if(!trialOk && !hasBalance) { showPayWall({...p, email: session.user.email}); return; }
       }
       launchApp(); return;
     }
@@ -637,10 +637,10 @@ async function doAuth() {
       return;
     }
     if (p2.suspended && p2.role === 'parent') { await sb.auth.signOut(); showSuspended(); return; }
-    me = { role: p2.role, name: p2.name, id: uid, teacher_code: p2.teacher_code };
+    me = { role: p2.role, name: p2.name, id: uid, teacher_code: p2.teacher_code, email: em };
   } else {
     if (p.suspended && p.role === 'parent') { await sb.auth.signOut(); showSuspended(); return; }
-    me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code };
+    me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code, email: em };
   }
   subscribeToPush(uid, res.data.session?.access_token);
   launchApp();
@@ -2326,10 +2326,18 @@ async function pHome(el) {
   ]);
   const allIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
   const stuIds=allIds;
-  if(!stuIds.length){// Получаем имена детей для заголовка
-  const{data:stuNames}=await sb.from('students').select('name').in('id',stuIds);
-  const childrenLabel=(stuNames||[]).map(s=>s.name).join(', ')||'ученика';
-  el.innerHTML=`<div class="page"><div class="stitle">Прогресс: ${childrenLabel} 📊</div><div class="ssub">Обзор обучения</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
+  if(!stuIds.length){
+    el.innerHTML=`<div class="page"><div class="stitle">Главная 🏠</div><div class="ssub">Добро пожаловать!</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы привязать ребёнка</span></p></div>
+      <div class="card" style="border-color:var(--g);background:var(--gl);cursor:pointer" onclick="openPayInfo()">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:28px">💳</div>
+          <div style="flex:1"><div style="font-weight:800;font-size:15px;color:var(--g)">Оплата сервиса</div><div style="font-size:12px;color:var(--t2);margin-top:2px">300₽/мес · 1 ребёнок</div></div>
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+      </div>
+    </div>`;
+    return;
+  }
   const[{data:ls},{data:ws},{data:stuFull},{data:payments},{data:doneLs}]=await Promise.all([
     sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}),
     sb.from('words').select('level,student_record_id').in('student_record_id',stuIds),
@@ -2598,8 +2606,8 @@ async function pChats(el) {
     l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет привязанных учеников</p></div>`;
     return;
   }
-  const teacherIds=[...new Set(myStus.map(s=>s.teacher_id))];
-  const{data:teachers}=await sb.from('profiles').select('id,name').in('id',teacherIds);
+  const teacherIds=[...new Set(myStus.map(s=>s.teacher_id).filter(Boolean))];
+  const{data:teachers}=teacherIds.length?await sb.from('profiles').select('id,name').in('id',teacherIds):{data:[]};
   const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t]));
   l.innerHTML=myStus.map(s=>{
     const tp=tMap[s.teacher_id];
@@ -2669,11 +2677,15 @@ async function sendPayRequest(userId, email, name) {
   </div>`;
 }
 
-function openPayInfo() {
+async function openPayInfo() {
+  // Берём email из текущей сессии Supabase Auth
+  const { data: { session } } = await sb.auth.getSession();
+  const email = session?.user?.email || me.email || me.name || '';
+  const safeEmail = email.replace(/'/g,"\\'");
+  const safeName = (me.name||'').replace(/'/g,"\\'");
   const mo = document.createElement('div');
   mo.className='mo open'; mo.id='m-pay-info';
   mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
-  const email = me.email||me.name||'';
   mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
     <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
     <div style="font-size:20px;font-weight:800;margin-bottom:4px">💳 Оплата сервиса</div>
@@ -2690,10 +2702,10 @@ function openPayInfo() {
     <button onclick="navigator.clipboard.writeText('Lesso оплата. ${email}').then(()=>toast('📋 Скопировано!')).catch(()=>prompt('Скопируйте:','Lesso оплата. ${email}'))" style="width:100%;padding:12px;background:var(--bg);color:var(--a);border:1.5px solid var(--a);border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px">
       📋 Скопировать комментарий
     </button>
-    <button class="btn bp" style="width:100%;padding:14px;font-family:inherit;font-size:15px;justify-content:center" onclick="sendPayRequest('${me.id}','${email}','${me.name}');document.getElementById('m-pay-info')?.remove()">
+    <button class="btn bp" style="width:100%;padding:14px;justify-content:center" onclick="document.getElementById('m-pay-info')?.remove();sendPayRequest('${me.id}','${safeEmail}','${safeName}')">
       ✅ Я оплатил — уведомить
     </button>
-    <button class="btn bs" style="width:100%;padding:12px;margin-top:8px;font-family:inherit;font-size:14px;cursor:pointer" onclick="document.getElementById('m-pay-info')?.remove()">Закрыть</button>
+    <button class="btn bs" style="width:100%;padding:12px;margin-top:8px;cursor:pointer" onclick="document.getElementById('m-pay-info')?.remove()">Закрыть</button>
   </div>`;
   document.body.appendChild(mo);
   mo.addEventListener('click', e=>{ if(e.target===mo) mo.remove(); });
@@ -2734,15 +2746,16 @@ async function doLinkChild() {
   if(!tcode || pin.length<4){ err.textContent='Заполните все поля'; err.classList.add('show'); return; }
   const _lcBtn=document.querySelector('#m-link-child .btn.bp');
   if(_lcBtn&&!lockBtn(_lcBtn,'Ищем...')) return;
+  const unlock=()=>{ if(_lcBtn) unlockBtn(_lcBtn); };
   // Ищем учителя по коду
   const{data:teacher}=await sb.from('profiles').select('id,name').eq('teacher_code',tcode).eq('role','teacher').single();
-  if(!teacher){ err.textContent='Учитель с таким кодом не найден'; err.classList.add('show'); return; }
+  if(!teacher){ err.textContent='Учитель с таким кодом не найден'; err.classList.add('show'); unlock(); return; }
   // Ищем ученика у этого учителя по PIN
   const{data:stu}=await sb.from('students').select('*').eq('teacher_id',teacher.id).eq('pin',pin).single();
-  if(!stu){ err.textContent='Неверный PIN ученика'; err.classList.add('show'); return; }
+  if(!stu){ err.textContent='Неверный PIN ученика'; err.classList.add('show'); unlock(); return; }
   // Проверяем: уже привязан к этому родителю?
   if(stu.parent_user_id === me.id || stu.parent_user_id2 === me.id){
-    err.textContent='Вы уже привязаны к этому ученику'; err.classList.add('show'); return;
+    err.textContent='Вы уже привязаны к этому ученику'; err.classList.add('show'); unlock(); return;
   }
   // Привязываем: сначала первый слот, потом второй
   let updateField = null;
@@ -2751,10 +2764,10 @@ async function doLinkChild() {
   } else if(!stu.parent_user_id2) {
     updateField = 'parent_user_id2';
   } else {
-    err.textContent='У этого ученика уже привязаны 2 родителя'; err.classList.add('show'); return;
+    err.textContent='У этого ученика уже привязаны 2 родителя'; err.classList.add('show'); unlock(); return;
   }
   const{error}=await sb.from('students').update({[updateField]:me.id}).eq('id',stu.id);
-  if(error){ err.textContent='Ошибка: '+error.message; err.classList.add('show'); return; }
+  if(error){ err.textContent='Ошибка: '+error.message; err.classList.add('show'); unlock(); return; }
   document.getElementById('m-link-child')?.remove();
   toast('✅ '+stu.name+' привязан!');
   pSc('home',0);
