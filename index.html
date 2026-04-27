@@ -631,7 +631,7 @@ async function doAuth() {
     const displayName = authRole === 'teacher'
       ? (document.getElementById('aname')?.value.trim() || em.split('@')[0])
       : em.split('@')[0];
-    await sb.from('profiles').upsert({ id: uid, role: authRole, name: displayName, teacher_code: teacherCode });
+    await sb.from('profiles').upsert({ id: uid, role: authRole, name: displayName, teacher_code: teacherCode, email: em });
   } else {
     res = await sb.auth.signInWithPassword({ email: em, password: pw });
     if (res.error) { pg('pg-auth'); err.textContent = res.error.message.includes('Invalid') ? 'Неверный email или пароль' : res.error.message; err.classList.add('show'); document.getElementById('abtn').textContent = 'Войти'; return; }
