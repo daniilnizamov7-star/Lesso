@@ -2214,75 +2214,39 @@ async function pHome(el) {
   });
   const childrenLabel=(stuFull||[]).map(s=>s.name).join(', ')||'ученика';
   const stuNames=stuFull;
-  el.innerHTML=`<div class="page"><div class="stitle">Прогресс: ${childrenLabel} 📊</div><div class="ssub">Обзор обучения</div>
-    <div class="srow">
-      <div class="sbox blue"><div class="sv">${ls?.length||0}</div><div class="sl">Уроков</div></div>
-      <div class="sbox green"><div class="sv">${avg}</div><div class="sl">Средняя оценка</div></div>
-      <div class="sbox orange"><div class="sv">${ws?.length||0}</div><div class="sl">Слов</div></div>
-      <div class="sbox blue"><div class="sv">${known}</div><div class="sl">Знает хорошо</div></div>
-    </div>
+  el.innerHTML=`<div class="page"><div class="stitle">Главная 🏠</div><div class="ssub">${childrenLabel}</div>
     ${nextLesson?`<div class="card" style="border-color:var(--a);background:var(--al)">
       <div class="clbl">📅 Следующий урок</div>
       <div style="font-weight:700;font-size:15px;margin-bottom:4px">${nextLesson.title}</div>
-      <div style="font-size:13px;color:var(--t2)">${fd(nextLesson.date)}</div>
+      <div style="font-size:13px;color:var(--t2)">${fd(nextLesson.date)}${nextLesson.time?' · '+nextLesson.time:''}</div>
+      ${nextLesson.zoom_link?`<button onclick="openZoom('${nextLesson.zoom_link}')" class="btn bp bsm" style="display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>Подключиться к Zoom</button>`:''}
     </div>`:''}
-    ${unpaid>0?`<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Не оплачено уроков: ${unpaid}</div></div>`:''}
-    ${Object.values(stuStatMap).map(s=>{
+    ${lastWithHw?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)">
+      <div class="clbl">📝 Домашнее задание</div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px">${lastWithHw.homework}</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:8px">${fd(lastWithHw.date)}</div>
+      ${lastWithHw.hw_done?'<span style="color:#16a34a;font-weight:700;font-size:13px">✅ Выполнено</span>':'<span style="color:#f59e0b;font-weight:600;font-size:13px">⏳ Ещё не выполнено</span>'}
+    </div>`:''}
+    ${Object.values(stuStatMap).filter(s=>s.paid>0).map(s=>{
       const left=Math.max(s.paid-s.used,0);
       const pct=s.paid>0?Math.round(left/s.paid*100):0;
       const balClr=left<=2?'var(--r)':left<=4?'var(--o)':'var(--g)';
-      const stuAvg=s.grades.length?(s.grades.reduce((a,b)=>a+b,0)/s.grades.length).toFixed(1):'—';
-      const doneCount=s.lessons.filter(l=>l.status==='done').length;
-      const cancelCount=s.lessons.filter(l=>l.status==='cancelled').length;
-      const attendPct=doneCount+cancelCount>0?Math.round(doneCount/(doneCount+cancelCount)*100):doneCount>0?100:0;
-      const attClr=attendPct>=80?'var(--g)':attendPct>=60?'var(--o)':'var(--r)';
-      const hwPct=s.hwTotal?Math.round(s.hwDone/s.hwTotal*100):0;
-      const wPct=s.words?Math.round(s.wordsKnown/s.words*100):0;
-      return `<div class="card" style="margin-bottom:10px">
-        <!-- Шапка ученика -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-          <div class="sav" style="width:42px;height:42px;font-size:18px;flex-shrink:0">${s.name[0].toUpperCase()}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:800;font-size:15px">${s.name}</div>
-            <div style="font-size:12px;color:var(--t2)">${s.subject}${s.tName?' · 👨‍🏫 '+s.tName:''}</div>
+      return `<div class="card" style="border-left:4px solid ${balClr}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <div style="font-weight:700;font-size:14px">${s.name}</div>
+            <div style="font-size:12px;color:var(--t2)">${s.subject}${s.tName?' · '+s.tName:''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:${balClr};line-height:1">${left}</div>
+            <div style="font-size:11px;color:var(--t2)">из ${s.paid} уроков</div>
           </div>
         </div>
-        <!-- Метрики 2x2 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-          <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
-            <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:${stuAvg!=='—'?'var(--a)':'var(--t3)'}">${stuAvg}</div>
-            <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">ср. оценка</div>
-          </div>
-          <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
-            <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:${attClr}">${attendPct}%</div>
-            <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">посещаемость</div>
-          </div>
-          <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
-            <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--g)">${hwPct}%</div>
-            <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">ДЗ выполнено</div>
-          </div>
-          <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
-            <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--a)">${wPct}%</div>
-            <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">слов знает</div>
-          </div>
-        </div>
-        <!-- Баланс -->
-        ${s.paid>0?`<div style="border-top:1px solid var(--b);padding-top:10px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <div style="font-size:12px;font-weight:700;color:var(--t2)">💰 Оплаченных уроков</div>
-            ${left<=2?'<span class="bdg br">⚠️ Пополнить!</span>':''}
-          </div>
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:900;color:${balClr};min-width:32px">${left}</div>
-            <div style="flex:1">
-              <div class="pay-bar"><div class="pay-fill" style="width:${pct}%;background:${balClr}"></div></div>
-              <div style="font-size:11px;color:var(--t2);margin-top:3px">из ${s.paid} · проведено ${s.used}</div>
-            </div>
-          </div>
-        </div>`:''}
+        <div class="pay-bar"><div class="pay-fill" style="width:${pct}%;background:${balClr}"></div></div>
+        ${left<=2?`<div style="font-size:12px;color:var(--r);font-weight:700;margin-top:6px">⚠️ Скоро закончатся — сообщите учителю</div>`:''}
       </div>`;
     }).join('')}
-    ${lastWithHw?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)"><div class="clbl">📝 Текущее ДЗ</div><div style="font-weight:600;font-size:15px">${lastWithHw.homework}</div><div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(lastWithHw.date)}</div><div style="margin-top:8px">${lastWithHw.hw_done?'<span style="color:#16a34a;font-weight:700;font-size:13px">✅ Ребёнок отметил как выполнено</span>':'<span style="color:#f59e0b;font-weight:600;font-size:13px">⏳ Ещё не выполнено</span>'}</div></div>`:''}
+    ${unpaid>0?`<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Не оплачено уроков: ${unpaid}</div></div>`:''}
   </div>`;
 }
 async function pLessons(el) {
