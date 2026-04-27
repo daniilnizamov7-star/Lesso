@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lesso Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -14,578 +14,593 @@
   --r:#ef4444;--rl:rgba(239,68,68,.12);
   --o:#f59e0b;--ol:rgba(245,158,11,.12);
   --t:#f1f5f9;--t2:#94a3b8;--t3:#475569;
-  --rs:10px;--rd:14px;--sh:0 1px 3px rgba(0,0,0,.4);
+  --rs:10px;--rd:14px;
 }
 body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
-
-/* LOGIN */
 .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .login-box{background:var(--card);border:1px solid var(--b);border-radius:20px;padding:40px;width:100%;max-width:380px;text-align:center}
 .login-logo{font-family:'Fraunces',serif;font-size:36px;font-weight:900;color:var(--a);margin-bottom:4px}
 .login-sub{font-size:13px;color:var(--t3);margin-bottom:32px}
-.login-box input{width:100%;background:var(--card2);border:1.5px solid var(--b);border-radius:10px;padding:12px 14px;color:var(--t);font-family:inherit;font-size:14px;outline:none;margin-bottom:12px}
-.login-box input:focus{border-color:var(--a)}
-.login-err{color:var(--r);font-size:13px;margin-bottom:12px;display:none}
-
-/* LAYOUT */
+.inp{width:100%;background:var(--card2);border:1.5px solid var(--b);border-radius:10px;padding:12px 14px;color:var(--t);font-family:inherit;font-size:14px;outline:none;margin-bottom:12px}
+.inp:focus{border-color:var(--a)}
+.err-msg{color:var(--r);font-size:13px;margin-bottom:12px;display:none}
 .app{display:none;min-height:100vh}
-.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--card);border-right:1px solid var(--b);padding:20px 0;z-index:10}
-.sidebar-logo{font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--a);padding:0 20px 24px;border-bottom:1px solid var(--b);margin-bottom:16px}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:220px;background:var(--card);border-right:1px solid var(--b);padding:20px 0;z-index:10;overflow-y:auto}
+.sidebar-logo{font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--a);padding:0 20px 20px;border-bottom:1px solid var(--b);margin-bottom:12px}
 .sidebar-logo span{font-size:11px;color:var(--t3);font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;display:block;margin-top:2px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:var(--t2);font-size:14px;font-weight:600;transition:all .15s;border-radius:0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:var(--t2);font-size:14px;font-weight:600;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:inherit}
 .nav-item:hover{background:var(--al);color:var(--t)}
 .nav-item.active{background:var(--al);color:var(--a);border-right:3px solid var(--a)}
 .nav-item svg{width:18px;height:18px;flex-shrink:0}
 .main{margin-left:220px;padding:28px;min-height:100vh}
 .page-title{font-family:'Fraunces',serif;font-size:28px;font-weight:900;margin-bottom:4px}
 .page-sub{font-size:13px;color:var(--t3);margin-bottom:24px}
-
-/* CARDS */
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
 .stat-card{background:var(--card);border:1px solid var(--b);border-radius:var(--rd);padding:20px}
 .stat-val{font-family:'Fraunces',serif;font-size:32px;font-weight:900;line-height:1}
-.stat-lbl{font-size:12px;color:var(--t3);font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:.5px}
+.stat-lbl{font-size:11px;color:var(--t3);font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:.5px}
 .card{background:var(--card);border:1px solid var(--b);border-radius:var(--rd);padding:20px;margin-bottom:16px}
-.card-title{font-size:14px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
-
-/* TABLE */
+.card-title{font-size:14px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .tbl{width:100%;border-collapse:collapse}
-.tbl th{text-align:left;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:8px 12px;border-bottom:1px solid var(--b)}
-.tbl td{padding:10px 12px;border-bottom:1px solid var(--b);font-size:13px;vertical-align:middle}
+.tbl th{text-align:left;font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;border-bottom:1px solid var(--b);white-space:nowrap}
+.tbl td{padding:12px 14px;border-bottom:1px solid var(--b);font-size:13px;vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
 .tbl tr:hover td{background:rgba(255,255,255,.02)}
-
-/* BADGES */
-.bdg{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.bdg{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
 .bg{background:var(--gl);color:var(--g)}
 .br{background:var(--rl);color:var(--r)}
 .bo{background:var(--ol);color:var(--o)}
 .bb{background:var(--al);color:var(--a)}
-
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
-.btn-p{background:var(--a);color:#fff}
-.btn-p:hover{background:#2563eb}
-.btn-g{background:var(--g);color:#fff}
-.btn-g:hover{background:#059669}
-.btn-r{background:var(--rl);color:var(--r);border:1px solid var(--r)}
-.btn-s{background:var(--card2);color:var(--t2);border:1px solid var(--b)}
-.btn-s:hover{border-color:var(--a);color:var(--t)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 14px;border-radius:8px;border:none;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-p{background:var(--a);color:#fff}.btn-p:hover{background:#2563eb}
+.btn-g{background:var(--g);color:#fff}.btn-g:hover{background:#059669}
+.btn-r{background:var(--rl);color:var(--r);border:1px solid rgba(239,68,68,.3)}
+.btn-s{background:var(--card2);color:var(--t2);border:1px solid var(--b)}.btn-s:hover{border-color:var(--a);color:var(--t)}
+.btn-o{background:var(--ol);color:var(--o);border:1px solid rgba(245,158,11,.3)}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-
-/* MODAL */
+.tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--card);border-radius:10px;padding:4px;width:fit-content;border:1px solid var(--b)}
+.tab{padding:7px 16px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;color:var(--t3);border:none;background:none;font-family:inherit;transition:all .15s}
+.tab.active{background:var(--a);color:#fff}
+.stars{color:#f59e0b}
+.empty-state{text-align:center;padding:48px 20px;color:var(--t3)}
+.empty-state .ei{font-size:40px;margin-bottom:12px}
+.search-wrap{position:relative;margin-bottom:16px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3);pointer-events:none}
+.search-inp{width:100%;background:var(--card2);border:1.5px solid var(--b);border-radius:10px;padding:10px 12px 10px 38px;color:var(--t);font-family:inherit;font-size:14px;outline:none}
+.search-inp:focus{border-color:var(--a)}
+.notif-dot{background:var(--r);color:#fff;border-radius:20px;font-size:10px;font-weight:800;padding:1px 6px;margin-left:auto}
+.spin{width:24px;height:24px;border:3px solid var(--b);border-top-color:var(--a);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-bg.open{display:flex}
-.modal{background:var(--card);border:1px solid var(--b);border-radius:20px;padding:28px;width:100%;max-width:460px}
+.modal{background:var(--card);border:1px solid var(--b);border-radius:20px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
 .modal-title{font-size:18px;font-weight:800;margin-bottom:16px}
 .fg{margin-bottom:14px}
 .fl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px}
 .fi{width:100%;background:var(--card2);border:1.5px solid var(--b);border-radius:8px;padding:10px 12px;color:var(--t);font-family:inherit;font-size:14px;outline:none}
 .fi:focus{border-color:var(--a)}
 .brow{display:flex;gap:10px;margin-top:20px}
-.brow .btn{flex:1;justify-content:center}
-
-/* TABS */
-.tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--card);border-radius:10px;padding:4px;width:fit-content}
-.tab{padding:7px 16px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;color:var(--t3);border:none;background:none;font-family:inherit;transition:all .15s}
-.tab.active{background:var(--a);color:#fff}
-
-/* FEEDBACK STARS */
-.stars{color:#f59e0b;letter-spacing:2px}
-.empty-state{text-align:center;padding:48px 20px;color:var(--t3)}
-.empty-state .ei{font-size:40px;margin-bottom:12px}
-
-/* SEARCH */
-.search-wrap{position:relative;margin-bottom:16px}
-.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--t3)}
-.search-inp{width:100%;background:var(--card2);border:1.5px solid var(--b);border-radius:10px;padding:10px 12px 10px 38px;color:var(--t);font-family:inherit;font-size:14px;outline:none}
-.search-inp:focus{border-color:var(--a)}
-
-/* NOTIF BADGE */
-.notif-dot{background:var(--r);color:#fff;border-radius:20px;font-size:10px;font-weight:800;padding:1px 6px;margin-left:auto}
-
-/* LOADING */
-.spin{width:24px;height:24px;border:3px solid var(--b);border-top-color:var(--a);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* RESPONSIVE */
+.brow .btn{flex:1}
+.pay-bar{height:8px;background:var(--b);border-radius:4px;overflow:hidden;margin:6px 0}
+.pay-fill{height:100%;border-radius:4px;transition:width .4s}
 @media(max-width:900px){
-  .sidebar{width:60px}
-  .sidebar-logo,.nav-item span,.nav-item .lbl{display:none}
-  .nav-item{justify-content:center;padding:12px}
-  .main{margin-left:60px;padding:16px}
+  .sidebar{width:56px}
+  .sidebar-logo,.nav-item .lbl{display:none}
+  .nav-item{justify-content:center;padding:14px}
+  .main{margin-left:56px;padding:16px}
   .stat-grid{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div class="login-wrap" id="login-screen">
   <div class="login-box">
     <div class="login-logo">Lesso</div>
     <div class="login-sub">Панель администратора</div>
-    <div class="login-err" id="login-err">Неверный пароль</div>
-    <input type="password" id="admin-pw" placeholder="Пароль" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="btn btn-p" style="width:100%;justify-content:center;padding:12px" onclick="doLogin()">Войти</button>
+    <div class="err-msg" id="login-err">Неверный пароль</div>
+    <input class="inp" type="password" id="admin-pw" placeholder="Пароль" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-p" style="width:100%;padding:12px" onclick="doLogin()">Войти</button>
   </div>
 </div>
 
-<!-- APP -->
 <div class="app" id="app">
-  <!-- Sidebar -->
   <div class="sidebar">
-    <div class="sidebar-logo">Lesso <span>Admin Panel</span></div>
-    <div class="nav-item active" onclick="showPage('dashboard',this)">
+    <div class="sidebar-logo">Lesso<span>Admin Panel</span></div>
+    <button class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>
       <span class="lbl">Дашборд</span>
-    </div>
-    <div class="nav-item" onclick="showPage('payments',this)" id="nav-payments">
+    </button>
+    <button class="nav-item" id="nav-payments" onclick="showPage('payments',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
       <span class="lbl">Оплаты</span>
       <span class="notif-dot" id="pay-dot" style="display:none">0</span>
-    </div>
-    <div class="nav-item" onclick="showPage('teachers',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      <span class="lbl">Учителя</span>
-    </div>
-    <div class="nav-item" onclick="showPage('parents',this)">
+    </button>
+    <button class="nav-item" id="nav-parents" onclick="showPage('parents',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
       <span class="lbl">Родители</span>
-    </div>
-    <div class="nav-item" onclick="showPage('students',this)">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
-      <span class="lbl">Ученики</span>
-    </div>
-    <div class="nav-item" onclick="showPage('feedback',this)" id="nav-feedback">
+    </button>
+    <button class="nav-item" id="nav-teachers" onclick="showPage('teachers',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      <span class="lbl">Учителя</span>
+    </button>
+    <button class="nav-item" id="nav-feedback" onclick="showPage('feedback',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       <span class="lbl">Отзывы</span>
       <span class="notif-dot" id="fb-dot" style="display:none">0</span>
-    </div>
-    <div class="nav-item" onclick="showPage('lessons',this)">
+    </button>
+    <button class="nav-item" id="nav-lessons" onclick="showPage('lessons',this)">
       <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
       <span class="lbl">Уроки</span>
-    </div>
+    </button>
   </div>
-
-  <!-- Main -->
   <div class="main" id="main-content">
     <div style="text-align:center;padding:60px"><div class="spin"></div></div>
   </div>
 </div>
 
-<!-- Modal -->
-<div class="modal-bg" id="modal">
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal" id="modal-inner"></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const SU = 'https://yiqipulgofoschkccaxr.supabase.co';
-const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
-const ADMIN_PUSH_ID = '01b9a57d-63e2-4e19-9fd2-be19dc4311a0';
-const sb = supabase.createClient(SU, SK);
-const ADMIN_PW = 'lesso174.';
+const SU='https://yiqipulgofoschkccaxr.supabase.co';
+const SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
+const ADMIN_ID='01b9a57d-63e2-4e19-9fd2-be19dc4311a0';
+const ADMIN_PW='lesso_d4n1l_2025';
+const sb=supabase.createClient(SU,SK);
 
-// ── AUTH ──
-function doLogin() {
-  const pw = document.getElementById('admin-pw').value;
-  if(pw !== ADMIN_PW) { document.getElementById('login-err').style.display='block'; return; }
+// ── SESSION ──
+function doLogin(){
+  const pw=document.getElementById('admin-pw').value;
+  if(pw!==ADMIN_PW){document.getElementById('login-err').style.display='block';return;}
+  sessionStorage.setItem('lesso_admin','1');
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  showPage('dashboard', document.querySelector('.nav-item'));
+  showPage('dashboard',document.getElementById('nav-dashboard'));
   loadNotifDots();
+  setInterval(loadNotifDots,30000);
+}
+// Восстанавливаем сессию при обновлении
+if(sessionStorage.getItem('lesso_admin')==='1'){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  setTimeout(()=>{showPage('dashboard',document.getElementById('nav-dashboard'));loadNotifDots();setInterval(loadNotifDots,30000);},100);
 }
 
 // ── NAV ──
-function showPage(name, el) {
+let _currentPage='';
+function showPage(name,el){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   el?.classList.add('active');
-  const m = document.getElementById('main-content');
+  _currentPage=name;
+  const m=document.getElementById('main-content');
   m.innerHTML=`<div style="text-align:center;padding:60px"><div class="spin"></div></div>`;
-  if(name==='dashboard') loadDashboard();
-  else if(name==='payments') loadPayments();
-  else if(name==='teachers') loadTeachers();
-  else if(name==='parents') loadParents();
-  else if(name==='students') loadStudents();
-  else if(name==='feedback') loadFeedback();
-  else if(name==='lessons') loadLessons();
+  const pages={dashboard:loadDashboard,payments:loadPayments,teachers:loadTeachers,parents:loadParents,feedback:loadFeedback,lessons:loadLessons};
+  if(pages[name]) pages[name]();
 }
 
-function fd(d) {
-  if(!d) return '—';
-  return new Date(d).toLocaleDateString('ru',{day:'numeric',month:'short',year:'numeric'});
-}
-function ft(d) {
-  if(!d) return '—';
-  return new Date(d).toLocaleDateString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-}
+function fd(d){if(!d)return'—';return new Date(d).toLocaleDateString('ru',{day:'numeric',month:'short',year:'numeric'});}
+function ft(d){if(!d)return'—';return new Date(d).toLocaleDateString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ── MODAL ──
+function openModal(html){document.getElementById('modal-inner').innerHTML=html;document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
 
 // ── NOTIF DOTS ──
-async function loadNotifDots() {
-  const [{data:pays},{data:fbs}] = await Promise.all([
-    sb.from('payment_requests').select('id',{count:'exact',head:true}).is('activated_at',null),
-    sb.from('feedback').select('id',{count:'exact',head:true}).is('read_at',null)
-  ]);
-  const pc = pays?.length||0, fc = fbs?.length||0;
-  const pd = document.getElementById('pay-dot');
-  const fd2 = document.getElementById('fb-dot');
-  if(pd){ pd.style.display=pc>0?'inline':'none'; pd.textContent=pc; }
-  if(fd2){ fd2.style.display=fc>0?'inline':'none'; fd2.textContent=fc; }
+async function loadNotifDots(){
+  try{
+    const[{data:pays},{data:fbs}]=await Promise.all([
+      sb.from('payment_requests').select('id').is('activated_at',null),
+      sb.from('feedback').select('id').is('read_at',null)
+    ]);
+    const pc=(pays||[]).length,fc=(fbs||[]).length;
+    const pd=document.getElementById('pay-dot'),fd2=document.getElementById('fb-dot');
+    if(pd){pd.style.display=pc>0?'inline':'none';pd.textContent=pc;}
+    if(fd2){fd2.style.display=fc>0?'inline':'none';fd2.textContent=fc;}
+  }catch(e){}
 }
 
 // ── DASHBOARD ──
-async function loadDashboard() {
-  const [
-    {count:teachers}, {count:parents}, {count:students},
-    {count:lessons}, {count:pendingPays}, {data:recentFb},
-    {data:recentPays}, {count:paidParents}
-  ] = await Promise.all([
-    sb.from('profiles').select('*',{count:'exact',head:true}).eq('role','teacher'),
-    sb.from('profiles').select('*',{count:'exact',head:true}).eq('role','parent'),
-    sb.from('students').select('*',{count:'exact',head:true}),
-    sb.from('lessons').select('*',{count:'exact',head:true}),
-    sb.from('payment_requests').select('*',{count:'exact',head:true}).is('activated_at',null),
-    sb.from('feedback').select('*').order('created_at',{ascending:false}).limit(3),
-    sb.from('payment_requests').select('*').order('created_at',{ascending:false}).limit(5),
-    sb.from('profiles').select('*',{count:'exact',head:true}).eq('role','parent').gt('paid_until',new Date().toISOString())
-  ]);
-  const m = document.getElementById('main-content');
-  m.innerHTML=`
-    <div class="page-title">Дашборд</div>
-    <div class="page-sub">Общая статистика платформы</div>
-    <div class="stat-grid">
-      <div class="stat-card"><div class="stat-val" style="color:var(--a)">${teachers||0}</div><div class="stat-lbl">Учителей</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--g)">${parents||0}</div><div class="stat-lbl">Родителей</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--o)">${students||0}</div><div class="stat-lbl">Учеников</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--t)">${lessons||0}</div><div class="stat-lbl">Уроков</div></div>
-    </div>
-    <div class="stat-grid">
-      <div class="stat-card" style="border-color:${pendingPays>0?'var(--r)':'var(--b)'}">
-        <div class="stat-val" style="color:${pendingPays>0?'var(--r)':'var(--g)'}">${pendingPays||0}</div>
-        <div class="stat-lbl">Ждут активации</div>
+async function loadDashboard(){
+  try{
+    const[
+      {count:teachers},{count:parents},{count:students},{count:lessons},
+      {data:pendingPays},{data:recentFb},{data:recentPays}
+    ]=await Promise.all([
+      sb.from('profiles').select('*',{count:'exact',head:true}).eq('role','teacher'),
+      sb.from('profiles').select('*',{count:'exact',head:true}).eq('role','parent'),
+      sb.from('students').select('*',{count:'exact',head:true}),
+      sb.from('lessons').select('*',{count:'exact',head:true}),
+      sb.from('payment_requests').select('*').is('activated_at',null).order('created_at',{ascending:false}),
+      sb.from('feedback').select('*').order('created_at',{ascending:false}).limit(3),
+      sb.from('payment_requests').select('*').order('created_at',{ascending:false}).limit(5)
+    ]);
+    const pc=(pendingPays||[]).length;
+    const m=document.getElementById('main-content');
+    m.innerHTML=`
+      <div class="page-title">Дашборд 📊</div>
+      <div class="page-sub">Общая статистика платформы</div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-val" style="color:var(--a)">${teachers||0}</div><div class="stat-lbl">Учителей</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--g)">${parents||0}</div><div class="stat-lbl">Родителей</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--o)">${students||0}</div><div class="stat-lbl">Учеников</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--t)">${lessons||0}</div><div class="stat-lbl">Уроков</div></div>
       </div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--g)">${paidParents||0}</div><div class="stat-lbl">Платящих родителей</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--a)">${(recentFb||[]).length}</div><div class="stat-lbl">Новых отзывов</div></div>
-      <div class="stat-card"><div class="stat-val" style="color:var(--o)">${Math.round((paidParents||0)/(parents||1)*100)}%</div><div class="stat-lbl">Конверсия</div></div>
+      ${pc>0?`<div class="card" style="border-color:var(--r)">
+        <div class="card-title">🔴 Ожидают активации <span class="bdg br">${pc}</span></div>
+        ${(pendingPays||[]).map(p=>payRow(p)).join('')}
+        <button class="btn btn-p" style="margin-top:12px" onclick="showPage('payments',document.getElementById('nav-payments'))">Все заявки →</button>
+      </div>`:'<div class="card" style="border-color:var(--g)"><div style="color:var(--g);font-weight:700">✅ Нет ожидающих заявок на оплату</div></div>'}
+      <div class="card">
+        <div class="card-title">💬 Последние отзывы</div>
+        ${(recentFb||[]).length?(recentFb||[]).map(f=>fbRow(f)).join(''):'<div class="empty-state"><div class="ei">💬</div><p>Отзывов пока нет</p></div>'}
+      </div>`;
+  }catch(e){document.getElementById('main-content').innerHTML=`<div style="color:var(--r);padding:20px">Ошибка: ${e.message}</div>`;}
+}
+
+function payRow(p,done=false){
+  return`<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--b)">
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700">${esc(p.name||'—')}</div>
+      <div style="font-size:12px;color:var(--t3)">${esc(p.email||'—')} · ${ft(p.created_at)}</div>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        ${p.amount?`<span class="bdg bg">💰 ${p.amount}₽</span>`:''}
+        <span class="bdg bb">👶 ${p.children_count||1} реб.</span>
+        ${done?`<span class="bdg bg">✅ ${ft(p.activated_at)}</span>`:''}
+      </div>
     </div>
-    ${pendingPays>0?`<div class="card" style="border-color:var(--r)">
-      <div class="card-title">🔴 Ожидают активации <span class="bdg br">${pendingPays}</span></div>
-      ${(recentPays||[]).filter(p=>!p.activated_at).map(p=>`
-        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--b)">
-          <div style="flex:1">
-            <div style="font-weight:700;font-size:14px">${p.name||p.email}</div>
-            <div style="font-size:12px;color:var(--t3)">${p.email} · ${ft(p.created_at)}</div>
-            ${p.amount?`<div style="font-size:12px;color:var(--g);font-weight:700">${p.amount}₽</div>`:''}
-          </div>
-          <button class="btn btn-g" onclick="activateParent('${p.id}','${p.user_id}')">✓ Активировать</button>
-        </div>`).join('')}
-      <button class="btn btn-p" style="margin-top:12px" onclick="showPage('payments',document.getElementById('nav-payments'))">Все заявки →</button>
-    </div>`:''}
-    <div class="card">
-      <div class="card-title">💬 Последние отзывы</div>
-      ${(recentFb||[]).length?recentFb.map(f=>`
-        <div style="padding:10px 0;border-bottom:1px solid var(--b)">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span class="bdg bb">${f.role}</span>
-            ${f.rating?`<span class="stars">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>`:''}
-            <span style="font-size:11px;color:var(--t3);margin-left:auto">${ft(f.created_at)}</span>
-          </div>
-          <div style="font-size:13px;color:var(--t2)">${f.text}</div>
-        </div>`).join(''):`<div class="empty-state"><div class="ei">💬</div><p>Отзывов пока нет</p></div>`}
-    </div>`;
+    ${!done?`<button class="btn btn-g" onclick="activateParent('${p.id}','${p.user_id}','${esc(p.name)}')">✓ Активировать</button>`:''}
+  </div>`;
+}
+
+function fbRow(f){
+  return`<div style="padding:10px 0;border-bottom:1px solid var(--b)">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+      <span class="bdg bb">${f.role||'—'}</span>
+      ${f.rating?`<span class="stars">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>`:''}
+      <span style="font-size:11px;color:var(--t3);margin-left:auto">${ft(f.created_at)}</span>
+    </div>
+    <div style="font-size:13px;color:var(--t2)">${esc(f.text||'')}</div>
+  </div>`;
 }
 
 // ── PAYMENTS ──
-async function loadPayments() {
-  const {data} = await sb.from('payment_requests').select('*').order('created_at',{ascending:false});
-  const m = document.getElementById('main-content');
-  const pending = (data||[]).filter(p=>!p.activated_at);
-  const done = (data||[]).filter(p=>p.activated_at);
-  m.innerHTML=`
-    <div class="page-title">Оплаты 💰</div>
-    <div class="page-sub">Заявки на активацию от родителей</div>
-    <div class="tabs">
-      <button class="tab active" onclick="payTab('pending',this)">Ожидают (${pending.length})</button>
-      <button class="tab" onclick="payTab('done',this)">Активированы (${done.length})</button>
-    </div>
-    <div id="pay-pending">
-      ${pending.length?pending.map(p=>payCard(p,false)).join(''):`<div class="empty-state"><div class="ei">🎉</div><p>Нет ожидающих заявок</p></div>`}
-    </div>
-    <div id="pay-done" style="display:none">
-      ${done.length?done.map(p=>payCard(p,true)).join(''):`<div class="empty-state"><div class="ei">📋</div><p>Нет активированных</p></div>`}
-    </div>`;
+async function loadPayments(){
+  try{
+    const{data}=await sb.from('payment_requests').select('*').order('created_at',{ascending:false});
+    const pending=(data||[]).filter(p=>!p.activated_at);
+    const done=(data||[]).filter(p=>p.activated_at);
+    const m=document.getElementById('main-content');
+    m.innerHTML=`
+      <div class="page-title">Оплаты 💰</div>
+      <div class="page-sub">Заявки «Я оплатил» от родителей</div>
+      <div class="tabs">
+        <button class="tab active" onclick="payTab('pending',this)">Ожидают (${pending.length})</button>
+        <button class="tab" onclick="payTab('done',this)">Активированы (${done.length})</button>
+      </div>
+      <div id="pay-pending">
+        ${pending.length?pending.map(p=>payCard(p,false)).join(''):'<div class="empty-state"><div class="ei">🎉</div><p>Нет ожидающих заявок</p></div>'}
+      </div>
+      <div id="pay-done" style="display:none">
+        ${done.length?done.map(p=>payCard(p,true)).join(''):'<div class="empty-state"><div class="ei">📋</div><p>Нет активированных</p></div>'}
+      </div>`;
+  }catch(e){document.getElementById('main-content').innerHTML=`<div style="color:var(--r);padding:20px">Ошибка: ${e.message}</div>`;}
 }
 
-function payTab(tab, el) {
+function payTab(tab,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  document.getElementById('pay-pending').style.display = tab==='pending'?'block':'none';
-  document.getElementById('pay-done').style.display = tab==='done'?'block':'none';
+  document.getElementById('pay-pending').style.display=tab==='pending'?'block':'none';
+  document.getElementById('pay-done').style.display=tab==='done'?'block':'none';
 }
 
-function payCard(p, done) {
-  return `<div class="card" style="border-color:${done?'var(--b)':'var(--o)'}">
+function payCard(p,done){
+  return`<div class="card" style="border-color:${done?'var(--b)':'var(--o)'}">
     <div style="display:flex;align-items:flex-start;gap:14px">
       <div style="width:44px;height:44px;background:${done?'var(--gl)':'var(--ol)'};border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${done?'✅':'⏳'}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-weight:800;font-size:15px">${p.name||'—'}</div>
-        <div style="font-size:13px;color:var(--t2);margin-top:2px">${p.email}</div>
+        <div style="font-weight:800;font-size:15px">${esc(p.name||'—')}</div>
+        <div style="font-size:13px;color:var(--t2);margin-top:2px">${esc(p.email||'—')}</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
           ${p.amount?`<span class="bdg bg">💰 ${p.amount}₽</span>`:''}
-          <span class="bdg bb">👶 ${p.children_count||1} ${p.children_count>1?'детей':'ребёнок'}</span>
+          <span class="bdg bb">👶 ${p.children_count||1} реб.</span>
           <span class="bdg bo">${ft(p.created_at)}</span>
           ${done?`<span class="bdg bg">Активировано: ${ft(p.activated_at)}</span>`:''}
         </div>
       </div>
-      ${!done?`<button class="btn btn-g" onclick="activateParent('${p.id}','${p.user_id}')">✓ Активировать</button>`:''}
+      ${!done?`<button class="btn btn-g" onclick="activateParent('${p.id}','${p.user_id}','${esc(p.name)}')">✓ Активировать</button>`:''}
     </div>
   </div>`;
 }
 
-async function activateParent(reqId, userId) {
-  const months = parseInt(prompt('Активировать на сколько месяцев?', '1'))||1;
-  if(!months) return;
-  const paidUntil = new Date();
-  paidUntil.setMonth(paidUntil.getMonth() + months);
-  const [{error:e1},{error:e2}] = await Promise.all([
+async function activateParent(reqId,userId,name){
+  openModal(`<div class="modal-title">💰 Активация: ${esc(name)}</div>
+    <div class="fg"><label class="fl">Сумма пополнения (₽)</label><input class="fi" id="act-amount" type="number" placeholder="300" min="0"></div>
+    <div class="fg"><label class="fl">Кол-во детей</label>
+      <select class="fi" id="act-children"><option value="1">1 ребёнок — 300₽/мес</option><option value="2">2+ детей — 500₽/мес</option></select>
+    </div>
+    <div style="background:var(--al);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;color:var(--t2)" id="act-preview">Введите сумму</div>
+    <div class="brow">
+      <button class="btn btn-s" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-g" id="act-btn" onclick="doActivate('${reqId}','${userId}')">✓ Активировать</button>
+    </div>`);
+  // Живой расчёт
+  const upd=()=>{
+    const amt=parseInt(document.getElementById('act-amount')?.value)||0;
+    const ch=parseInt(document.getElementById('act-children')?.value)||1;
+    const price=ch>=2?500:300;
+    const months=amt>0?Math.floor(amt/price):0;
+    const rem=amt>0?amt%price:0;
+    document.getElementById('act-preview').innerHTML=amt>0
+      ?`<strong>Сумма ${amt}₽</strong> → ${months} мес по ${price}₽ + остаток ${rem}₽ на счёте`
+      :'Введите сумму';
+  };
+  setTimeout(()=>{
+    document.getElementById('act-amount')?.addEventListener('input',upd);
+    document.getElementById('act-children')?.addEventListener('change',upd);
+  },100);
+}
+
+async function doActivate(reqId,userId){
+  const amt=parseInt(document.getElementById('act-amount')?.value)||0;
+  if(amt<1){alert('Введите сумму');return;}
+  const btn=document.getElementById('act-btn');
+  if(btn){btn.disabled=true;btn.textContent='...';}
+  // Получаем текущий баланс
+  const{data:prof}=await sb.from('profiles').select('balance').eq('id',userId).single();
+  const newBalance=(prof?.balance||0)+amt;
+  const[{error:e1},{error:e2}]=await Promise.all([
     sb.from('payment_requests').update({activated_at:new Date().toISOString(),activated_by:'admin'}).eq('id',reqId),
-    sb.from('profiles').update({paid_until:paidUntil.toISOString()}).eq('id',userId)
+    sb.from('profiles').update({balance:newBalance}).eq('id',userId)
   ]);
-  if(e1||e2) { alert('Ошибка: '+(e1?.message||e2?.message)); return; }
+  if(e1||e2){alert('Ошибка: '+(e1?.message||e2?.message));if(btn){btn.disabled=false;btn.textContent='✓ Активировать';}return;}
   // Уведомление родителю
-  await sb.from('notifications').insert({recipient_id:userId,type:'payment_activated',title:'✅ Доступ активирован!',body:`Ваш аккаунт активирован до ${paidUntil.toLocaleDateString('ru',{day:'numeric',month:'long'})}`}).catch(()=>{});
-  await fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:[userId],title:'✅ Доступ активирован!',body:`Аккаунт Lesso активирован на ${months} мес.`})}).catch(()=>{});
-  alert(`✅ Активировано до ${paidUntil.toLocaleDateString('ru')}`);
+  await sb.from('notifications').insert({recipient_id:userId,type:'payment_activated',title:'✅ Баланс пополнен!',body:`Пополнение: ${amt}₽. Текущий баланс: ${newBalance}₽`}).catch(()=>{});
+  await fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:[userId],title:'✅ Баланс пополнен!',body:`Пополнение ${amt}₽ · Баланс: ${newBalance}₽`})}).catch(()=>{});
+  closeModal();
+  alert(`✅ Баланс пополнен на ${amt}₽. Новый баланс: ${newBalance}₽`);
   loadPayments();
   loadNotifDots();
 }
 
-// ── TEACHERS ──
-async function loadTeachers() {
-  const {data} = await sb.from('profiles').select('*').eq('role','teacher').order('created_at',{ascending:false});
-  const m = document.getElementById('main-content');
-  m.innerHTML=`
-    <div class="page-title">Учителя 👨‍🏫</div>
-    <div class="page-sub">Все зарегистрированные учителя</div>
-    <div class="search-wrap">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input class="search-inp" placeholder="Поиск по имени или email..." oninput="filterTable(this.value,'teachers-tbl')">
-    </div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <table class="tbl" id="teachers-tbl">
-        <thead><tr>
-          <th>Учитель</th><th>Код</th><th>Учеников</th><th>Лимит</th><th>Дата</th><th>Действия</th>
-        </tr></thead>
-        <tbody>
-          ${(data||[]).map(t=>`<tr>
-            <td><div style="font-weight:700">${t.name}</div><div style="font-size:12px;color:var(--t3)">${t.email||'—'}</div></td>
-            <td><span class="bdg bb">${t.teacher_code||'—'}</span></td>
-            <td id="tc-${t.id}">...</td>
-            <td>
-              <div style="display:flex;align-items:center;gap:6px">
-                <span style="font-weight:700">${t.students_limit||1}</span>
-                <button class="btn btn-s" style="padding:4px 8px;font-size:11px" onclick="editLimit('${t.id}','${t.name}',${t.students_limit||1})">✏️</button>
-              </div>
-            </td>
-            <td style="font-size:12px;color:var(--t3)">${fd(t.created_at)}</td>
-            <td>
-              <button class="btn btn-r" style="padding:4px 10px;font-size:11px" onclick="deleteUser('${t.id}','${t.name}','teacher')">Удалить</button>
-            </td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
-  // Загружаем счётчики учеников
-  (data||[]).forEach(async t => {
-    const {count} = await sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',t.id);
-    const el = document.getElementById('tc-'+t.id);
-    if(el) el.textContent = count||0;
-  });
-}
-
-async function editLimit(id, name, current) {
-  const val = parseInt(prompt(`Лимит учеников для "${name}" (сейчас ${current}):`, current));
-  if(!val||val<1) return;
-  const {error} = await sb.from('profiles').update({students_limit:val}).eq('id',id);
-  if(error){ alert('Ошибка: '+error.message); return; }
-  alert(`✅ Лимит изменён на ${val}`);
-  loadTeachers();
-}
-
 // ── PARENTS ──
-async function loadParents() {
-  const {data} = await sb.from('profiles').select('*').eq('role','parent').order('created_at',{ascending:false});
-  const now = new Date();
-  const m = document.getElementById('main-content');
-  m.innerHTML=`
-    <div class="page-title">Родители 👨‍👩‍👦</div>
-    <div class="page-sub">Все зарегистрированные родители</div>
-    <div class="search-wrap">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input class="search-inp" placeholder="Поиск..." oninput="filterTable(this.value,'parents-tbl')">
-    </div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <table class="tbl" id="parents-tbl">
-        <thead><tr>
-          <th>Родитель</th><th>Статус</th><th>Оплачено до</th><th>Триал до</th><th>Дети</th><th>Действия</th>
-        </tr></thead>
-        <tbody>
-          ${(data||[]).map(p=>{
-            const isPaid = p.paid_until && new Date(p.paid_until)>now;
-            const isTrial = p.trial_until && new Date(p.trial_until)>now;
-            const status = isPaid?'paid':isTrial?'trial':'expired';
-            return `<tr>
-              <td><div style="font-weight:700">${p.name}</div><div style="font-size:12px;color:var(--t3)">${p.email||'—'}</div></td>
-              <td>${status==='paid'?'<span class="bdg bg">✅ Активен</span>':status==='trial'?'<span class="bdg bo">⏳ Триал</span>':'<span class="bdg br">❌ Истёк</span>'}</td>
-              <td style="font-size:13px">${p.paid_until?fd(p.paid_until):'—'}</td>
-              <td style="font-size:13px;color:var(--t3)">${p.trial_until?fd(p.trial_until):'—'}</td>
-              <td id="pc-${p.id}">...</td>
-              <td style="display:flex;gap:6px">
-                <button class="btn btn-g" style="padding:4px 8px;font-size:11px" onclick="extendParent('${p.id}','${p.name}')">+Месяц</button>
-                <button class="btn btn-r" style="padding:4px 8px;font-size:11px" onclick="deleteUser('${p.id}','${p.name}','parent')">Удалить</button>
-              </td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>`;
-  (data||[]).forEach(async p => {
-    const {count} = await sb.from('students').select('*',{count:'exact',head:true}).or(`parent_user_id.eq.${p.id},parent_user_id2.eq.${p.id}`);
-    const el = document.getElementById('pc-'+p.id);
-    if(el) el.textContent = count||0;
-  });
+async function loadParents(){
+  try{
+    const{data}=await sb.from('profiles').select('*').eq('role','parent').order('created_at',{ascending:false});
+    const now=new Date();
+    const m=document.getElementById('main-content');
+    m.innerHTML=`
+      <div class="page-title">Родители 👨‍👩‍👦</div>
+      <div class="page-sub">Управление родителями и их балансом</div>
+      <div class="search-wrap">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input class="search-inp" placeholder="Поиск по имени или email..." oninput="filterTable(this.value,'parents-tbl')">
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="tbl" id="parents-tbl">
+          <thead><tr>
+            <th>Родитель</th><th>Баланс</th><th>Статус</th><th>Триал до</th><th>Регистрация</th><th>Действия</th>
+          </tr></thead>
+          <tbody>
+            ${(data||[]).map(p=>{
+              const bal=p.balance||0;
+              const isTrial=p.trial_until&&new Date(p.trial_until)>now;
+              const price=300; // упрощённо
+              const monthsLeft=bal>0?Math.floor(bal/price):0;
+              const status=bal>0?'active':isTrial?'trial':'expired';
+              return`<tr>
+                <td>
+                  <div style="font-weight:700">${esc(p.name)}</div>
+                  <div style="font-size:12px;color:var(--t3)">${esc(p.email||'—')}</div>
+                </td>
+                <td>
+                  <div style="font-family:'Fraunces',sans-serif;font-size:18px;font-weight:900;color:${bal>0?'var(--g)':'var(--r)'}">${bal}₽</div>
+                  ${bal>0?`<div style="font-size:11px;color:var(--t3)">~${monthsLeft} мес</div>`:''}
+                </td>
+                <td>${status==='active'?'<span class="bdg bg">✅ Активен</span>':status==='trial'?'<span class="bdg bo">⏳ Триал</span>':'<span class="bdg br">❌ Истёк</span>'}</td>
+                <td style="font-size:12px;color:var(--t3)">${p.trial_until?fd(p.trial_until):'—'}</td>
+                <td style="font-size:12px;color:var(--t3)">${fd(p.created_at)}</td>
+                <td>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <button class="btn btn-g" style="padding:5px 10px;font-size:11px" onclick="addBalance('${p.id}','${esc(p.name)}',${bal})">+ Баланс</button>
+                    <button class="btn btn-s" style="padding:5px 10px;font-size:11px" onclick="viewParentChildren('${p.id}','${esc(p.name)}')">👶 Дети</button>
+                    <button class="btn btn-r" style="padding:5px 10px;font-size:11px" onclick="deleteUser('${p.id}','${esc(p.name)}','parent')">Удалить</button>
+                  </div>
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }catch(e){document.getElementById('main-content').innerHTML=`<div style="color:var(--r);padding:20px">Ошибка: ${e.message}</div>`;}
 }
 
-async function extendParent(id, name) {
-  const months = parseInt(prompt(`Продлить доступ для "${name}" на сколько месяцев?`, '1'))||1;
-  if(!months) return;
-  const {data:prof} = await sb.from('profiles').select('paid_until').eq('id',id).single();
-  const base = prof?.paid_until && new Date(prof.paid_until)>new Date() ? new Date(prof.paid_until) : new Date();
-  base.setMonth(base.getMonth()+months);
-  const {error} = await sb.from('profiles').update({paid_until:base.toISOString()}).eq('id',id);
-  if(error){ alert('Ошибка: '+error.message); return; }
-  await sb.from('notifications').insert({recipient_id:id,type:'payment_activated',title:'✅ Доступ продлён!',body:`Ваш аккаунт активирован до ${base.toLocaleDateString('ru',{day:'numeric',month:'long'})}`}).catch(()=>{});
-  alert(`✅ Продлено до ${base.toLocaleDateString('ru')}`);
+async function addBalance(userId,name,currentBal){
+  openModal(`<div class="modal-title">💰 Пополнение баланса: ${esc(name)}</div>
+    <div style="background:var(--al);border-radius:8px;padding:12px;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--t2)">Текущий баланс: <strong style="color:var(--a)">${currentBal}₽</strong></div>
+    </div>
+    <div class="fg"><label class="fl">Сумма пополнения (₽)</label><input class="fi" id="bal-amount" type="number" placeholder="300" min="1" oninput="updBalPreview(${currentBal})"></div>
+    <div style="background:var(--gl);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px" id="bal-preview">Введите сумму</div>
+    <div class="brow">
+      <button class="btn btn-s" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-g" id="bal-btn" onclick="doAddBalance('${userId}',${currentBal})">Пополнить</button>
+    </div>`);
+}
+
+function updBalPreview(current){
+  const amt=parseInt(document.getElementById('bal-amount')?.value)||0;
+  const newBal=current+amt;
+  document.getElementById('bal-preview').innerHTML=amt>0
+    ?`Новый баланс: <strong style="color:var(--g)">${newBal}₽</strong> (~${Math.floor(newBal/300)} мес для 1 реб.)`
+    :'Введите сумму';
+}
+
+async function doAddBalance(userId,currentBal){
+  const amt=parseInt(document.getElementById('bal-amount')?.value)||0;
+  if(amt<1){alert('Введите сумму');return;}
+  const btn=document.getElementById('bal-btn');
+  if(btn){btn.disabled=true;btn.textContent='...';}
+  const newBal=currentBal+amt;
+  const{error}=await sb.from('profiles').update({balance:newBal}).eq('id',userId);
+  if(error){alert('Ошибка: '+error.message);if(btn){btn.disabled=false;btn.textContent='Пополнить';}return;}
+  await sb.from('notifications').insert({recipient_id:userId,type:'payment_activated',title:'✅ Баланс пополнен!',body:`Пополнение: ${amt}₽. Баланс: ${newBal}₽`}).catch(()=>{});
+  await fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:[userId],title:'✅ Баланс пополнен!',body:`+${amt}₽ · Баланс: ${newBal}₽`})}).catch(()=>{});
+  closeModal();
+  alert(`✅ Баланс пополнен. Новый баланс: ${newBal}₽`);
   loadParents();
 }
 
-// ── STUDENTS ──
-async function loadStudents() {
-  const {data} = await sb.from('students').select('*').order('created_at',{ascending:false});
-  const tIds = [...new Set((data||[]).map(s=>s.teacher_id).filter(Boolean))];
-  const {data:teachers} = tIds.length ? await sb.from('profiles').select('id,name').in('id',tIds) : {data:[]};
-  const tMap = Object.fromEntries((teachers||[]).map(t=>[t.id,t.name]));
-  const m = document.getElementById('main-content');
-  m.innerHTML=`
-    <div class="page-title">Ученики 🧒</div>
-    <div class="page-sub">Все ученики на платформе</div>
-    <div class="search-wrap">
-      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input class="search-inp" placeholder="Поиск..." oninput="filterTable(this.value,'students-tbl')">
-    </div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <table class="tbl" id="students-tbl">
-        <thead><tr><th>Ученик</th><th>Предмет</th><th>Учитель</th><th>PIN</th><th>Статус</th><th>Действия</th></tr></thead>
-        <tbody>
-          ${(data||[]).map(s=>`<tr>
-            <td style="font-weight:700">${s.name}</td>
-            <td style="color:var(--t3)">${s.subject||'—'}</td>
-            <td><span class="bdg bb">${tMap[s.teacher_id]||'—'}</span></td>
-            <td><code style="background:var(--card2);padding:2px 6px;border-radius:4px;font-size:12px">${s.pin}</code></td>
-            <td>${s.active!==false?'<span class="bdg bg">Активен</span>':'<span class="bdg br">Заблокирован</span>'}</td>
-            <td>
-              <button class="btn btn-r" style="padding:4px 10px;font-size:11px" onclick="deleteStudent('${s.id}','${s.name}')">Удалить</button>
-            </td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
+async function viewParentChildren(parentId,parentName){
+  const{data:stus}=await sb.from('students').select('*').or(`parent_user_id.eq.${parentId},parent_user_id2.eq.${parentId}`);
+  const tIds=[...new Set((stus||[]).map(s=>s.teacher_id).filter(Boolean))];
+  const{data:teachers}=tIds.length?await sb.from('profiles').select('id,name,teacher_code').in('id',tIds):{data:[]};
+  const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t]));
+  openModal(`<div class="modal-title">👶 Дети: ${esc(parentName)}</div>
+    ${(stus||[]).length?(stus||[]).map(s=>{
+      const t=tMap[s.teacher_id]||{};
+      return`<div style="background:var(--card2);border-radius:var(--rs);padding:14px;margin-bottom:10px">
+        <div style="font-weight:800;font-size:15px;margin-bottom:8px">${esc(s.name)}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+          <div><span style="color:var(--t3)">Предмет:</span> ${esc(s.subject||'—')}</div>
+          <div><span style="color:var(--t3)">PIN:</span> <code style="background:var(--bg);padding:2px 6px;border-radius:4px">${esc(s.pin)}</code></div>
+          <div><span style="color:var(--t3)">Учитель:</span> ${esc(t.name||'—')}</div>
+          <div><span style="color:var(--t3)">Код учителя:</span> <code style="background:var(--bg);padding:2px 6px;border-radius:4px">${esc(t.teacher_code||'—')}</code></div>
+          ${s.active===false?'<div style="color:var(--r);font-weight:700">❌ Заблокирован</div>':''}
+        </div>
+      </div>`;
+    }).join(''):'<div class="empty-state"><div class="ei">👶</div><p>Нет привязанных детей</p></div>'}
+    <button class="btn btn-s" style="width:100%;margin-top:8px" onclick="closeModal()">Закрыть</button>`);
+}
+
+// ── TEACHERS ──
+async function loadTeachers(){
+  try{
+    const{data}=await sb.from('profiles').select('*').eq('role','teacher').order('created_at',{ascending:false});
+    const m=document.getElementById('main-content');
+    m.innerHTML=`
+      <div class="page-title">Учителя 👨‍🏫</div>
+      <div class="page-sub">Все зарегистрированные учителя</div>
+      <div class="search-wrap">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input class="search-inp" placeholder="Поиск..." oninput="filterTable(this.value,'teachers-tbl')">
+      </div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="tbl" id="teachers-tbl">
+          <thead><tr><th>Учитель</th><th>Код</th><th>Учеников</th><th>Регистрация</th><th>Действия</th></tr></thead>
+          <tbody>
+            ${(data||[]).map(t=>`<tr>
+              <td><div style="font-weight:700">${esc(t.name)}</div><div style="font-size:12px;color:var(--t3)">${esc(t.email||'—')}</div></td>
+              <td><span class="bdg bb">${esc(t.teacher_code||'—')}</span></td>
+              <td id="tc-${t.id}"><div class="spin" style="width:14px;height:14px;border-width:2px"></div></td>
+              <td style="font-size:12px;color:var(--t3)">${fd(t.created_at)}</td>
+              <td>
+                <div style="display:flex;gap:6px">
+                  <button class="btn btn-s" style="padding:5px 10px;font-size:11px" onclick="viewTeacherStudents('${t.id}','${esc(t.name)}')">👥 Ученики</button>
+                  <button class="btn btn-r" style="padding:5px 10px;font-size:11px" onclick="deleteUser('${t.id}','${esc(t.name)}','teacher')">Удалить</button>
+                </div>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    // Счётчики учеников асинхронно
+    (data||[]).forEach(async t=>{
+      const{count}=await sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',t.id);
+      const el=document.getElementById('tc-'+t.id);
+      if(el) el.textContent=count||0;
+    });
+  }catch(e){document.getElementById('main-content').innerHTML=`<div style="color:var(--r);padding:20px">Ошибка: ${e.message}</div>`;}
+}
+
+async function viewTeacherStudents(teacherId,teacherName){
+  const{data:stus}=await sb.from('students').select('*').eq('teacher_id',teacherId).order('name');
+  openModal(`<div class="modal-title">👥 Ученики: ${esc(teacherName)}</div>
+    ${(stus||[]).length?(stus||[]).map(s=>`<div style="background:var(--card2);border-radius:var(--rs);padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+      <div style="width:36px;height:36px;background:var(--al);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--a);flex-shrink:0">${esc(s.name[0].toUpperCase())}</div>
+      <div style="flex:1">
+        <div style="font-weight:700">${esc(s.name)} ${s.active===false?'<span style="color:var(--r);font-size:11px">заблокирован</span>':''}</div>
+        <div style="font-size:12px;color:var(--t3)">${esc(s.subject||'—')} · PIN: ${esc(s.pin)}</div>
+      </div>
+    </div>`).join(''):'<div class="empty-state"><div class="ei">👥</div><p>Нет учеников</p></div>'}
+    <button class="btn btn-s" style="width:100%;margin-top:8px" onclick="closeModal()">Закрыть</button>`);
 }
 
 // ── FEEDBACK ──
-async function loadFeedback() {
-  const {data} = await sb.from('feedback').select('*').order('created_at',{ascending:false});
-  // Помечаем как прочитанные
-  await sb.from('feedback').update({read_at:new Date().toISOString()}).is('read_at',null).catch(()=>{});
-  loadNotifDots();
-  const m = document.getElementById('main-content');
-  m.innerHTML=`
-    <div class="page-title">Отзывы 💬</div>
-    <div class="page-sub">Обратная связь от пользователей</div>
-    ${(data||[]).length?(data||[]).map(f=>`
-      <div class="card">
-        <div style="display:flex;align-items:flex-start;gap:14px">
-          <div style="width:44px;height:44px;background:var(--al);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${f.role==='teacher'?'👨‍🏫':f.role==='parent'?'👨‍👩‍👦':'🧒'}</div>
-          <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-              <div style="font-weight:700">${f.name||'Аноним'}</div>
-              <span class="bdg bb">${f.role}</span>
-              ${f.rating?`<span class="stars">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>`:''}
-              <span style="font-size:11px;color:var(--t3);margin-left:auto">${ft(f.created_at)}</span>
+async function loadFeedback(){
+  try{
+    const{data}=await sb.from('feedback').select('*').order('created_at',{ascending:false});
+    await sb.from('feedback').update({read_at:new Date().toISOString()}).is('read_at',null).catch(()=>{});
+    loadNotifDots();
+    const m=document.getElementById('main-content');
+    m.innerHTML=`
+      <div class="page-title">Отзывы 💬</div>
+      <div class="page-sub">Обратная связь от пользователей</div>
+      ${(data||[]).length?(data||[]).map(f=>`
+        <div class="card">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <div style="width:44px;height:44px;background:var(--al);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${f.role==='teacher'?'👨‍🏫':f.role==='parent'?'👨‍👩‍👦':'🧒'}</div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                <div style="font-weight:700">${esc(f.name||'Аноним')}</div>
+                <span class="bdg bb">${f.role||'—'}</span>
+                ${f.rating?`<span class="stars">${'★'.repeat(f.rating)}${'☆'.repeat(5-f.rating)}</span>`:''}
+                <span style="font-size:11px;color:var(--t3);margin-left:auto">${ft(f.created_at)}</span>
+              </div>
+              <div style="font-size:14px;color:var(--t);line-height:1.6">${esc(f.text||'')}</div>
             </div>
-            <div style="font-size:14px;color:var(--t);line-height:1.6">${f.text}</div>
           </div>
-        </div>
-      </div>`).join(''):`<div class="empty-state"><div class="ei">💬</div><p>Отзывов пока нет</p></div>`}`;
+        </div>`).join(''):'<div class="empty-state"><div class="ei">💬</div><p>Отзывов пока нет</p></div>'}`;
+  }catch(e){document.getElementById('main-content').innerHTML=`<div style="color:var(--r);padding:20px">Ошибка: ${e.message}</div>`;}
 }
 
 // ── LESSONS ──
-async function loadLessons() {
-  const {data:ls} = await sb.from('lessons').select('*').order('created_at',{ascending:false}).limit(50);
-  const stuIds = [...new Set((ls||[]).map(l=>l.student_id).filter(Boolean))];
-  const {data:stus} = stuIds.length ? await sb.from('students').select('id,name').in('id',stuIds) : {data:[]};
-  const stuMap = Object.fromEntries((stus||[]).map(s=>[s.id,s.name]));
-  const m = document.getElementById('main-content');
-  m.innerHTML=`
-    <div class="page-title">Уроки 📅</div>
-    <div class="page-sub">Последние 50 уроков на платформе</div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <table class="tbl">
-        <thead><tr><th>Урок</th><th>Ученик</th><th>Дата</th><th>Статус</th><th>Оценка</th><th>ДЗ</th></tr></thead>
-        <tbody>
-          ${(ls||[]).map(l=>`<tr>
-            <td style="font-weight:700;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${l.title}</td>
-            <td>${stuMap[l.student_id]||'—'}</td>
-            <td style="font-size:12px;color:var(--t3)">${fd(l.date)}</td>
-            <td>${l.status==='done'?'<span class="bdg bg">✓ Готов</span>':l.status==='cancelled'?'<span class="bdg br">Отменён</span>':'<span class="bdg bo">Запланирован</span>'}</td>
-            <td>${l.grade?`<span style="font-weight:800;color:${l.grade>=4?'var(--g)':l.grade===3?'var(--o)':'var(--r)'}">${l.grade}</span>`:'—'}</td>
-            <td>${l.homework?`${l.hw_done?'<span class="bdg bg">✅</span>':'<span class="bdg br">⏳</span>'}`:'—'}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
+async function loadLessons(){
+  try{
+    const{data:ls}=await sb.from('lessons').select('*').order('created_at',{ascending:false}).limit(50);
+    const stuIds=[...new Set((ls||[]).map(l=>l.student_id).filter(Boolean))];
+    const{data:stus}=stuIds.length?await sb.from('students').select('id,name').in('id',stuIds):{data:[]};
+    const stuMap=Object.fromEntries((stus||[]).map(s=>[s.id,s.name]));
+    const m=document.getElementById('main-content');
+    m.innerHTML=`
+      <div class="page-title">Уроки 📅</div>
+      <div class="page-sub">Последние 50 уроков на платформе</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table class="tbl">
+          <thead><tr><th>Урок</th><th>Ученик</th><th>Дата</th><th>Статус</th><th>Оценка</th><th>ДЗ</th></tr></thead>
+          <tbody>
+            ${(ls||[]).map(l=>`<tr>
+              <td style="font-weight:700;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(l.title)}</td>
+              <td>${esc(stuMap[l.student_id]||'—')}</td>
+              <td style="font-size:12px;color:var(--t3)">${fd(l.date)}</td>
+              <td>${l.status==='done'?'<span class="bdg bg">✓ Готов</span>':l.status==='cancelled'?'<span class="bdg br">Отменён</span>':'<span class="bdg bo">Запланирован</span>'}</td>
+              <td>${l.grade?`<span style="font-weight:800;color:${l.grade>=4?'var(--g)':l.grade===3?'var(--o)':'var(--r)'}">${l.grade}</span>`:'—'}</td>
+              <td>${l.homework?`${l.hw_done?'<span class="bdg bg">✅</span>':'<span class="bdg br">⏳</span>'}`:'—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }catch(e){document.getElementById('main-content').innerHTML=`<div style="color:var(--r);padding:20px">Ошибка: ${e.message}</div>`;}
 }
 
 // ── DELETE ──
-async function deleteUser(id, name, role) {
-  if(!confirm(`Удалить ${role==='teacher'?'учителя':'родителя'} "${name}"? Это действие необратимо.`)) return;
-  const {error} = await sb.from('profiles').delete().eq('id',id);
-  if(error){ alert('Ошибка: '+error.message); return; }
+async function deleteUser(id,name,role){
+  if(!confirm(`Удалить ${role==='teacher'?'учителя':'родителя'} "${name}"?\nЭто действие необратимо.`)) return;
+  const{error}=await sb.from('profiles').delete().eq('id',id);
+  if(error){alert('Ошибка: '+error.message);return;}
   alert(`✅ ${name} удалён`);
-  if(role==='teacher') loadTeachers();
-  else loadParents();
+  if(role==='teacher') loadTeachers(); else loadParents();
 }
 
-async function deleteStudent(id, name) {
-  if(!confirm(`Удалить ученика "${name}"?`)) return;
-  const {error} = await sb.from('students').delete().eq('id',id);
-  if(error){ alert('Ошибка: '+error.message); return; }
-  alert(`✅ ${name} удалён`);
-  loadStudents();
+// ── SEARCH ──
+function filterTable(query,tblId){
+  const rows=document.querySelectorAll(`#${tblId} tbody tr`);
+  const q=query.toLowerCase();
+  rows.forEach(row=>{row.style.display=row.textContent.toLowerCase().includes(q)?'':'none';});
 }
-
-// ── SEARCH FILTER ──
-function filterTable(query, tblId) {
-  const rows = document.querySelectorAll(`#${tblId} tbody tr`);
-  const q = query.toLowerCase();
-  rows.forEach(row => {
-    row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
-  });
-}
-
-// Обновляем нотиф-доты каждые 30 сек
-setInterval(loadNotifDots, 30000);
 </script>
 </body>
 </html>
