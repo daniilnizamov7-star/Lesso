@@ -392,13 +392,147 @@ function unlockBtn(id) {
 function renderRoles() {
   pg('pg-roles');
   document.getElementById('pg-roles').innerHTML = `<div class="auth-pg">
-    <div class="logo-big">Lesso</div><div class="logo-sub">Платформа для обучения</div>
+    <div class="logo-big">Lesso</div>
+    <div class="logo-sub">Платформа для обучения</div>
     <div class="rcards">
       <button class="rcard" onclick="showAuth('teacher')"><div class="ricon" style="background:#eff4ff">👨‍🏫</div><div><div class="rname">Учитель</div><div class="rdesc">Управление уроками и учениками</div></div>${chev()}</button>
       <button class="rcard" onclick="showAuth('parent')"><div class="ricon" style="background:#f0fdf4">👨‍👩‍👦</div><div><div class="rname">Родитель</div><div class="rdesc">Прогресс и контроль занятий</div></div>${chev()}</button>
       <button class="rcard" onclick="showTeachers()"><div class="ricon" style="background:#fff7ed">🧒</div><div><div class="rname">Ученик</div><div class="rdesc">Уроки, слова и карточки</div></div>${chev()}</button>
     </div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button onclick="openGuide()" style="flex:1;background:var(--al);color:var(--a);border:none;border-radius:var(--rs);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+        📖 Как пользоваться
+      </button>
+      <button onclick="openPublicFeedback()" style="flex:1;background:var(--gl);color:var(--g);border:none;border-radius:var(--rs);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+        💬 Оставить отзыв
+      </button>
+    </div>
+    <div style="font-size:11px;color:var(--t3);text-align:center;margin-top:16px">v1.0 · lesso-three.vercel.app</div>
   </div>`;
+}
+
+function openGuide() {
+  const mo = document.createElement('div');
+  mo.className='mo open'; mo.id='m-guide';
+  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:88dvh;overflow-y:auto">
+    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:4px">📖 Как пользоваться Lesso</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Коротко о каждой роли</div>
+
+    <!-- Учитель -->
+    <div style="background:var(--al);border-radius:var(--rs);padding:14px;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:800;margin-bottom:10px">👨‍🏫 Учитель</div>
+      <div style="font-size:13px;color:var(--t);line-height:1.7">
+        1. Зарегистрируйтесь и придумайте свой <b>код</b> (например ANNA1)<br>
+        2. Добавьте ученика: имя, предмет, PIN, цену урока и Zoom ID<br>
+        3. Создавайте уроки — ставьте оценки, задавайте ДЗ, прикрепляйте файлы<br>
+        4. Нажмите <b>«💰 Оплата»</b> чтобы внести пакет уроков — родитель увидит баланс<br>
+        5. В Аналитике смотрите посещаемость и прогресс каждого ученика
+      </div>
+    </div>
+
+    <!-- Родитель -->
+    <div style="background:var(--gl);border-radius:var(--rs);padding:14px;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:800;margin-bottom:10px">👨‍👩‍👦 Родитель</div>
+      <div style="font-size:13px;color:var(--t);line-height:1.7">
+        1. Зарегистрируйтесь по email<br>
+        2. На главной нажмите <b>+</b> → введите код учителя и PIN ребёнка<br>
+        3. На <b>Главной</b> — следующий урок, ДЗ и баланс оплаченных уроков<br>
+        4. В <b>Уроках</b> — вся история занятий с оценками<br>
+        5. В <b>Прогрессе</b> — посещаемость, оценки, словарь ребёнка
+      </div>
+    </div>
+
+    <!-- Ученик -->
+    <div style="background:var(--ol);border-radius:var(--rs);padding:14px;margin-bottom:20px">
+      <div style="font-size:15px;font-weight:800;margin-bottom:10px">🧒 Ученик</div>
+      <div style="font-size:13px;color:var(--t);line-height:1.7">
+        1. Нажмите <b>«Ученик»</b> → введите код учителя и свой PIN<br>
+        2. На <b>Главной</b> — ближайший урок и кнопка Zoom<br>
+        3. В <b>Уроках</b> — отмечайте домашнее задание как выполненное<br>
+        4. В <b>Карточках</b> — учите слова как в игре<br>
+        5. В <b>Чате</b> — пишите учителю вопросы
+      </div>
+    </div>
+
+    <button onclick="document.getElementById('m-guide')?.remove()" class="btn bp" style="width:100%">Понятно 👍</button>
+  </div>`;
+  document.body.appendChild(mo);
+  mo.addEventListener('click', e => { if(e.target===mo) mo.remove(); });
+}
+
+function openPublicFeedback() {
+  const mo = document.createElement('div');
+  mo.className='mo open'; mo.id='m-pub-feedback';
+  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:4px">💬 Отзыв и предложения</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Расскажите что работает, что нет — мы читаем каждое сообщение</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px">ВЫ</div>
+      <select id="pf-role" class="fs" style="width:100%">
+        <option value="teacher">👨‍🏫 Репетитор</option>
+        <option value="parent">👨‍👩‍👦 Родитель</option>
+        <option value="student">🧒 Ученик</option>
+        <option value="other">Другое</option>
+      </select>
+    </div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px">ОЦЕНКА</div>
+      <div style="display:flex;gap:8px" id="pf-stars">
+        ${[1,2,3,4,5].map(i=>`<button onclick="pfStar(${i})" id="pf-star-${i}" style="flex:1;background:var(--bg);border:1.5px solid var(--b);border-radius:10px;padding:10px;font-size:20px;cursor:pointer">⭐</button>`).join('')}
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px">СООБЩЕНИЕ</div>
+      <textarea id="pf-text" placeholder="Что понравилось? Что улучшить? Каких функций не хватает?" style="width:100%;min-height:110px;border:1.5px solid var(--b);border-radius:var(--rs);padding:10px 12px;font-family:inherit;font-size:14px;resize:none;outline:none;color:var(--t);box-sizing:border-box"></textarea>
+    </div>
+    <div id="pf-err" class="err"></div>
+    <button id="pf-btn" class="btn bp" style="width:100%" onclick="sendPublicFeedback()">Отправить</button>
+    <button class="btn bs" style="width:100%;margin-top:8px" onclick="document.getElementById('m-pub-feedback')?.remove()">Отмена</button>
+  </div>`;
+  document.body.appendChild(mo);
+  mo.addEventListener('click', e => { if(e.target===mo) mo.remove(); });
+}
+
+let pfRating = 0;
+function pfStar(n) {
+  pfRating = n;
+  [1,2,3,4,5].forEach(i => {
+    const btn = document.getElementById('pf-star-'+i);
+    if(btn) btn.style.background = i<=n ? 'var(--ol)' : 'var(--bg)';
+  });
+}
+
+async function sendPublicFeedback() {
+  const text = document.getElementById('pf-text')?.value.trim();
+  const role = document.getElementById('pf-role')?.value;
+  const err  = document.getElementById('pf-err');
+  if(!text) { err.textContent='Напишите сообщение'; err.classList.add('show'); return; }
+  if(!lockBtn('pf-btn','Отправляем...')) return;
+  const{error}=await sb.from('feedback').insert({
+    role, name:'Гость ('+role+')', rating:pfRating||null, text
+  });
+  if(error){ err.textContent='Ошибка: '+error.message; err.classList.add('show'); unlockBtn('pf-btn'); return; }
+  await fetch(`${SU}/functions/v1/send-push`,{
+    method:'POST',
+    headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},
+    body:JSON.stringify({user_ids:['01b9a57d-63e2-4e19-9fd2-be19dc4311a0'],title:'💬 Отзыв от '+role,body:(pfRating?'★'.repeat(pfRating)+' ':'')+text.slice(0,80)})
+  }).catch(()=>{});
+  document.getElementById('m-pub-feedback')?.remove();
+  // Показываем спасибо
+  const thanks = document.createElement('div');
+  thanks.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px';
+  thanks.innerHTML=`<div style="background:var(--w);border-radius:20px;padding:32px 24px;text-align:center;max-width:320px;width:100%">
+    <div style="font-size:56px;margin-bottom:12px">🎉</div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:8px">Спасибо!</div>
+    <div style="font-size:14px;color:var(--t2);margin-bottom:20px">Ваш отзыв получен — мы читаем каждое сообщение и делаем Lesso лучше</div>
+    <button onclick="this.closest('div[style]').remove()" class="btn bp" style="width:100%">Закрыть</button>
+  </div>`;
+  document.body.appendChild(thanks);
+  thanks.addEventListener('click', e => { if(e.target===thanks) thanks.remove(); });
 }
 
 let authRole = '', authMode = 'login';
