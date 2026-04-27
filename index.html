@@ -380,7 +380,18 @@ function unlockBtn(id) {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-    if (p) { me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code }; subscribeToPush(session.user.id, session.access_token); launchApp(); return; }
+    if (p) {
+      me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code };
+      subscribeToPush(session.user.id, session.access_token);
+      // Проверка оплаты для родителя
+      if(p.role === 'parent') {
+        const now = new Date();
+        const trialOk = p.trial_until && new Date(p.trial_until) > now;
+        const paidOk  = p.paid_until  && new Date(p.paid_until)  > now;
+        if(!trialOk && !paidOk) { showPayWall(p); return; }
+      }
+      launchApp(); return;
+    }
   }
   // Восстанавливаем сессию ученика
   const stuSess = localStorage.getItem('stu_session');
@@ -407,7 +418,10 @@ function renderRoles() {
         💬 Оставить отзыв
       </button>
     </div>
-    <div style="font-size:11px;color:var(--t3);text-align:center;margin-top:16px">v1.0 · lesso-three.vercel.app</div>
+    <div style="text-align:center;margin-top:16px">
+      <a href="tel:+79911745113" style="font-size:14px;font-weight:700;color:var(--a);text-decoration:none">📞 +7 991 174-51-13</a>
+      <div style="font-size:11px;color:var(--t3);margin-top:4px">v1.0 · lesso-three.vercel.app</div>
+    </div>
   </div>`;
 }
 
@@ -2577,6 +2591,53 @@ async function pChats(el) {
   </div>`;
   }).join('');
   checkUnread();
+}
+
+function showPayWall(profile) {
+  pg('pg-roles');
+  document.getElementById('pg-roles').innerHTML=`<div class="auth-pg">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-size:56px;margin-bottom:12px">🔒</div>
+      <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:900;margin-bottom:8px">Пробный период закончился</div>
+      <div style="font-size:14px;color:var(--t2);line-height:1.6">Для продолжения оплатите доступ</div>
+    </div>
+    <div style="background:var(--gl);border-radius:var(--rd);padding:20px;margin-bottom:16px;text-align:center">
+      <div style="font-size:13px;color:var(--t2);margin-bottom:8px">Стоимость</div>
+      <div style="font-family:'Fraunces',serif;font-size:36px;font-weight:900;color:var(--g)">300₽<span style="font-size:16px;color:var(--t2)">/мес</span></div>
+      <div style="font-size:12px;color:var(--t2);margin-top:4px">500₽/мес при 2 и более детях</div>
+    </div>
+    <div style="background:var(--al);border-radius:var(--rd);padding:16px;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">Как оплатить:</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.8">
+        1. Переведите на номер <strong style="color:var(--t)">+7 991 174-51-13</strong><br>
+        2. В комментарии напишите ваш email:<br>
+        <strong style="color:var(--a)">${profile.email||profile.name}</strong>
+      </div>
+    </div>
+    <a href="tel:+79911745113" class="btn bp" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;text-decoration:none;margin-bottom:10px;font-size:15px">
+      📞 Позвонить для оплаты
+    </a>
+    <button class="btn" style="width:100%;padding:14px;background:var(--gl);color:var(--g);border:none;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer" onclick="sendPayRequest('${profile.id}','${(profile.email||'').replace(/'/g,"\'")}','${profile.name.replace(/'/g,"\'")}')">
+      ✅ Я оплатил — уведомить
+    </button>
+    <button class="btn bs" style="width:100%;padding:12px;margin-top:8px;font-family:inherit;font-size:14px;cursor:pointer" onclick="doLogout()">Выйти</button>
+  </div>`;
+}
+
+async function sendPayRequest(userId, email, name) {
+  const childCount = parseInt(prompt('Сколько детей привязано?','1'))||1;
+  const amount = childCount>=2?500:300;
+  const{error}=await sb.from('payment_requests').insert({user_id:userId,email,name,children_count:childCount,amount});
+  if(error&&!error.message.includes('duplicate')){alert('Ошибка: '+error.message);return;}
+  // Пуш администратору
+  await fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:['01b9a57d-63e2-4e19-9fd2-be19dc4311a0'],title:'💰 Заявка на оплату',body:name+' · '+email+' · '+amount+'₽'})}).catch(()=>{});
+  pg('pg-roles');
+  document.getElementById('pg-roles').innerHTML=`<div class="auth-pg" style="text-align:center">
+    <div style="font-size:64px;margin-bottom:16px">🎉</div>
+    <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:8px">Спасибо!</div>
+    <div style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:24px">Мы получили ваше уведомление и активируем доступ в течение нескольких часов. После активации вы получите уведомление.</div>
+    <button class="btn bp" style="width:100%;padding:14px;font-family:inherit;font-size:15px" onclick="doLogout()">Понятно</button>
+  </div>`;
 }
 
 async function openLinkChild() {
