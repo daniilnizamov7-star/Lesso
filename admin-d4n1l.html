@@ -416,9 +416,6 @@ async function loadParents(){
           </tbody>
         </table>
       </div>`;
-  }catch(e){document.getElementById('main-content').innerHTML=`<div style="color:var(--r);padding:20px">Ошибка: ${e.message}</div>`;}
-}
-
   // Загружаем кол-во детей — два запроса из-за ограничений Supabase
   (data||[]).forEach(async p=>{
     const[{data:c1},{data:c2}]=await Promise.all([
@@ -433,6 +430,8 @@ async function loadParents(){
       ?'<span class="bdg bb">👶 '+count+'</span><div style="font-size:11px;color:var(--t3);margin-top:2px">'+price+'₽/мес</div>'
       :'<span style="color:var(--t3)">—</span>';
   });
+  }catch(e){document.getElementById('main-content').innerHTML=`<div style="color:var(--r);padding:20px">Ошибка: ${e.message}</div>`;}
+}
 
 async function addBalance(userId,name,currentBal){
   openModal(`<div class="modal-title">💰 Пополнение баланса: ${esc(name)}</div>
