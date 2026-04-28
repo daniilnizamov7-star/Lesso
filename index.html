@@ -1944,7 +1944,7 @@ ${recentL.length?`<div class="card"><div class="clbl">Последние уро�
 ${recentL.map(l=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--b)">
 <div style="flex:1">
   <div style="font-size:13px;font-weight:700">${l.title}</div>
-  <div style="font-size:12px;color:var(--t2)">${formatDate(l.date)}${l.homework?` · ДЗ: ${l.hw_done?'✅':'⏳'}`:''}${l.paid?' · 💳 оплачен':''}</div>
+  <div style="font-size:12px;color:var(--t2)">${fd(l.date)}${l.homework?` · ДЗ: ${l.hw_done?'✅':'⏳'}`:''}${l.paid?' · 💳 оплачен':''}</div>
 </div>
 ${l.grade?`<div style="font-size:16px;font-weight:800;color:${l.grade>=4?'var(--g)':l.grade===3?'var(--o)':'var(--r)'}">${l.grade}</div>`:''}
 </div>`).join('')}
