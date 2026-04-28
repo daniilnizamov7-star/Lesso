@@ -187,7 +187,14 @@ html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-
 </style>
 </head>
 <body>
-<div id="pg-load" class="loading"><div class="sp"></div><div style="font-size:14px;color:var(--t2);font-weight:600">Загрузка...</div></div>
+<div id="pg-load" class="loading">
+  <div class="sp"></div>
+  <div style="font-size:14px;color:var(--t2);font-weight:600">Загрузка...</div>
+  <div id="pg-load-slow" style="display:none;text-align:center;padding:0 24px">
+    <div style="font-size:13px;color:var(--t3);margin-bottom:12px">Сервер отвечает медленно.<br>Подождите или войдите заново.</div>
+    <button onclick="doSignOut()" style="padding:10px 20px;border-radius:10px;border:1.5px solid var(--b);background:var(--w);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--r);cursor:pointer">Выйти и войти заново</button>
+  </div>
+</div>
 <div id="pg-roles" style="display:none"></div>
 <div id="pg-auth" style="display:none"></div>
 <div id="pg-teachers" style="display:none"></div>
@@ -314,9 +321,15 @@ function chev() { return `<svg style="margin-left:auto;color:var(--t3);flex-shri
 function backSvg() { return `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>`; }
 (async () => {
 pg('pg-load');
+// Показываем кнопку выхода если грузится дольше 8 сек
+const _slowTimer = setTimeout(() => {
+  const el = document.getElementById('pg-load-slow');
+  const load = document.getElementById('pg-load');
+  if (el && load && load.style.display !== 'none') el.style.display = 'block';
+}, 8000);
 try {
-  // Без таймаута — ждём сколько нужно, Supabase Auth может быть медленным
   const { data } = await sb.auth.getSession();
+  clearTimeout(_slowTimer);
   const session = data?.session;
   if (session) {
     const { data: p } = await sb.from('profiles')
@@ -327,6 +340,7 @@ try {
   }
   renderRoles();
 } catch(e) {
+  clearTimeout(_slowTimer);
   console.warn('Init error:', e.message);
   renderRoles();
 }
@@ -337,6 +351,11 @@ const{data:p}=await sb.from('profiles').select('id,role,name,teacher_code').eq('
 if(p){ me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code}; launchApp(); }
 }
 });
+async function doSignOut() {
+  try { await sb.auth.signOut(); } catch(e) {}
+  me = null;
+  renderRoles();
+}
 function renderRoles() {
 pg('pg-roles');
 document.getElementById('pg-roles').innerHTML = `<div class="auth-pg">
