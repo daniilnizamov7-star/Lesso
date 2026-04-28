@@ -764,9 +764,8 @@ function tSc(n,i) {
 }
 
 async function tHome(el) {
-  // Мгновенный скелетон пока грузятся данные
-  el.innerHTML=`<div class="page"><div class="stitle">Главная 👋</div><div class="ssub" style="color:var(--t2)">Загружаем данные...</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
-  el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">—</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">—</div><div class="sl">Учеников</div></div></div><div class="card" id="th-next" style="display:none"></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r">Загрузка...</div></div></div>`;
+  // Один рендер после загрузки данных
+el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">—</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">—</div><div class="sl">Учеников</div></div></div><div class="card" id="th-next" style="display:none"></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r">Загрузка...</div></div></div>`;
   const [{count:lc},{count:sc},{data:rc},{data:ss}]=await Promise.all([
     sb.from('lessons').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
     sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
@@ -774,7 +773,8 @@ async function tHome(el) {
     sb.from('students').select('id,name').eq('teacher_id',me.id)
   ]);
   document.getElementById('th-l').textContent=lc||0;
-  document.getElementById('th-s').textContent=sc||0;
+document.getElementById('th-s').textContent=sc||0;
+// ... и остальной код
   const sm=Object.fromEntries((ss||[]).map(s=>[s.id,s.name]));
   // Ближайший запланированный урок
   const next=(rc||[]).find(l=>l.status==='planned'||!l.status||l.status==='active');
