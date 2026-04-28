@@ -1,97 +1,2169 @@
-const CACHE = 'lesso-v7';
-const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/apple-touch-icon.png'
-];
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Lesso">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <script><!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Lesso">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <script>
+    // Генерируем иконку через canvas если файлы не найдены
+    function makeIcon(size) {
+      const c=document.createElement('canvas');c.width=size;c.height=size;
+      const x=c.getContext('2d');
+      x.fillStyle='#2563eb';x.beginPath();x.roundRect(0,0,size,size,size*0.22);x.fill();
+      x.fillStyle='#fff';x.font=`bold ${size*0.45}px system-ui`;x.textAlign='center';x.textBaseline='middle';
+      x.fillText('L',size/2,size/2);
+      return c.toDataURL('image/png');
+    }
+    window.addEventListener('DOMContentLoaded',()=>{
+      // apple-touch-icon через link
+      const lnk=document.querySelector('link[rel="apple-touch-icon"]');
+      if(lnk){ const img=new Image();img.onerror=()=>{lnk.href=makeIcon(180);};img.src=lnk.href; }
+    });
+  </script>
+  <title>Lesso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#f8f9fc;--w:#fff;--b:#e8eaf0;--t:#0f1520;--t2:#5a6478;--t3:#9aa0b0;--a:#2563eb;--al:#eff4ff;--ad:#1d4ed8;--g:#16a34a;--gl:#f0fdf4;--o:#ea580c;--ol:#fff7ed;--r:#dc2626;--rl:#fef2f2;--rd:16px;--rs:10px;--sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--shl:0 4px 24px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04)}
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif;color:var(--t);overflow-x:hidden}
+    .page{padding:20px 16px 100px;max-width:480px;margin:0 auto;animation:fu .2s ease}
+    @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .hdr{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--w);border-bottom:1px solid var(--b);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between}
+    .logo{font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--a)}
+    .usr{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--t2)}
+    .av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;background:var(--a);flex-shrink:0;position:relative}
+    .av-badge{position:absolute;top:-3px;right:-3px;width:14px;height:14px;background:var(--r);border-radius:50%;border:2px solid var(--w);font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+    .logout{background:none;border:none;cursor:pointer;color:var(--t3);padding:6px;border-radius:8px}
+    .content{padding-top:56px;min-height:100dvh}
+    .bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:var(--w);border-top:1px solid var(--b);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+    .ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;border:none;background:none;cursor:pointer;color:var(--t3);font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;font-weight:700;transition:color .15s;position:relative}
+    .ni.active{color:var(--a)}
+    .ni svg{width:22px;height:22px}
+    .ni-dot{position:absolute;top:8px;right:calc(50% - 14px);width:8px;height:8px;background:var(--r);border-radius:50%;border:2px solid var(--w);display:none}
+    .ni-dot.show{display:block}
+    .fab{position:fixed;right:20px;bottom:74px;width:52px;height:52px;border-radius:50%;background:var(--a);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(37,99,235,.35);transition:transform .15s;z-index:99}
+    .fab:active{transform:scale(.93)}
+    .fab svg{width:22px;height:22px;color:#fff}
+    /* Auth */
+    .auth-pg{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+    .logo-big{font-family:'Fraunces',serif;font-size:48px;font-weight:900;color:var(--a);letter-spacing:-1px;margin-bottom:4px}
+    .logo-sub{font-size:14px;color:var(--t3);margin-bottom:40px;font-weight:500}
+    .panel{background:var(--w);border-radius:var(--rd);border:1px solid var(--b);padding:24px;width:100%;max-width:360px;box-shadow:var(--shl)}
+    .pback{display:flex;align-items:center;gap:8px;color:var(--t2);font-size:14px;font-weight:600;cursor:pointer;background:none;border:none;padding:0;margin-bottom:20px}
+    .pback:hover{color:var(--a)}
+    .ptitle{font-family:'Fraunces',serif;font-size:24px;font-weight:900;margin-bottom:6px}
+    .psub{font-size:13px;color:var(--t2);margin-bottom:24px;line-height:1.5}
+    .rcards{display:flex;flex-direction:column;gap:12px;width:100%;max-width:360px}
+    .rcard{background:var(--w);border:1.5px solid var(--b);border-radius:var(--rd);padding:18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .18s;box-shadow:var(--sh);text-align:left}
+    .rcard:hover{border-color:var(--a);transform:translateY(-1px)}
+    .rcard:active{transform:scale(.98)}
+    .ricon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+    .rname{font-weight:700;font-size:15px;margin-bottom:2px}
+    .rdesc{font-size:12px;color:var(--t2)}
+    /* Forms */
+    .fg{margin-bottom:14px}
+    .fl{font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;display:block}
+    .fi,.fs,.fta{width:100%;background:var(--bg);border:1.5px solid var(--b);border-radius:var(--rs);padding:12px 14px;color:var(--t);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:500;outline:none;transition:border-color .15s;-webkit-appearance:none}
+    .fi:focus,.fs:focus,.fta:focus{border-color:var(--a);background:var(--w)}
+    .fi::placeholder{color:var(--t3);font-weight:400}
+    .fta{resize:none;min-height:80px}
+    .pin-wrap{display:flex;gap:10px;justify-content:center;margin:8px 0 24px}
+    .pd{width:60px;height:68px;border:1.5px solid var(--b);border-radius:var(--rs);background:var(--w);font-size:26px;font-weight:800;text-align:center;color:var(--a);outline:none;font-family:'Plus Jakarta Sans',sans-serif;transition:border-color .15s;-webkit-appearance:none}
+    .pd:focus{border-color:var(--a)}
+    .err{background:var(--rl);border:1px solid #fecaca;color:var(--r);padding:12px 14px;border-radius:var(--rs);font-size:13px;font-weight:600;margin-bottom:14px;display:none}
+    .err.show{display:block}
+    /* Buttons */
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 20px;border-radius:var(--rs);border:none;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;transition:all .15s}
+    .btn:active{transform:scale(.98)}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+    .bp{background:var(--a);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+    .bp:hover:not(:disabled){background:var(--ad)}
+    .bs{background:var(--w);color:var(--t);border:1.5px solid var(--b)}
+    .bd{background:var(--rl);color:var(--r);border:1px solid #fecaca}
+    .bg_{background:var(--gl);color:var(--g);border:1.5px solid #bbf7d0}
+    .bsm{padding:8px 14px;font-size:13px;width:auto}
+    .brow{display:flex;gap:10px;margin-top:8px}
+    /* Cards */
+    .card{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:16px;margin-bottom:10px;box-shadow:var(--sh)}
+    .clbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:10px}
+    .srow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .sbox{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:16px;box-shadow:var(--sh)}
+    .sv{font-family:'Fraunces',serif;font-size:32px;font-weight:900;line-height:1}
+    .sl{font-size:12px;color:var(--t2);font-weight:600;margin-top:4px}
+    .sbox.blue .sv{color:var(--a)}.sbox.green .sv{color:var(--g)}.sbox.orange .sv{color:var(--o)}
+    .stitle{font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px}
+    .ssub{font-size:13px;color:var(--t2);margin-bottom:18px}
+    .shdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    /* Badges */
+    .bdg{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+    .bb{background:var(--al);color:var(--a)}.bgg{background:var(--gl);color:var(--g)}.bo{background:var(--ol);color:var(--o)}.bgr{background:var(--bg);color:var(--t2);border:1px solid var(--b)}.br{background:var(--rl);color:var(--r)}
+    /* Lesson card */
+    .lc{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:16px;margin-bottom:10px;box-shadow:var(--sh);cursor:pointer;transition:all .15s}
+    .lc:hover{border-color:var(--a);box-shadow:var(--shl)}
+    .lct{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+    .lcti{font-weight:700;font-size:15px}
+    .lcm{font-size:12px;color:var(--t2);margin-top:2px}
+    .lcf{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .grade{font-family:'Fraunces',serif;font-weight:900;font-size:18px;padding:2px 10px;border-radius:10px}
+    .g5{background:var(--gl);color:var(--g)}.g4{background:var(--al);color:var(--a)}.g3{background:var(--ol);color:var(--o)}.g2{background:var(--rl);color:var(--r)}
+    /* Words */
+    .wi{display:flex;align-items:center;gap:12px;background:var(--w);border:1px solid var(--b);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh);cursor:pointer;transition:border-color .15s}
+    .wi:hover{border-color:var(--a)}
+    .ld{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .lv0{background:#cbd5e1}.lv1{background:#f87171}.lv2{background:#fb923c}.lv3{background:#4ade80}
+    .wen{font-weight:700;font-size:15px}.wru{font-size:13px;color:var(--t2)}
+    .wch{margin-left:auto;font-size:11px;color:var(--t3);background:var(--bg);padding:3px 8px;border-radius:8px;flex-shrink:0}
+    /* Flashcard */
+    .fcw{perspective:1000px;margin:16px 0}
+    .fc{position:relative;width:100%;height:200px;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.4,0,.2,1);cursor:pointer}
+    .fc.flipped{transform:rotateY(180deg)}
+    .fcf{position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--rd);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1.5px solid var(--b);box-shadow:var(--shl)}
+    .fcfr{background:var(--w)}.fcbk{background:var(--al);border-color:#bfdbfe;transform:rotateY(180deg)}
+    .fcw2{font-family:'Fraunces',serif;font-size:34px;font-weight:900;text-align:center;padding:0 20px}
+    .fch{font-size:13px;color:var(--t3);font-weight:600}
+    .fcc{font-size:12px;color:var(--a);background:var(--al);padding:4px 12px;border-radius:20px;font-weight:700}
+    /* Progress */
+    .pb{background:var(--bg);border-radius:20px;height:8px;overflow:hidden;margin-top:4px}
+    .pbf{height:100%;border-radius:20px;background:var(--a);transition:width .6s}
+    /* Chat */
+    .chat-pg{display:flex;flex-direction:column;height:calc(100dvh - 56px - 64px);padding:0}
+    .chat-list-wrap{flex:1;overflow-y:auto;padding:16px}
+    .chat-msgs{display:flex;flex-direction:column;gap:10px}
+    .msg{max-width:82%}
+    .msg.mine{align-self:flex-end}.msg.theirs{align-self:flex-start}
+    .msg-bbl{padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;font-weight:500}
+    .msg.mine .msg-bbl{background:var(--a);color:#fff;border-bottom-right-radius:4px}
+    .msg.theirs .msg-bbl{background:var(--w);border:1px solid var(--b);color:var(--t);border-bottom-left-radius:4px;box-shadow:var(--sh)}
+    .msg-who{font-size:11px;color:var(--t3);margin-bottom:3px;font-weight:600}
+    .msg-time{font-size:11px;color:var(--t3);margin-top:3px;font-weight:500}
+    .msg.mine .msg-time{text-align:right}
+    .chat-inp-wrap{padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--w);border-top:1px solid var(--b);display:flex;gap:8px;flex-shrink:0}
+    .cinp{flex:1;background:var(--bg);border:1.5px solid var(--b);border-radius:24px;padding:11px 16px;font-size:14px;font-weight:500;font-family:'Plus Jakarta Sans',sans-serif;outline:none;color:var(--t)}
+    .cinp:focus{border-color:var(--a)}
+    .csend{width:42px;height:42px;border-radius:50%;background:var(--a);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+    .csend svg{width:18px;height:18px;color:#fff}
+    /* Chat list items */
+    .chitem{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;box-shadow:var(--sh)}
+    .chitem:hover{border-color:var(--a)}
+    .chav{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:#fff;flex-shrink:0;position:relative}
+    .chav-dot{position:absolute;top:-2px;right:-2px;width:12px;height:12px;background:var(--r);border-radius:50%;border:2px solid var(--w)}
+    .chname{font-weight:700;font-size:15px}
+    .chlast{font-size:12px;color:var(--t2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+    .chtime{margin-left:auto;font-size:11px;color:var(--t3);font-weight:600;flex-shrink:0}
+    /* Notifications */
+    .notif{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);display:flex;gap:12px;align-items:flex-start}
+    .notif.unread{border-color:var(--a);background:var(--al)}
+    .notif-icon{font-size:20px;flex-shrink:0;margin-top:2px}
+    .notif-title{font-weight:700;font-size:14px}
+    .notif-body{font-size:13px;color:var(--t2);margin-top:2px}
+    .notif-time{font-size:11px;color:var(--t3);margin-top:4px;font-weight:600}
+    /* Modal */
+    .mo{position:fixed;inset:0;background:rgba(15,21,32,.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(2px)}
+    .mo.open{opacity:1;pointer-events:all}
+    .modal{background:var(--w);border-radius:24px 24px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));width:100%;max-width:480px;max-height:92dvh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+    .mo.open .modal{transform:none}
+    .mh{width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 20px}
+    .mt{font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:18px}
+    /* Pay toggle */
+    .pr{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--b);margin-top:10px}
+    .pl{font-size:13px;color:var(--t2);font-weight:600}
+    .tog{width:44px;height:24px;border-radius:12px;background:var(--b);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+    .tog.on{background:var(--g)}
+    .tog::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+    .tog.on::after{transform:translateX(20px)}
+    .lrow{display:flex;gap:8px}
+    .lo{flex:1;padding:10px 6px;border-radius:var(--rs);border:1.5px solid var(--b);background:var(--w);color:var(--t2);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:13px;cursor:pointer;text-align:center;transition:all .15s}
+    .lo.active{border-color:var(--a);background:var(--al);color:var(--a)}
+    .frow{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;margin-bottom:14px}
+    .fc2{flex-shrink:0;padding:6px 14px;border-radius:20px;border:1.5px solid var(--b);background:var(--w);color:var(--t2);font-size:13px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;transition:all .15s}
+    .fc2.active{background:var(--a);color:#fff;border-color:var(--a)}
+    .scard{background:var(--w);border:1px solid var(--b);border-radius:var(--rd);padding:16px;margin-bottom:10px;box-shadow:var(--sh);display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s}
+    .scard:hover{border-color:var(--a)}
+    .sav{width:44px;height:44px;border-radius:50%;background:var(--al);color:var(--a);font-family:'Fraunces',serif;font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .sname_{font-weight:700;font-size:15px}.smeta_{font-size:12px;color:var(--t2);margin-top:2px}
+    .spinb{margin-left:auto;background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--t2);font-family:'Fraunces',serif}
+    .mitem{display:flex;align-items:center;gap:12px;background:var(--w);border:1px solid var(--b);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh)}
+    .mico{width:38px;height:38px;border-radius:10px;background:var(--rl);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+    .mname_{font-weight:600;font-size:14px}.msize_{font-size:12px;color:var(--t2)}
+    .titem{background:var(--w);border:1.5px solid var(--b);border-radius:var(--rd);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;box-shadow:var(--sh);margin-bottom:10px}
+    .titem:hover{border-color:var(--a)}
+    .empty{text-align:center;padding:48px 20px;color:var(--t2)}
+    .ei{font-size:44px;margin-bottom:12px}
+    .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;gap:16px}
+    .sp{width:34px;height:34px;border:3px solid var(--b);border-top-color:var(--a);border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--t);color:#fff;border-radius:20px;padding:10px 20px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;z-index:999}
+    #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  </style>
+</head>
+<body>
+<div id="pg-load" class="loading"><div class="sp"></div><div style="font-size:14px;color:var(--t2);font-weight:600">Загрузка...</div></div>
+<div id="pg-roles" style="display:none"></div>
+<div id="pg-auth" style="display:none"></div>
+<div id="pg-teachers" style="display:none"></div>
+<div id="pg-pin" style="display:none"></div>
+<div id="pg-app" style="display:none"></div>
+<div id="toast"></div>
 
-const BYPASS = [
-  'supabase.co','fonts.googleapis.com','fonts.gstatic.com',
-  'cdn.jsdelivr.net','fcm.googleapis.com','firebaseinstallations.googleapis.com',
-  'gstatic.com/firebasejs','googleapis.com'
-];
+<!-- Modals -->
+<div class="mo" id="m-lesson"><div class="modal">
+  <div class="mh"></div><div class="mt" id="mlt">Урок</div>
+  <div class="fg"><label class="fl">Ученик</label><select class="fs" id="li-stu"></select></div>
+  <div class="fg"><label class="fl">Тема урока</label><input class="fi" id="li-title" placeholder="Past Simple, числа..."></div>
+  <div class="fg"><label class="fl">Дата</label><input class="fi" type="date" id="li-date"></div>
+  <div class="fg"><label class="fl">Время урока</label><input class="fi" type="time" id="li-time"></div>
+  <div class="fg"><label class="fl">Ссылка Zoom</label><input class="fi" type="url" id="li-zoom" placeholder="https://zoom.us/j/..."></div>
+  <div class="fg"><label class="fl">Домашнее задание</label><textarea class="fta" id="li-hw" placeholder="Выучить слова..."></textarea></div>
+  <div id="li-hw-photo-wrap" style="display:none;margin-bottom:14px">
+    <div class="fl" style="margin-bottom:6px">📷 Фото ДЗ от ученика</div>
+    <a id="li-hw-photo-link" href="" target="_blank"><img id="li-hw-photo-img" src="" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1.5px solid #bbf7d0"></a>
+  </div>
+  <div class="fg"><label class="fl">Оценка</label>
+    <select class="fs" id="li-grade"><option value="">— не ставить —</option><option value="5">5 — Отлично</option><option value="4">4 — Хорошо</option><option value="3">3 — Удовл.</option><option value="2">2 — Плохо</option></select>
+  </div>
+  <div class="fg"><label class="fl">Заметки</label><textarea class="fta" id="li-notes" placeholder="Что далось сложно..."></textarea></div>
+  <div class="fg"><label class="fl">Материалы урока</label>
+    <div id="li-mats" style="margin-bottom:8px"></div>
+    <label style="display:flex;align-items:center;gap:10px;background:var(--bg);border:1.5px dashed var(--b);border-radius:var(--rs);padding:12px 14px;cursor:pointer;font-size:14px;color:var(--t2);font-weight:600">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Загрузить файл
+      <input type="file" id="li-file" accept=".pdf,.doc,.docx,.jpg,.png" style="display:none" onchange="onFileSelect(this)">
+    </label>
+    <div id="li-fprev" style="margin-top:8px"></div>
+  </div>
+  <div class="pr"><div class="pl">Урок оплачен</div><button class="tog" id="li-paid" onclick="togPaid(this)"></button></div>
+  <button class="btn bs" id="li-stbtn" style="margin-top:12px" onclick="togStatus(this)">▶ Начать урок</button>
+  <div class="brow" style="margin-top:10px">
+    <button class="btn bs" onclick="closeM('m-lesson')">Отмена</button>
+    <button class="btn bp" onclick="saveLesson()">Сохранить</button>
+  </div>
+  <button class="btn bd" id="li-delbtn" style="display:none;margin-top:8px" onclick="delLesson()">Удалить урок</button>
+</div></div>
 
-self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(ASSETS))
-      .then(() => self.skipWaiting()) // активируемся сразу не ждём закрытия вкладок
-  );
+<div class="mo" id="m-word"><div class="modal">
+  <div class="mh"></div><div class="mt">Новое слово</div>
+  <div class="fg"><label class="fl">Ученик</label><select class="fs" id="wi-stu"></select></div>
+  <div class="fg"><label class="fl">Английское слово</label><input class="fi" id="wi-en" placeholder="apple"></div>
+  <div class="fg"><label class="fl">Перевод</label><input class="fi" id="wi-ru" placeholder="яблоко"></div>
+  <div class="fg"><label class="fl">Тема</label><input class="fi" id="wi-topic" placeholder="Еда, Животные..."></div>
+  <div class="fg"><label class="fl">Уровень</label>
+    <div class="lrow">
+      <button class="lo active" data-lv="0" onclick="selLv(this)">Новое</button>
+      <button class="lo" data-lv="1" onclick="selLv(this)">Учит</button>
+      <button class="lo" data-lv="2" onclick="selLv(this)">Почти</button>
+      <button class="lo" data-lv="3" onclick="selLv(this)">Знает ✓</button>
+    </div>
+  </div>
+  <div class="brow"><button class="btn bs" onclick="closeM('m-word')">Отмена</button><button class="btn bp" onclick="saveWord()">Добавить</button></div>
+</div></div>
+
+<div class="mo" id="m-stu"><div class="modal">
+  <div class="mh"></div><div class="mt" id="mstu-t">Новый ученик</div>
+  <div class="fg"><label class="fl">Имя</label><input class="fi" id="si-name" placeholder="Вадим"></div>
+  <div class="fg"><label class="fl">Предмет</label><input class="fi" id="si-subj" placeholder="Английский..."></div>
+  <div class="fg"><label class="fl">PIN-код (4 цифры)</label><input class="fi" id="si-pin" type="number" placeholder="1234"></div>
+  <div class="fg"><label class="fl">Цена одного урока (₽)</label><input class="fi" id="si-price" type="number" placeholder="800" min="0"></div>
+  <div style="margin-top:4px;margin-bottom:14px;font-size:12px;color:var(--t2);line-height:1.5">👨‍👩‍👦 Родители привязываются сами через «Привязать ребёнка» в своём кабинете. PIN можно передать маме и папе — каждый привяжется отдельно.</div>
+  <div class="brow"><button class="btn bs" onclick="closeM('m-stu')">Отмена</button><button class="btn bp" onclick="saveStu()">Сохранить</button></div>
+  <button class="btn bd" id="si-delbtn" style="display:none;margin-top:8px" onclick="delStu()">Удалить ученика</button>
+</div></div>
+
+<div class="mo" id="m-pay"><div class="modal">
+  <div class="mtitle">💰 Пополнение баланса</div>
+  <div class="ssub" id="mp-name" style="margin-bottom:16px"></div>
+  <div class="fg"><label class="fl">Количество уроков</label><input class="fi" id="mp-count" type="number" placeholder="10" min="1" max="100"></div>
+  <div class="fg"><label class="fl">Сумма (₽)</label><input class="fi" id="mp-amount" type="number" placeholder="10000" min="0"></div>
+  <div id="mp-price-hint" style="font-size:12px;color:var(--a);font-weight:600;margin-top:-8px;margin-bottom:12px;display:none"></div>
+  <div class="fg"><label class="fl">Комментарий (необязательно)</label><input class="fi" id="mp-note" placeholder="Оплата за апрель"></div>
+  <div class="brow"><button class="btn bs" onclick="closeM('m-pay')">Отмена</button><button class="btn bp" id="mp-save-btn" onclick="savePayment()">Сохранить</button></div>
+  <div id="mp-history" style="margin-top:16px"></div>
+</div></div>
+
+<div class="mo" id="m-chat"><div class="modal" style="height:88dvh;display:flex;flex-direction:column;padding-bottom:0">
+  <div class="mh"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-shrink:0;padding:0 0 0 0">
+    <div class="chav" id="chat-av" style="background:var(--a);width:36px;height:36px;font-size:16px"></div>
+    <div><div style="font-weight:700;font-size:16px" id="chat-title">Чат</div><div style="font-size:12px;color:var(--t2)" id="chat-sub"></div></div>
+    <button class="btn bs bsm" style="margin-left:auto" onclick="closeM('m-chat')">✕</button>
+  </div>
+  <div id="chat-msgs" class="chat-msgs" style="flex:1;overflow-y:auto;padding:0 0 10px"></div>
+  <div class="chat-inp-wrap" style="margin:0 -20px;padding:12px 20px calc(12px + env(safe-area-inset-bottom))">
+    <input class="cinp" id="chat-inp" placeholder="Написать..." onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="csend" onclick="sendMsg()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg></button>
+  </div>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SU = 'https://yiqipulgofoschkccaxr.supabase.co';
+const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
+const sb = supabase.createClient(SU, SK);
+
+// ── КЭШИРОВАНИЕ ──
+const _cache={stus:null,ts:0};
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escq(s){return esc(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
+async function getStudents(tid){
+  if(_cache.stus&&Date.now()-_cache.ts<30000)return _cache.stus;
+  const{data}=await sb.from('students').select('*').eq('teacher_id',tid).order('name');
+  _cache.stus=data||[];_cache.ts=Date.now();return _cache.stus;
+}
+function invalidateStudents(){_cache.stus=null;}
+
+let me = null; // {role, name, id, student_id, teacher_id, teacher_code}
+let editLessonId = null, editStuId = null;
+let activeChatId = null, chatChannel = null, lessonChatId = null;
+let wLevel = 0, pendingFile = null;
+let unreadCount = 0;
+
+// ── Pages ──
+function pg(id) {
+  ['pg-load','pg-roles','pg-auth','pg-teachers','pg-pin','pg-app'].forEach(p => {
+    document.getElementById(p).style.display = 'none';
+  });
+  document.getElementById(id).style.display = 'block';
+}
+function toast(m) {
+  const t = document.getElementById('toast');
+  t.textContent = m; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2500);
+}
+function openM(id) { document.getElementById(id).classList.add('open'); }
+function closeM(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.mo').forEach(o => o.addEventListener('click', e => { if (e.target === o) closeM(o.id); }));
+function fd(d) { if(!d) return '—'; const dt=new Date(d); return isNaN(dt)?'—':dt.toLocaleDateString('ru-RU',{day:'numeric',month:'long'}); }
+function ft(d) { return new Date(d).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'}); }
+function chev() { return `<svg style="margin-left:auto;color:var(--t3);flex-shrink:0" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>`; }
+function backSvg() { return `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>`; }
+
+// ── Init ──
+(async () => {
+  pg('pg-load');
+  try {
+    // Таймаут 8 сек на инициализацию
+    const initTimeout = new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')), 8000));
+    const initWork = async () => {
+      let session=null;
+      for(let i=0;i<3;i++){
+        const{data}=await sb.auth.getSession();
+        session=data?.session;
+        if(session) break;
+        if(i<2) await new Promise(r=>setTimeout(r,500));
+      }
+      if(session){
+        const{data:p}=await sb.from('profiles').select('id,role,name,teacher_code').eq('id',session.user.id).single();
+        if(p){me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code};launchApp();return;}
+      }
+      renderRoles();
+    };
+    await Promise.race([initWork(), initTimeout]);
+  } catch(e) {
+    // Таймаут или ошибка — показываем роли
+    console.warn('Init error:', e);
+    renderRoles();
+  }
+})();
+
+// Автовход если сессия пришла после таймаута
+sb.auth.onAuthStateChange(async(event, session) => {
+  if(event==='SIGNED_IN' && !me && session) {
+    const{data:p}=await sb.from('profiles').select('id,role,name,teacher_code').eq('id',session.user.id).single();
+    if(p){ me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code}; launchApp(); }
+  }
 });
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim()) // берём контроль над всеми вкладками
-      .then(() => {
-        // Сообщаем всем открытым вкладкам — есть обновление, перезагрузись
-        return self.clients.matchAll({ type: 'window' }).then(clients => {
-          clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
-        });
+// ── Roles ──
+function renderRoles() {
+  pg('pg-roles');
+  document.getElementById('pg-roles').innerHTML = `<div class="auth-pg">
+    <div class="logo-big">Lesso</div><div class="logo-sub">Платформа для обучения</div>
+    <div class="rcards">
+      <button class="rcard" onclick="showAuth('teacher')"><div class="ricon" style="background:#eff4ff">👨‍🏫</div><div><div class="rname">Учитель</div><div class="rdesc">Управление уроками и учениками</div></div>${chev()}</button>
+      <button class="rcard" onclick="showAuth('parent')"><div class="ricon" style="background:#f0fdf4">👨‍👩‍👦</div><div><div class="rname">Родитель</div><div class="rdesc">Прогресс и контроль занятий</div></div>${chev()}</button>
+      <button class="rcard" onclick="showTeachers()"><div class="ricon" style="background:#fff7ed">🧒</div><div><div class="rname">Ученик</div><div class="rdesc">Уроки, слова и карточки</div></div>${chev()}</button>
+    </div>
+  </div>`;
+}
+
+let authRole = '', authMode = 'login';
+function showAuth(role) {
+  authRole = role; authMode = 'login';
+  pg('pg-auth');
+  renderAuthForm();
+}
+function renderAuthForm() {
+  const isTeacher = authRole === 'teacher';
+  const isReg = authMode === 'register';
+  document.getElementById('pg-auth').innerHTML = `<div class="auth-pg"><div class="panel">
+    <button class="pback" onclick="renderRoles()">${backSvg()} Назад</button>
+    <div class="ptitle">${isTeacher ? 'Учитель' : 'Родитель'}</div>
+    <div class="psub">${isReg ? 'Создайте аккаунт' : 'Войдите в аккаунт'}</div>
+    <div class="err" id="aerr"></div>
+    <div class="fg"><label class="fl">Email</label><input class="fi" type="email" id="aem" placeholder="example@mail.ru"></div>
+    <div class="fg"><label class="fl">Пароль</label><input class="fi" type="password" id="apw" placeholder="••••••••" onkeydown="if(event.key==='Enter')doAuth()"></div>
+    ${isTeacher && isReg ? `<div class="fg" id="fg-tcode">
+      <label class="fl">Ваш код (придумайте сами)</label>
+      <input class="fi" id="atcode" placeholder="Например: DAN1" maxlength="8" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+      <div style="font-size:11px;color:var(--t2);margin-top:5px">Этот код ученики и родители будут использовать для входа. Только буквы и цифры.</div>
+    </div>` : ''}
+    ${isTeacher && isReg ? `<div class="fg">
+      <label class="fl">Ваше имя</label>
+      <input class="fi" id="aname" placeholder="Как вас зовут?">
+    </div>` : ''}
+    <button class="btn bp" id="abtn" onclick="doAuth()">${isReg ? 'Зарегистрироваться' : 'Войти'}</button>
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--t2)">
+      ${isReg ? 'Уже есть аккаунт?' : 'Нет аккаунта?'} <a style="color:var(--a);font-weight:700;cursor:pointer" onclick="togAuth()">${isReg ? 'Войти' : 'Зарегистрироваться'}</a>
+    </div>
+  </div></div>`;
+}
+function togAuth() {
+  authMode = authMode === 'login' ? 'register' : 'login';
+  renderAuthForm();
+}
+async function doAuth() {
+  const em = document.getElementById('aem').value.trim();
+  const pw = document.getElementById('apw').value;
+  const err = document.getElementById('aerr');
+  err.classList.remove('show');
+  if (!em || !pw) { err.textContent = 'Заполните все поля'; err.classList.add('show'); return; }
+  const abtn=document.getElementById('abtn');
+  if(abtn.disabled) return;
+  abtn.disabled=true; abtn.textContent='...';
+  pg('pg-load');
+  let res, uid;
+  if (authMode === 'register') {
+    // Для учителя — проверяем код
+    let teacherCode = null;
+    if (authRole === 'teacher') {
+      teacherCode = (document.getElementById('atcode')?.value || '').trim().toUpperCase();
+      if (!teacherCode || teacherCode.length < 2) {
+        pg('pg-auth'); err.textContent='Придумайте код (минимум 2 символа)'; err.classList.add('show'); abtn.disabled=false; abtn.textContent='Зарегистрироваться'; return;
+      }
+      if (!/^[A-Z0-9]+$/.test(teacherCode)) {
+        pg('pg-auth'); err.textContent='Код — только буквы и цифры (без пробелов)'; err.classList.add('show'); abtn.disabled=false; abtn.textContent='Зарегистрироваться'; return;
+      }
+      // Проверяем уникальность кода
+      const { data: existing } = await sb.from('profiles').select('id').eq('teacher_code', teacherCode).eq('role', 'teacher');
+      if (existing?.length) {
+        pg('pg-auth'); err.textContent='Этот код уже занят. Придумайте другой.'; err.classList.add('show'); abtn.disabled=false; abtn.textContent='Зарегистрироваться'; return;
+      }
+    }
+    res = await sb.auth.signUp({ email: em, password: pw });
+    if (res.error) { pg('pg-auth'); err.textContent=res.error.message; err.classList.add('show'); abtn.disabled=false; abtn.textContent='Зарегистрироваться'; return; }
+    uid = res.data.user?.id;
+    if(!uid){pg('pg-auth');err.textContent='Подтвердите email для завершения регистрации';err.classList.add('show');abtn.disabled=false;abtn.textContent='Зарегистрироваться';return;}
+    const displayName = authRole === 'teacher'
+      ? (document.getElementById('aname')?.value.trim() || em.split('@')[0])
+      : em.split('@')[0];
+    await sb.from('profiles').upsert({ id: uid, role: authRole, name: displayName, teacher_code: teacherCode });
+  } else {
+    res = await sb.auth.signInWithPassword({ email: em, password: pw });
+    if (res.error) { pg('pg-auth'); err.textContent = res.error.message.includes('Invalid') ? 'Неверный email или пароль' : res.error.message; err.classList.add('show'); document.getElementById('abtn').textContent = 'Войти'; return; }
+    uid = res.data.user?.id;
+    if(!uid){pg('pg-auth');err.textContent='Подтвердите email для завершения регистрации';err.classList.add('show');abtn.disabled=false;abtn.textContent='Зарегистрироваться';return;}
+  }
+  const { data: p, error: pErr } = await sb.from('profiles').select('*').eq('id', uid).single();
+  if (pErr || !p) {
+    // Профиль не найден — пробуем ещё раз через 800мс (Supabase иногда лагает после upsert)
+    await new Promise(r => setTimeout(r, 800));
+    const { data: p2 } = await sb.from('profiles').select('*').eq('id', uid).single();
+    if (!p2) {
+      pg('pg-auth');
+      err.textContent = 'Ошибка загрузки профиля. Попробуйте войти снова.';
+      err.classList.add('show');
+      document.getElementById('abtn').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
+      return;
+    }
+    me = { role: p2.role, name: p2.name, id: uid, teacher_code: p2.teacher_code };
+  } else {
+    me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code };
+  }
+  launchApp();
+}
+
+// ── Student Login ──
+let selTeacherId = null;
+async function showTeachers() {
+  // Показываем форму входа по коду учителя + PIN (без списка всех учителей)
+  pg('pg-teachers');
+  document.getElementById('pg-teachers').innerHTML = `<div class="auth-pg"><div class="panel">
+    <button class="pback" onclick="renderRoles()">${backSvg()} Назад</button>
+    <div class="ptitle">Привет! 👋</div>
+    <div class="psub">Введи код учителя и свой PIN</div>
+    <div class="err" id="perr"></div>
+    <div class="fg" style="margin-bottom:12px">
+      <label class="fl">Код учителя</label>
+      <input class="fi" id="s-tcode" placeholder="Например: DAN1" maxlength="8" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <div class="fg" style="margin-bottom:4px">
+      <label class="fl">Твой PIN-код</label>
+      <div class="pin-wrap" style="margin:8px 0 0">
+        <input class="pd" type="tel" maxlength="1" id="p0" oninput="pi(this,0)">
+        <input class="pd" type="tel" maxlength="1" id="p1" oninput="pi(this,1)">
+        <input class="pd" type="tel" maxlength="1" id="p2" oninput="pi(this,2)">
+        <input class="pd" type="tel" maxlength="1" id="p3" oninput="pi(this,3)">
+      </div>
+    </div>
+    <button class="btn bp" style="margin-top:16px" onclick="doPin()">Войти</button>
+  </div></div>`;
+  setTimeout(() => document.getElementById('s-tcode')?.focus(), 100);
+}
+function showPin(tid, tname) {
+  // Оставляем для обратной совместимости, но больше не используется
+  showTeachers();
+}
+function pi(el, idx) {
+  el.value = el.value.toString().slice(-1);
+  if (el.value && idx < 3) document.getElementById('p'+(idx+1)).focus();
+  if (idx === 3 && el.value) doPin();
+}
+async function doPin() {
+  const tcode = (document.getElementById('s-tcode')?.value||'').trim().toUpperCase();
+  const pin   = [0,1,2,3].map(i => document.getElementById('p'+i)?.value||'').join('');
+  if (!tcode) { perr('Введи код учителя'); return; }
+  if (pin.length < 4) { perr('Введи все 4 цифры PIN'); return; }
+  const pinBtn=document.querySelector('#pg-teachers .btn.bp');
+  if(pinBtn) { if(pinBtn.disabled) return; pinBtn.disabled=true; }
+  pg('pg-load');
+  // Ищем учителя по коду
+  const { data: teacher } = await sb.from('profiles').select('id,name').eq('teacher_code', tcode).eq('role','teacher').single();
+  if (!teacher) { pg('pg-teachers'); if(pinBtn) pinBtn.disabled=false; perr('Учитель с таким кодом не найден'); return; }
+  selTeacherId = teacher.id;
+  // Ищем ученика по PIN у этого учителя
+  const { data: stu } = await sb.from('students').select('*').eq('teacher_id', teacher.id).eq('pin', pin).single();
+  if (!stu) { pg('pg-teachers'); if(pinBtn) pinBtn.disabled=false; perr('Неверный PIN-код'); return; }
+  if (stu.active === false) { pg('pg-teachers'); if(pinBtn) pinBtn.disabled=false; perr('Доступ заблокирован. Обратитесь к учителю.'); return; }
+  me = { role: 'student', name: stu.name, id: stu.id, student_id: stu.id, teacher_id: teacher.id };
+  launchApp();
+}
+function perr(m) { const e = document.getElementById('perr'); if(e){e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000);} }
+
+// ── App ──
+function launchApp() {
+  pg('pg-app');
+  document.getElementById('pg-app').innerHTML = `
+    <header class="hdr">
+      <div class="logo">Lesso</div>
+      <div class="usr">
+        <div class="av" id="av" onclick="openNotifPanel()" style="cursor:pointer">${(me.name||'?')[0].toUpperCase()}<span class="av-badge" id="av-badge" style="display:none"></span></div>
+        <span style="max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${me.name}</span>
+        <button class="logout" onclick="doLogout()"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg></button>
+      </div>
+    </header>
+    <div class="content" id="ac"></div>
+    <nav class="bnav" id="an"></nav>`;
+  if (me.role === 'teacher') buildTeacher();
+  else if (me.role === 'parent') buildParent();
+  else buildStudent();
+  // Уведомления грузим асинхронно — не блокируем запуск
+  setTimeout(() => subscribeNotifs(), 300);
+}
+async function doLogout() {
+  try {
+    if (me.role === 'teacher' || me.role === 'parent') {
+      await Promise.race([sb.auth.signOut(), new Promise(r=>setTimeout(r,3000))]);
+    }
+  } catch(e){ console.warn('logout error',e); }
+  // Сбрасываем всё состояние приложения
+  me=null; selTeacherId=null; _cache.stus=null;
+  editLessonId=null; editStuId=null;
+  activeChatId=null; lessonChatId=null;
+  pendFile=null; allW=[]; rQ=[];
+  if(typeof _payState!=='undefined') _payState={stuId:null,stuName:'',price:0};
+  // Закрываем realtime каналы
+  try { await sb.removeAllChannels(); } catch(e){}
+  // Закрываем открытые модалки
+  document.querySelectorAll('.mo.open').forEach(m=>m.classList.remove('open'));
+  renderRoles();
+}
+
+// ── Nav ──
+function setNav(items) {
+  document.getElementById('an').innerHTML = items.map((it,i) =>
+    `<button class="ni${i===0?' active':''}" id="ni${i}" onclick="${it.fn}">
+      ${it.ico}<div class="ni-dot" id="nd${i}"></div><span>${it.lbl}</span>
+    </button>`).join('');
+}
+function actNav(i) { document.querySelectorAll('.ni').forEach((b,j)=>b.classList.toggle('active',j===i)); }
+function addFab(fn) {
+  document.getElementById('fab')?.remove();
+  const b = document.createElement('button'); b.className='fab'; b.id='fab';
+  b.innerHTML=`<svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`;
+  b.onclick=fn; document.body.appendChild(b);
+}
+
+// ── Notifications ──
+async function deleteNotif(id) {
+  await sb.from('notifications').delete().eq('id',id);
+  document.getElementById('ni-'+id)?.remove();
+  const list=document.getElementById('notif-list');
+  if(list&&!list.querySelector('[id^="ni-"]')){
+    list.innerHTML='<div class="empty" style="padding:40px 0"><div class="ei">🔔</div><p>Уведомлений нет</p></div>';
+    const btn=document.querySelector('[onclick*="clearAllNotifs"]');
+    if(btn) btn.remove();
+  }
+  checkUnread();
+}
+async function clearAllNotifs(rid) {
+  await sb.from('notifications').delete().eq('recipient_id',rid);
+  const list=document.getElementById('notif-list');
+  if(list) list.innerHTML='<div class="empty" style="padding:40px 0"><div class="ei">🔔</div><p>Уведомлений нет</p></div>';
+  const btn=document.querySelector('[onclick*="clearAllNotifs"]');
+  if(btn) btn.remove();
+  unreadCount=0;
+  const badge=document.getElementById('av-badge');
+  if(badge) badge.style.display='none';
+  const chatNavIdx = me.role==='teacher'?5:me.role==='parent'?3:4;
+  const dot=document.getElementById('nd'+chatNavIdx);
+  if(dot) dot.classList.remove('show');
+}
+async function openNotifPanel() {
+  document.getElementById('m-notif')?.remove();
+  const rid = me.role === 'student' ? me.student_id : me.id;
+  const{data:notifs}=await sb.from('notifications').select('*').eq('recipient_id',rid).order('created_at',{ascending:false}).limit(20);
+  const mo=document.createElement('div');
+  mo.id='m-notif';
+  mo.className='mo open';
+  mo.style.cssText='';
+  const items=!notifs?.length
+    ?'<div class="empty" style="padding:40px 0"><div class="ei">🔔</div><p>Уведомлений нет</p></div>'
+    :notifs.map(n=>`<div id="ni-${n.id}" style="padding:12px 0;border-bottom:1px solid var(--b);display:flex;gap:10px;align-items:flex-start">
+        <div style="font-size:20px">${n.type==='new_message'?'💬':n.type==='lesson_created'?'📅':n.type==='homework'?'📝':'🔔'}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:14px">${n.title||''}</div>
+          <div style="font-size:13px;color:var(--t2);margin-top:2px">${n.body||''}</div>
+          <div style="font-size:11px;color:var(--t2);margin-top:4px">${new Date(n.created_at).toLocaleString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+        <button onclick="deleteNotif('${n.id}')" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:18px;padding:0 4px;flex-shrink:0">×</button>
+      </div>`).join('');
+  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;max-height:70dvh;display:flex;flex-direction:column;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:18px;font-weight:700">Уведомления</div>
+      ${notifs?.length?`<button onclick="clearAllNotifs('${rid}')" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--r);font-weight:600;font-family:inherit">Удалить все</button>`:''}
+    </div>
+    <div style="overflow-y:auto;flex:1" id="notif-list">${items}</div>
+    <button class="btn bs" style="width:100%;margin-top:12px" onclick="document.getElementById('m-notif')?.remove()">Закрыть</button>
+  </div>`;
+  document.body.appendChild(mo);
+  mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
+  // Помечаем все как прочитанные
+  await sb.from('notifications').update({read:true}).eq('recipient_id',rid).eq('read',false);
+  unreadCount=0;
+  const badge=document.getElementById('av-badge');
+  if(badge) badge.style.display='none';
+}
+
+let _notifChannel=null, _msgChannel=null;
+async function subscribeNotifs() {
+  // Отписываемся от старых каналов если есть
+  if(_notifChannel){try{_notifChannel.unsubscribe();}catch(e){}}
+  if(_msgChannel){try{_msgChannel.unsubscribe();}catch(e){}}
+  checkUnread(); // не блокируем
+  const rid = me.role === 'student' ? me.student_id : me.id;
+  if(!rid) return;
+  // Подписка на уведомления
+  _notifChannel=sb.channel('notifs-'+rid)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notifications',filter:`recipient_id=eq.${rid}`},
+      () => { checkUnread(); toast('🔔 Новое уведомление!'); })
+    .subscribe();
+  // Подписка на новые сообщения чата для красной точки
+  _msgChannel=sb.channel('msgs-global-'+rid)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages'},
+      (payload) => {
+        // Не показываем точку на своё сообщение
+        if(payload.new.sender_id === rid) return;
+        checkUnread();
+        // Если чат открыт — обновляем его
+        if(activeChatId && payload.new.chat_id === activeChatId) loadChatMsgs();
+        else if(lessonChatId && payload.new.lesson_id === lessonChatId) loadLessonMsgs();
+        else toast('💬 Новое сообщение');
       })
-  );
-});
+    .subscribe();
+}
+let _cuTimer=null;
+async function checkUnread() {
+  if(!me) return; // защита после logout
+  if(_cuTimer) return; _cuTimer=setTimeout(()=>{_cuTimer=null;},5000);
+  const rid = me.role === 'student' ? me.student_id : me.id;
+  if (!rid) return;
 
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  const url = e.request.url;
-  if (BYPASS.some(d => url.includes(d))) return;
+  // Считаем непрочитанные уведомления
+  const { count: notifCount } = await sb.from('notifications').select('*',{count:'exact',head:true})
+    .eq('recipient_id', rid).eq('read', false);
 
-  // index.html — всегда network-first, кэш только при офлайне
-  if (url.endsWith('/') || url.includes('index.html') || url === self.location.origin + '/') {
-    e.respondWith(
-      fetch(e.request, { cache: 'no-store' })
-        .then(response => {
-          if (response.ok) caches.open(CACHE).then(c => c.put('/index.html', response.clone()));
-          return response;
-        })
-        .catch(() => caches.match('/index.html'))
-    );
+  unreadCount = (notifCount || 0);
+  const badge = document.getElementById('av-badge');
+  if (badge) {
+    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+    badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+  }
+  // Красная точка на вкладке Чаты
+  const chatNavIdx = me.role === 'teacher' ? 5 : me.role === 'parent' ? 3 : 4;
+  const dot = document.getElementById('nd'+chatNavIdx);
+  if (dot) dot.classList.toggle('show', unreadCount > 0);
+}
+async function createNotif(recipientId, type, title, body, lessonId=null) {
+  if (!recipientId) return;
+  await sb.from('notifications').insert({ recipient_id: recipientId, type, title, body, lesson_id: lessonId });
+}
+
+// ── TEACHER ──
+function buildTeacher() {
+  setNav([
+    {fn:"tSc('home',0)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>`,lbl:'Главная'},
+    {fn:"tSc('students',1)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>`,lbl:'Ученики'},
+    {fn:"tSc('lessons',2)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,lbl:'Уроки'},
+    {fn:"tSc('words',3)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.25V19.25M12 6.25C10.83 5.48 9.25 5 7.5 5C5.75 5 4.17 5.48 3 6.25V19.25C4.17 18.48 5.75 18 7.5 18C9.25 18 10.83 18.48 12 19.25M12 6.25C13.17 5.48 14.75 5 16.5 5C18.25 5 19.83 5.48 21 6.25V19.25C19.83 18.48 18.25 18 16.5 18C14.75 18 13.17 18.48 12 19.25"/></svg>`,lbl:'Слова'},
+    {fn:"tSc('stats',4)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 20h18M7 20V10M11 20V4M15 20V14M19 20V8"/></svg>`,lbl:'Аналитика'},
+    {fn:"tSc('chats',5)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,lbl:'Чаты'}
+  ]);
+  tSc('home',0);
+}
+function tSc(n,i) {
+  actNav(i); document.getElementById('fab')?.remove();
+  editLessonId=null; editStuId=null; // сбрасываем при переключении вкладок
+  const c=document.getElementById('ac');
+  if(n==='home') tHome(c);
+  else if(n==='students') tStudents(c);
+  else if(n==='lessons') tLessons(c);
+  else if(n==='words') tWords(c);
+  else if(n==='stats') tStats(c);
+  else if(n==='chats') tChats(c);
+}
+
+async function tHome(el) {
+  // Мгновенный скелетон пока грузятся данные
+  el.innerHTML=`<div class="page"><div class="stitle">Главная 👋</div><div class="ssub" style="color:var(--t2)">Загружаем данные...</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
+  el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">—</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">—</div><div class="sl">Учеников</div></div></div><div class="card" id="th-next" style="display:none"></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r">Загрузка...</div></div></div>`;
+  const [{count:lc},{count:sc},{data:rc},{data:ss}]=await Promise.all([
+    sb.from('lessons').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
+    sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
+    sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false}).limit(5),
+    sb.from('students').select('id,name').eq('teacher_id',me.id)
+  ]);
+  document.getElementById('th-l').textContent=lc||0;
+  document.getElementById('th-s').textContent=sc||0;
+  const sm=Object.fromEntries((ss||[]).map(s=>[s.id,s.name]));
+  // Ближайший запланированный урок
+  const next=(rc||[]).find(l=>l.status==='planned'||!l.status||l.status==='active');
+  const nb=document.getElementById('th-next');
+  if(next&&nb){
+    nb.style.display='block';
+    nb.innerHTML=`<div class="clbl">📅 Ближайший урок</div>
+      <div style="font-weight:700;font-size:16px;margin-bottom:4px">${next.title}</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:10px">${fd(next.date)}${next.student_id&&sm[next.student_id]?' · '+sm[next.student_id]:''}</div>
+      <div style="display:flex;gap:8px">
+        ${next.status!=='done'?`<button class="btn bp bsm" onclick="openLesson('${next.id}')">Открыть →</button>`:''}
+        ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" class="btn bs bsm">🎥 Zoom</a>`:''}
+      </div>`;
+  }
+  const r=document.getElementById('th-r');
+  if(!rc?.length){r.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
+  r.innerHTML=rc.map(l=>`<div class="lc" onclick="openLesson('${l.id}')">
+    <div class="lct"><div><div class="lcti">${l.title}${l.student_id&&sm[l.student_id]?` <span style="font-size:12px;color:var(--t2);font-weight:500">· ${sm[l.student_id]}</span>`:''}</div><div class="lcm">${fd(l.date)}</div></div>
+    ${l.grade?`<div class="grade g${l.grade}">${l.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
+    <div class="lcf">${l.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}${l.homework?`<span class="bdg bo">📝 ДЗ</span>${l.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}</div>
+  </div>`).join('');
+}
+
+async function tStudents(el) {
+  el.innerHTML=`<div class="page"><div class="shdr"><div><div class="stitle">Ученики</div><div class="ssub">Управление</div></div></div><div id="ts-list">Загрузка...</div><div style="height:80px"></div></div>`;
+  addFab(()=>openAddStu());
+  const{data}=await sb.from('students').select('id,name,subject,pin,active,lesson_price,parent_user_id,parent_user_id2').eq('teacher_id',me.id).order('name');
+  const l=document.getElementById('ts-list');
+  if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">👨‍🎓</div><p>Учеников пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
+  // Загружаем платежи для счётчиков
+  const stuIds=data.map(s=>s.id);
+  const{data:payments}=stuIds.length?await sb.from('payments').select('student_id,lessons_count,amount,created_at').in('student_id',stuIds).order('created_at',{ascending:false}):{data:[]};
+  const{data:doneLessons}=stuIds.length?await sb.from('lessons').select('student_id').eq('teacher_id',me.id).eq('status','done').in('student_id',stuIds):{data:[]};
+  // Считаем баланс по каждому ученику
+  const balMap={};
+  stuIds.forEach(id=>{ balMap[id]={paid:0,used:0}; });
+  (payments||[]).forEach(p=>{ if(balMap[p.student_id]) balMap[p.student_id].paid+=p.lessons_count||0; });
+  (doneLessons||[]).forEach(l=>{ if(balMap[l.student_id]) balMap[l.student_id].used++; });
+  l.innerHTML=data.map(s=>{
+    const bal=balMap[s.id]||{paid:0,used:0};
+    const left=Math.max(bal.paid-bal.used,0);
+    const pct=bal.paid>0?Math.round(left/bal.paid*100):0;
+    const balClr=left<=2?'var(--r)':left<=4?'var(--o)':'var(--g)';
+    return `<div class="scard" onclick="openEditStu('${s.id}')">
+    <div class="sav" style="${s.active===false?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+        <div style="min-width:0">
+          <div class="sname_">${s.name}${s.active===false?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div>
+          <div class="smeta_">${s.subject||'—'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+          <div class="spinb">PIN: ${s.pin||'—'}</div>
+          <button class="bdg bo" style="cursor:pointer;border:none;font-size:13px" onclick="event.stopPropagation();sendReminder('${s.id}','${s.name.replace(/'/g,"\\'")}')">🔔</button>
+        </div>
+      </div>
+      ${bal.paid>0?`<div style="margin-top:8px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:3px">
+          <span style="color:${balClr}">Осталось: ${left} из ${bal.paid} уроков</span>
+          ${left<=2&&bal.paid>0?'<span style="color:var(--r);font-size:10px">⚠️ Пополнить!</span>':''}
+        </div>
+        <div class="pay-bar"><div class="pay-fill" style="width:${pct}%;background:${balClr}"></div></div>
+      </div>`:''}
+      <div style="margin-top:10px">
+        <button class="btn bp bsm" style="cursor:pointer;font-size:12px;padding:6px 14px" onclick="event.stopPropagation();openPayment('${s.id}','${s.name.replace(/'/g,"\\'")}',${ s.lesson_price||0})">💰 Оплата</button>
+      </div>
+    </div>
+  </div>`;}).join('');
+}
+
+async function tLessons(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Уроки</div><div class="ssub">История и планирование</div><div id="tl-list">Загрузка...</div><div style="height:80px"></div></div>`;
+  addFab(()=>openAddLesson());
+  const[{data:ss},{data:ls}]=await Promise.all([
+    sb.from('students').select('id,name').eq('teacher_id',me.id),
+    sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false})
+  ]);
+  const sm=Object.fromEntries((ss||[]).map(s=>[s.id,s.name]));
+  const l=document.getElementById('tl-list');
+  if(!ls?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
+  l.innerHTML=ls.map(l_=>`<div class="lc" onclick="openLesson('${l_.id}')">
+    <div class="lct"><div><div class="lcti">${l_.title}</div><div class="lcm">${fd(l_.date)}${l_.student_id&&sm[l_.student_id]?' · '+sm[l_.student_id]:''}</div></div>
+    ${l_.grade?`<div class="grade g${l_.grade}">${l_.grade}</div>`:''}</div>
+    <div class="lcf">
+      ${l_.status==='active'?'<span class="bdg br">🔴 Идёт</span>':l_.status==='done'?'<span class="bdg bgg">✓ Завершён</span>':''}
+      ${l_.paid?'<span class="bdg bgg">Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
+      ${l_.homework?`<span class="bdg bo">📝 ДЗ</span>${l_.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}
+    </div>
+  </div>`).join('');
+}
+
+let allW=[], wStuId=null, wStus=[];
+async function tWords(el) {
+  const{data:ss}=await sb.from('students').select('id,name').eq('teacher_id',me.id);
+  wStus=ss||[]; wStuId=wStus[0]?.id||null;
+  el.innerHTML=`<div class="page"><div class="stitle">Словарь</div><div class="ssub">Слова по ученикам</div>
+    <div class="frow" id="wstu-tabs">${wStus.map(s=>`<button class="fc2${s.id===wStuId?' active':''}" data-sid="${s.id}" onclick="switchWStu(this)">${s.name}</button>`).join('')}</div>
+    <div class="frow"><button class="fc2 active" data-f="all" onclick="filterW(this)">Все</button><button class="fc2" data-f="0" onclick="filterW(this)">Новые</button><button class="fc2" data-f="1" onclick="filterW(this)">Учат</button><button class="fc2" data-f="2" onclick="filterW(this)">Почти</button><button class="fc2" data-f="3" onclick="filterW(this)">Знают ✓</button></div>
+    <div id="tw-list">Загрузка...</div><div style="height:80px"></div></div>`;
+  addFab(()=>openAddWord());
+  await loadW(wStuId);
+}
+async function switchWStu(btn) {
+  document.querySelectorAll('#wstu-tabs .fc2').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); wStuId=btn.dataset.sid; await loadW(wStuId);
+}
+async function loadW(sid) {
+  let q=sb.from('words').select('*').order('created_at',{ascending:false});
+  if(sid) q=q.eq('student_record_id',sid); else q=q.is('student_record_id',null);
+  const{data}=await q; allW=data||[]; renderW('all');
+}
+function filterW(btn) { document.querySelectorAll('#tw-list').length&&document.querySelectorAll('.frow .fc2').forEach(c=>c.dataset.f&&c.classList.remove('active')); btn.classList.add('active'); renderW(btn.dataset.f); }
+function renderW(f) {
+  const l=document.getElementById('tw-list'); if(!l) return;
+  const d=f==='all'?allW:allW.filter(w=>w.level==f);
+  if(!d.length){l.innerHTML=`<div class="empty"><div class="ei">📖</div><p>Нет слов</p></div>`;return;}
+  l.innerHTML=d.map(w=>`<div class="wi"><div class="ld lv${w.level}"></div><div><div class="wen">${w.word}</div><div class="wru">${w.translation}</div></div><div class="wch">${w.topic||'—'}</div></div>`).join('');
+}
+
+// ── Teacher Chats ──
+
+// ── TEACHER STATS ──
+async function tStats(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Статистика 📊</div><div class="ssub">Аналитика по ученикам</div><div id="ts-loading" style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
+
+  const [{data:students},{data:lessons}] = await Promise.all([
+    sb.from('students').select('*').eq('teacher_id', me.id),
+    sb.from('lessons').select('*').eq('teacher_id', me.id).order('date',{ascending:false})
+  ]);
+  const stuIds = (students||[]).map(s=>s.id);
+  const {data:words} = stuIds.length
+    ? await sb.from('words').select('level,student_record_id').in('student_record_id', stuIds)
+    : {data:[]};
+
+  const stus = students || [];
+  const lsns = lessons || [];
+  const wds  = words || [];
+
+  if(!stus.length) {
+    el.innerHTML=`<div class="page"><div class="stitle">Статистика 📊</div><div class="empty" style="margin-top:40px"><div class="ei">📊</div><p>Добавьте учеников<br>чтобы видеть статистику</p></div></div>`;
     return;
   }
 
-  // Остальное — cache-first
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(response => {
-        if (response.ok) caches.open(CACHE).then(c => c.put(e.request, response.clone()));
-        return response;
-      }).catch(() => caches.match('/index.html'));
-    })
-  );
-});
+  // Общие цифры
+  const totalLessons = lsns.length;
+  const doneLessons  = lsns.filter(l=>l.status==='done').length;
+  const paidLessons  = lsns.filter(l=>l.paid).length;
+  const unpaidLessons= lsns.filter(l=>!l.paid && l.status==='done').length;
+  const hwTotal      = lsns.filter(l=>l.homework).length;
+  const hwDone       = lsns.filter(l=>l.hw_done).length;
+  const grades       = lsns.filter(l=>l.grade).map(l=>l.grade);
+  const avgGrade     = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
+  const wordsTotal   = wds.length;
+  const wordsKnown   = wds.filter(w=>w.level===3).length;
 
-// ── Push уведомления ──
-self.addEventListener('push', e => {
-  if (!e.data) return;
-  let data = {};
-  try { data = e.data.json(); } catch { data = { title: 'Lesso', body: e.data.text() }; }
-  e.waitUntil(self.registration.showNotification(data.title || 'Lesso', {
-    body: data.body || '',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
-    data: { url: data.url || '/' },
-    vibrate: [200, 100, 200],
-    requireInteraction: false
-  }));
-});
+  // Статистика по ученикам
+  const stuMap = {};
+  stus.forEach(s => {
+    stuMap[s.id] = {
+      name: s.name,
+      subject: s.subject||'—',
+      active: s.active !== false,
+      lessons: [], words: [], grades: []
+    };
+  });
+  lsns.forEach(l => {
+    if(l.student_id && stuMap[l.student_id]) {
+      stuMap[l.student_id].lessons.push(l);
+      if(l.grade) stuMap[l.student_id].grades.push(l.grade);
+    }
+  });
+  wds.forEach(w => {
+    if(w.student_record_id && stuMap[w.student_record_id])
+      stuMap[w.student_record_id].words.push(w);
+  });
 
-self.addEventListener('notificationclick', e => {
-  e.notification.close();
-  const url = (e.notification.data && e.notification.data.url) || '/';
-  e.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
-      for (const client of list) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          client.navigate(url); return client.focus();
-        }
+  // Активность по месяцам (последние 6)
+  const months = [];
+  for(let i=5;i>=0;i--) {
+    const d = new Date(); d.setMonth(d.getMonth()-i);
+    months.push({
+      key: d.toISOString().slice(0,7),
+      label: d.toLocaleDateString('ru',{month:'short'}),
+      count: 0
+    });
+  }
+  lsns.forEach(l => {
+    const mk = l.date?.slice(0,7);
+    const m  = months.find(m=>m.key===mk);
+    if(m) m.count++;
+  });
+  const maxM = Math.max(...months.map(m=>m.count), 1);
+
+  // Рейтинг учеников по прогрессу (слов знает % + средняя оценка)
+  const ranked = Object.values(stuMap).map(s => {
+    const wKnown = s.words.filter(w=>w.level===3).length;
+    const wTotal = s.words.length;
+    const avg    = s.grades.length ? (s.grades.reduce((a,b)=>a+b,0)/s.grades.length) : 0;
+    const score  = (wTotal ? wKnown/wTotal*50 : 0) + (avg/5*50);
+    return {...s, wKnown, wTotal, avg: avg?avg.toFixed(1):'—', score: Math.round(score)};
+  }).sort((a,b)=>b.score-a.score);
+
+  // Строим HTML
+  el.innerHTML=`<div class="page">
+    <div class="stitle">Статистика 📊</div>
+    <div class="ssub">Аналитика по ученикам</div>
+
+    <!-- Общие карточки -->
+    <div class="srow">
+      <div class="sbox blue"><div class="sv">${totalLessons}</div><div class="sl">Всего уроков</div></div>
+      <div class="sbox green"><div class="sv">${stus.length}</div><div class="sl">Учеников</div></div>
+    </div>
+    <div class="srow">
+      <div class="sbox orange"><div class="sv">${avgGrade}</div><div class="sl">Средняя оценка</div></div>
+      <div class="sbox ${unpaidLessons>0?'orange':'green'}"><div class="sv">${unpaidLessons}</div><div class="sl">Не оплачено</div></div>
+    </div>
+
+    <!-- Активность по месяцам -->
+    <div class="card">
+      <div class="clbl">📅 Уроков по месяцам</div>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:80px;margin-top:8px">
+        ${months.map(m=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+          <div style="font-size:11px;font-weight:700;color:var(--a)">${m.count||''}</div>
+          <div style="width:100%;border-radius:6px 6px 0 0;height:${Math.round(m.count/maxM*60)+4}px;min-height:4px;background:${m.count?'var(--a)':'var(--b)'}"></div>
+          <div style="font-size:10px;color:var(--t3);font-weight:600">${m.label}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- ДЗ -->
+    <div class="card">
+      <div class="clbl">📝 Домашние задания</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px">
+            <span style="color:var(--g)">✅ Сдано: ${hwDone}</span>
+            <span style="color:var(--t3)">Всего: ${hwTotal}</span>
+          </div>
+          <div class="pb"><div class="pbf" style="width:${hwTotal?Math.round(hwDone/hwTotal*100):0}%;background:var(--g)"></div></div>
+        </div>
+        <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:900;color:var(--g);min-width:44px;text-align:right">${hwTotal?Math.round(hwDone/hwTotal*100):0}%</div>
+      </div>
+    </div>
+
+    <!-- Оплата -->
+    <div class="card">
+      <div class="clbl">💰 Оплата уроков</div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <div style="flex:1;background:var(--gl);border-radius:var(--rs);padding:12px;text-align:center">
+          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--g)">${paidLessons}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--g)">Оплачено</div>
+        </div>
+        <div style="flex:1;background:var(--rl);border-radius:var(--rs);padding:12px;text-align:center">
+          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--r)">${unpaidLessons}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--r)">Не оплачено</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Слова -->
+    <div class="card">
+      <div class="clbl">📖 Словарный запас</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px">
+            <span style="color:var(--a)">Знает хорошо: ${wordsKnown}</span>
+            <span style="color:var(--t3)">Всего: ${wordsTotal}</span>
+          </div>
+          <div class="pb"><div class="pbf" style="width:${wordsTotal?Math.round(wordsKnown/wordsTotal*100):0}%"></div></div>
+        </div>
+        <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:900;color:var(--a);min-width:44px;text-align:right">${wordsTotal?Math.round(wordsKnown/wordsTotal*100):0}%</div>
+      </div>
+    </div>
+
+    <!-- Рейтинг учеников -->
+    <div class="card">
+      <div class="clbl">🏆 По ученикам</div>
+      ${ranked.map((s,i)=>{
+        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+        const wPct  = s.wTotal ? Math.round(s.wKnown/s.wTotal*100) : 0;
+        return `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--b);${i===0?'border-top:none;margin-top:8px;padding-top:0':''}" >
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div class="sav" style="width:38px;height:38px;font-size:16px;${!s.active?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:14px">${medal} ${s.name.replace(/</g,'&lt;').replace(/>/g,'&gt;')}${!s.active?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div>
+              <div style="font-size:12px;color:var(--t2)">${s.subject}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:${s.avg!=='—'?'var(--a)':'var(--t3)'}">${s.avg!=='—'?s.avg:'—'}</div>
+              <div style="font-size:10px;color:var(--t3);font-weight:600">ср. оценка</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <span class="bdg bb">📅 ${s.lessons.length} уроков</span>
+            <span class="bdg ${s.words.length?'bgg':'bgr'}">📖 ${s.words.length} слов</span>
+            <span class="bdg ${wPct>=70?'bgg':wPct>=40?'bo':'bgr'}">✓ ${wPct}% знает</span>
+            ${s.lessons.filter(l=>!l.paid&&l.status==='done').length>0?`<span class="bdg br">💰 ${s.lessons.filter(l=>!l.paid&&l.status==='done').length} не оплачено</span>`:''}
+          </div>
+          <div class="pb"><div class="pbf" style="width:${s.score}%;background:${s.score>=70?'var(--g)':s.score>=40?'var(--o)':'var(--r)'}"></div></div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div style="height:80px"></div>
+  </div>`;
+}
+
+async function tChats(el) {
+  document.getElementById('fab')?.remove();
+  el.innerHTML=`<div class="page"><div class="stitle">Чаты</div><div class="ssub">Сообщения с учениками и родителями</div><div id="tc-list">Загрузка...</div></div>`;
+  // Загружаем учеников учителя
+  const stus=await getStudents(me.id);
+  const l=document.getElementById('tc-list');
+  if(!stus?.length){l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Сначала добавьте учеников</p></div>`;return;}
+  // Для каждого ученика показываем два чата
+  l.innerHTML=stus.map(s=>`
+    <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px">${s.name}</div>
+    <div class="chitem" onclick="openChat('teacher_parent','${s.id}','${s.name}','Родитель')">
+      <div class="chav" style="background:#16a34a">${s.name[0]}</div>
+      <div style="flex:1"><div class="chname">👨‍👩‍👦 Родитель</div><div class="chlast">Чат с родителями ${s.name}</div></div>
+    </div>
+    <div class="chitem" onclick="openChat('teacher_student','${s.id}','${s.name}','${s.name}')">
+      <div class="chav" style="background:#2563eb">${s.name[0]}</div>
+      <div style="flex:1"><div class="chname">🧒 ${s.name}</div><div class="chlast">Чат с учеником</div></div>
+    </div>`).join('');
+  // Чаты по урокам
+  const{data:ls}=await sb.from('lessons').select('id,title,date,student_id').eq('teacher_id',me.id).order('date',{ascending:false}).limit(20);
+  const sm2=Object.fromEntries((stus||[]).map(s=>[s.id,s.name]));
+  if(ls?.length){
+    const lessonDiv=document.createElement('div');
+    lessonDiv.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin:20px 0 8px">Чаты по урокам</div>`+
+      ls.map(l=>`<div class="chitem" onclick="openLessonChat('${l.id}','${l.title.replace(/'/g,"\'")}')">
+        <div class="chav" style="background:#ea580c;font-size:14px">📚</div>
+        <div style="flex:1"><div class="chname">${l.title}</div><div class="chlast">${fd(l.date)}${l.student_id&&sm2[l.student_id]?' · '+sm2[l.student_id]:''}</div></div>
+      </div>`).join('');
+    document.getElementById('tc-list').appendChild(lessonDiv);
+  }
+  checkUnread();
+}
+
+// ── Open Chat ──
+async function openChat(type, stuId, stuName, recipientName) {
+  // Для ученика teacher_id берём из me, для учителя/родителя тоже
+  const tid = me.role === 'teacher' ? me.id : me.teacher_id;
+  const realStuId = me.role === 'student' ? me.student_id : stuId;
+  // Найти или создать чат
+  let { data: chat } = await sb.from('chats').select('*').eq('teacher_id',tid).eq('student_id',realStuId).eq('type',type).single();
+  if (!chat) {
+    const{data:nc}=await sb.from('chats').insert({teacher_id:tid,student_id:realStuId,type}).select().single();
+    chat=nc;
+  }
+  if (!chat) { toast('Ошибка создания чата'); return; }
+  activeChatId=chat.id;
+  const isParent=type==='teacher_parent';
+  const isStudent = me.role === 'student';
+  document.getElementById('chat-av').textContent=stuName[0].toUpperCase();
+  document.getElementById('chat-av').style.background=isParent?'#16a34a':'#2563eb';
+  // Для ученика показываем имя учителя, для учителя — ученика
+  if(isStudent){
+    const{data:tp}=await sb.from('profiles').select('name').eq('id',me.teacher_id).single();
+    document.getElementById('chat-title').textContent=tp?.name||'Учитель';
+    document.getElementById('chat-sub').textContent='Чат с учителем';
+  } else {
+    document.getElementById('chat-title').textContent=isParent?`Родитель (${stuName})`:`${stuName}`;
+    document.getElementById('chat-sub').textContent=isParent?'Чат с родителями':'Чат с учеником';
+  }
+  openM('m-chat');
+  await loadChatMsgs();
+  if(chatChannel) chatChannel.unsubscribe();
+  chatChannel=sb.channel('ch-'+chat.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:`chat_id=eq.${chat.id}`},()=>loadChatMsgs())
+    .subscribe();
+}
+
+async function openLessonChat(lessonId, lessonTitle) {
+  lessonChatId=lessonId; activeChatId=null;
+  document.getElementById('chat-av').textContent='📚';
+  document.getElementById('chat-av').style.background='#ea580c';
+  document.getElementById('chat-title').textContent=lessonTitle;
+  document.getElementById('chat-sub').textContent='Чат по уроку';
+  openM('m-chat');
+  await loadLessonMsgs();
+  if(chatChannel) chatChannel.unsubscribe();
+  chatChannel=sb.channel('lch-'+lessonId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:`lesson_id=eq.${lessonId}`},()=>loadLessonMsgs())
+    .subscribe();
+}
+
+async function loadChatMsgs() {
+  if(!activeChatId) return;
+  const{data}=await sb.from('chat_messages').select('*').eq('chat_id',activeChatId).order('created_at');
+  renderMsgs(data);
+  markMsgsRead(activeChatId, null);
+}
+async function loadLessonMsgs() {
+  if(!lessonChatId) return;
+  const{data}=await sb.from('chat_messages').select('*').eq('lesson_id',lessonChatId).order('created_at');
+  renderMsgs(data);
+  markMsgsRead(null, lessonChatId);
+}
+
+async function markMsgsRead(chatId, lessonId) {
+  const rid = me.role === 'student' ? me.student_id : me.id;
+  if(!rid) return;
+  // Получаем непрочитанные сообщения
+  let q = sb.from('chat_messages').select('id,read_by').not('read_by','cs',`{${rid}}`).neq('sender_id',rid);
+  if(chatId) q = q.eq('chat_id', chatId);
+  if(lessonId) q = q.eq('lesson_id', lessonId);
+  const{data:msgs} = await q;
+  if(!msgs?.length) { checkUnread(); return; }
+  // Добавляем rid в read_by каждого сообщения
+  await Promise.all(msgs.map(m =>
+    sb.from('chat_messages').update({read_by:[...(m.read_by||[]),rid]}).eq('id',m.id)
+  ));
+  checkUnread();
+}
+
+function renderMsgs(data) {
+  const wrap=document.getElementById('chat-msgs');
+  if(!wrap) return;
+  if(!data?.length){wrap.innerHTML=`<div style="text-align:center;color:var(--t3);font-size:13px;padding:20px">Напишите первое сообщение!</div>`;return;}
+  const myId = me.role === 'student' ? me.student_id : me.id;
+  wrap.innerHTML=data.map(m=>{
+    const mine = m.sender_id === myId || (me.role==='student' && m.sender_role==='student' && m.sender_name===me.name);
+    return `<div class="msg ${mine?'mine':'theirs'}">
+      ${!mine?`<div class="msg-who">${m.sender_name}</div>`:''}
+      <div class="msg-bbl">${esc(m.text)}</div>
+      <div class="msg-time">${ft(m.created_at)}</div>
+    </div>`;
+  }).join('');
+  // Scroll to bottom — use requestAnimationFrame to ensure DOM is painted
+  requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
+}
+
+async function sendMsg() {
+  const inp=document.getElementById('chat-inp');
+  const text=inp.value.trim(); if(!text) return;
+  if(inp.dataset.sending==='1') return; // защита от двойной отправки
+  inp.dataset.sending='1';
+  inp.value='';
+
+  // Показываем сообщение сразу (оптимистичный UI)
+  const wrap=document.getElementById('chat-msgs');
+  let tempDiv=null;
+  if(wrap){
+    tempDiv=document.createElement('div');
+    tempDiv.className='msg mine';
+    tempDiv.innerHTML=`<div class="msg-bbl">${text}</div><div class="msg-time">${ft(new Date().toISOString())}</div>`;
+    wrap.appendChild(tempDiv);
+    requestAnimationFrame(()=>{wrap.scrollTop=wrap.scrollHeight;});
+  }
+
+  if(!activeChatId && !lessonChatId){toast('Чат не открыт');return;}
+  const senderId = me.role==='student' ? me.student_id : me.id;
+  const payload={sender_id:senderId, sender_role:me.role, sender_name:me.name, text};
+  if(activeChatId) payload.chat_id=activeChatId;
+  else if(lessonChatId) payload.lesson_id=lessonChatId;
+  const{error}=await sb.from('chat_messages').insert(payload);
+  inp.dataset.sending='';
+  if(error){
+    inp.value=text;
+    toast('Ошибка: '+error.message);
+    tempDiv?.remove(); // убираем оптимистичное сообщение при ошибке
+    return;
+  }
+
+  // Все уведомления и обновление чата — в фон, не блокируем UI
+  _sendNotifs(text).catch(()=>{});
+}
+
+async function _sendNotifs(text) {
+  const notifs=[];
+  if(lessonChatId){
+    if(me.role==='student'){
+      if(me.teacher_id) notifs.push({recipient_id:me.teacher_id,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId});
+    } else if(me.role==='teacher'){
+      const{data:les}=await sb.from('lessons').select('student_id').eq('id',lessonChatId).single();
+      if(les?.student_id) notifs.push({recipient_id:les.student_id,type:'new_message',title:'Учитель написал в уроке',body:text,lesson_id:lessonChatId});
+    }
+    if(notifs.length) await Promise.all(notifs.map(n=>sb.from('notifications').insert(n)));
+    return;
+  }
+  if(!activeChatId) return;
+  const{data:chat}=await sb.from('chats').select('*').eq('id',activeChatId).single();
+  if(!chat) return;
+  // Обновляем last_message параллельно с уведомлениями
+  const updates=[sb.from('chats').update({last_message:text,last_message_at:new Date().toISOString()}).eq('id',activeChatId)];
+  if(me.role==='teacher'){
+    const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',chat.student_id).single();
+    const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
+    if(chat.type==='teacher_parent'){
+      pids.forEach(pid=>updates.push(sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель пишет ('+(stu?.name||'')+')',body:text})));
+    } else {
+      updates.push(sb.from('notifications').insert({recipient_id:chat.student_id,type:'new_message',title:'Учитель пишет',body:text}));
+      pids.forEach(pid=>updates.push(sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель написал '+(stu?.name||''),body:text})));
+    }
+  } else if(me.role==='student'){
+    updates.push(sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:me.name+' пишет',body:text}));
+  } else if(me.role==='parent'){
+    const{data:stu}=await sb.from('students').select('name').eq('id',chat.student_id).single();
+    updates.push(sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:'Родитель ('+(stu?.name||'')+') пишет',body:text}));
+  }
+  await Promise.all(updates);
+}
+
+// ── Lesson CRUD ──
+let pendFile=null;
+function onFileSelect(input) {
+  const f=input.files[0]; if(!f) return;
+  pendFile=f;
+  const sz=f.size>1024*1024?(f.size/1024/1024).toFixed(1)+' МБ':Math.round(f.size/1024)+' КБ';
+  document.getElementById('li-fprev').innerHTML=`<div class="mitem">
+    <div class="mico">${f.type.includes('pdf')?'📄':f.type.includes('image')?'🖼️':'📎'}</div>
+    <div style="flex:1"><div class="mname_">${f.name}</div><div class="msize_">${sz}</div></div>
+    <button onclick="pendFile=null;document.getElementById('li-fprev').innerHTML='';document.getElementById('li-file').value=''" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:20px">×</button>
+  </div>`;
+}
+async function uploadFile(file, lid) {
+  const MAX_SIZE=20*1024*1024; // 20MB
+  if(file.size>MAX_SIZE){toast('Файл слишком большой (макс. 20MB)');return null;}
+  const ext=file.name.split('.').pop();
+  const path=`lessons/${lid}/${Date.now()}.${ext}`;
+  const{error}=await sb.storage.from('lesso-files').upload(path,file,{upsert:true});
+  if(error){toast('Ошибка загрузки: '+error.message);return null;}
+  const{data:u}=sb.storage.from('lesso-files').getPublicUrl(path);
+  return{url:u.publicUrl,name:file.name,size:Math.round(file.size/1024)+' КБ',type:ext};
+}
+async function loadLessonMats(lid) {
+  const{data}=await sb.from('materials').select('*').eq('lesson_id',lid).order('created_at');
+  const w=document.getElementById('li-mats'); if(!w) return;
+  w.innerHTML=(data||[]).map(m=>`<div class="mitem">
+    <div class="mico">${m.file_type==='pdf'?'📄':m.file_type?.match(/jpg|png|jpeg/)?'🖼️':'📎'}</div>
+    <div style="flex:1"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
+    <a href="${m.file_url}" target="_blank" style="background:var(--al);color:var(--a);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none">Открыть</a>
+  </div>`).join('');
+}
+async function popStuSelect(selId) {
+  const data=await getStudents(me.id);
+  const s=document.getElementById('li-stu'); if(!s) return;
+  s.innerHTML=(data||[]).map(st=>`<option value="${st.id}"${st.id===selId?' selected':''}>${st.name}</option>`).join('')||'<option value="">Нет учеников</option>';
+  // Word modal student select
+  const ws=document.getElementById('wi-stu'); if(ws) ws.innerHTML=s.innerHTML;
+}
+async function openAddLesson() {
+  editLessonId=null;
+  document.getElementById('mlt').textContent='Новый урок';
+  ['li-title','li-zoom','li-notes','li-time'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('li-hw').value='';
+  const _wrap=document.getElementById('li-hw-photo-wrap'); if(_wrap) _wrap.style.display='none';
+  document.getElementById('li-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('li-grade').value='';
+  document.getElementById('li-mats').innerHTML='';
+  document.getElementById('li-fprev').innerHTML='';
+  pendFile=null;
+  const p=document.getElementById('li-paid'); p.classList.remove('on'); p.dataset.lid=''; p.dataset.paid='0';
+  const stBtn=document.getElementById('li-stbtn'); stBtn.textContent='▶ Начать урок'; stBtn.dataset.status='planned'; stBtn.dataset.lid='';
+  document.getElementById('li-delbtn').style.display='none';
+  await popStuSelect(null);
+  openM('m-lesson');
+}
+async function openLesson(id) {
+  let l, le;
+  try {
+    const res=await sb.from('lessons').select('id,title,date,status,paid,grade,homework,hw_done,hw_photo,notes,zoom_link,lesson_time,student_id').eq('id',id).single();
+    l=res.data; le=res.error;
+  } catch(e){ toast('Ошибка сети — попробуй ещё раз'); return; }
+  if(le||!l){toast('Не удалось загрузить урок'); return;}
+  editLessonId=id;
+  document.getElementById('mlt').textContent='Урок';
+  document.getElementById('li-title').value=l.title;
+  document.getElementById('li-date').value=l.date;
+  document.getElementById('li-zoom').value=l.zoom_link||'';
+  if(document.getElementById('li-time')) document.getElementById('li-time').value=l.lesson_time||'';
+  document.getElementById('li-hw').value=l.homework||'';
+  // hw photo
+  const wrap=document.getElementById('li-hw-photo-wrap');
+  const img=document.getElementById('li-hw-photo-img');
+  const lnk=document.getElementById('li-hw-photo-link');
+  if(l.hw_photo&&wrap&&img&&lnk){wrap.style.display='block';img.src=l.hw_photo;lnk.href=l.hw_photo;}
+  else if(wrap) wrap.style.display='none';
+  document.getElementById('li-notes').value=l.notes||'';
+  document.getElementById('li-grade').value=l.grade||'';
+  const p=document.getElementById('li-paid'); p.classList.toggle('on',l.paid); p.dataset.lid=id; p.dataset.paid=l.paid?'1':'0';
+  const stBtn=document.getElementById('li-stbtn'); stBtn.textContent=l.status==='active'?'🔴 Урок идёт — завершить':l.status==='done'?'✓ Урок завершён':'▶ Начать урок'; stBtn.dataset.status=l.status; stBtn.dataset.lid=id;
+  document.getElementById('li-delbtn').style.display='block';
+  document.getElementById('li-fprev').innerHTML=''; pendFile=null;
+  openM('m-lesson');
+  Promise.all([popStuSelect(l.student_id), loadLessonMats(id)]).catch(()=>{});
+}
+async function saveLesson() {
+  const saveBtn=document.querySelector('#m-lesson .btn.bp');
+  if(saveBtn?.disabled) return;
+  if(saveBtn) {saveBtn.disabled=true; saveBtn.textContent='Сохраняем...';}
+  const _restore=()=>{if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Сохранить';}};
+  const title=document.getElementById('li-title').value.trim();
+  const date=document.getElementById('li-date').value;
+  if(!title||!date){toast('Заполни название и дату');_restore();return;}
+  const stuId=document.getElementById('li-stu')?.value||null;
+  const lesson_time=document.getElementById('li-time')?.value||null;
+  const payload={title,date,lesson_time,teacher_id:me.id,student_id:stuId,zoom_link:document.getElementById('li-zoom').value.trim()||null,homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
+  const wasNew=!editLessonId; // фиксируем ДО любых await
+  let error, lid=editLessonId;
+  if(editLessonId){({error}=await sb.from('lessons').update(payload).eq('id',editLessonId));}
+  else{const r=await sb.from('lessons').insert({...payload,status:'planned'}).select('id').single();error=r.error;lid=r.data?.id;}
+  if(error){toast('Ошибка сохранения: '+error.message);_restore();return;}
+  // Upload file
+  if(pendFile&&lid){
+    const fd=await uploadFile(pendFile,lid);
+    if(fd) await sb.from('materials').insert({lesson_id:lid,teacher_id:me.id,name:fd.name,file_url:fd.url,file_type:fd.type,file_size:fd.size});
+    pendFile=null;
+  }
+  if(slBtn){slBtn.disabled=false;slBtn.textContent='Сохранить';} closeM('m-lesson'); toast('Урок сохранён ✓'); tSc('lessons',2);
+  if(wasNew && stuId){
+    const{data:stuRec}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',stuId).single();
+    const notifIds=[stuId,...([stuRec?.parent_user_id,stuRec?.parent_user_id2].filter(Boolean))];
+    await Promise.all(notifIds.map((rid,i)=>sb.from('notifications').insert({
+      recipient_id:rid,type:'lesson_created',
+      title:i===0?'Новый урок: '+title:'Новый урок у '+title,
+      body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid
+    })));
+  }
+}
+async function delLesson() {
+  if(!editLessonId) return;
+  const{error}=await sb.from('lessons').delete().eq('id',editLessonId);
+  if(error){toast('Ошибка: '+error.message);return;}
+  closeM('m-lesson'); toast('Урок удалён'); tSc('lessons',2);
+}
+function togPaid(btn) {
+  if(!btn.dataset.lid) return;
+  const paid=btn.dataset.paid==='0';
+  sb.from('lessons').update({paid}).eq('id',btn.dataset.lid).then(({error})=>{
+    if(error){toast('Ошибка');return;}
+    btn.dataset.paid=paid?'1':'0'; btn.classList.toggle('on',paid);
+    toast(paid?'Оплачен ✓':'Отметка снята');
+  });
+}
+async function togStatus(btn) {
+  if(btn.dataset.status==='done') return;
+  if(!btn.dataset.lid){toast('Сначала сохрани урок');return;}
+  btn.disabled=true;
+  const ns=btn.dataset.status==='planned'?'active':'done';
+  const upd={status:ns};
+  if(ns==='active') upd.started_at=new Date().toISOString();
+  if(ns==='done') upd.ended_at=new Date().toISOString();
+  const{error}=await sb.from('lessons').update(upd).eq('id',btn.dataset.lid);
+  btn.disabled=false;
+  if(error){toast('Ошибка: '+error.message);return;}
+  btn.textContent=ns==='active'?'🔴 Урок идёт — завершить':'✓ Урок завершён';
+  btn.dataset.status=ns;
+  toast(ns==='active'?'🔴 Урок начат!':'✓ Урок завершён!');
+
+}
+// Student CRUD
+function openAddStu() {
+  editStuId=null;
+  document.getElementById('mstu-t').textContent='Новый ученик';
+  ['si-name','si-subj','si-pin','si-price'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('si-delbtn').style.display='none';
+  openM('m-stu');
+}
+async function openEditStu(id) {
+  const{data:s}=await sb.from('students').select('*').eq('id',id).single(); if(!s) return;
+  editStuId=id;
+  document.getElementById('mstu-t').textContent='Редактировать ученика';
+  document.getElementById('si-name').value=s.name;
+  document.getElementById('si-subj').value=s.subject||'';
+  document.getElementById('si-pin').value=s.pin||'';
+  if(document.getElementById('si-price')) document.getElementById('si-price').value=s.lesson_price||'';
+  document.getElementById('si-delbtn').style.display='block';
+  // active toggle
+  let ab=document.getElementById('si-active-row');
+  if(!ab){
+    ab=document.createElement('div');
+    ab.id='si-active-row';
+    ab.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:14px';
+    document.getElementById('si-delbtn').before(ab);
+  }
+  const isActive=s.active!==false;
+  ab.innerHTML=`<div style="font-size:14px;font-weight:600">Доступ к приложению</div>
+    <button id="si-active-btn" onclick="togStuActive('${id}',${isActive})" style="padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-weight:700;font-size:13px;background:${isActive?'#dcfce7':'#fee2e2'};color:${isActive?'#16a34a':'#ef4444'}">${isActive?'✅ Активен':'🚫 Заблокирован'}</button>`;
+  openM('m-stu');
+}
+async function saveStu() {
+  const name=document.getElementById('si-name').value.trim();
+  const pin=document.getElementById('si-pin').value.toString().trim();
+  if(!name){toast('Введи имя');return;}
+  if(!pin||pin.length!==4||isNaN(pin)){toast('PIN — 4 цифры');return;}
+  const saveBtn=document.querySelector('#m-stu .btn.bp');
+  if(saveBtn){if(saveBtn.disabled)return;saveBtn.disabled=true;}
+  if(!editStuId){
+    const[{count},{data:prof}]=await Promise.all([
+      sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
+      sb.from('profiles').select('students_limit').eq('id',me.id).single()
+    ]);
+    const lim=prof?.students_limit??1;
+    if(count>=lim){toast(`Лимит ${lim} уч. Пишите: +7 991 174-51-13`);return;}
+  }
+  const{data:ex}=await sb.from('students').select('id').eq('teacher_id',me.id).eq('pin',pin).neq('id',editStuId||'00000000-0000-0000-0000-000000000000');
+  if(ex?.length){if(saveBtn)saveBtn.disabled=false;toast('Такой PIN уже занят');return;}
+  const price=parseInt(document.getElementById('si-price')?.value)||0;
+  const payload={name,pin,subject:document.getElementById('si-subj').value.trim()||'Английский',teacher_id:me.id,lesson_price:price};
+  const{error}=editStuId?await sb.from('students').update(payload).eq('id',editStuId):await sb.from('students').insert(payload);
+  if(error){toast('Ошибка: '+error.message);return;}
+  if(saveBtn)saveBtn.disabled=false; closeM('m-stu'); invalidateStudents(); toast('Ученик сохранён ✓'); tSc('students',1);
+}
+
+let _payState = {stuId:null, stuName:'', price:0};
+
+async function openPayment(stuId, stuName, price) {
+  _payState = {stuId, stuName, price};
+  document.getElementById('mp-name').textContent = stuName;
+  document.getElementById('mp-count').value = '';
+  document.getElementById('mp-amount').value = '';
+  document.getElementById('mp-note').value = '';
+  // Подсказка по цене
+  const hint = document.getElementById('mp-price-hint');
+  if(price) { hint.style.display='block'; hint.textContent=`Цена урока: ${price}₽`; }
+  else hint.style.display='none';
+  // Автоподсчёт суммы при вводе количества
+  const cnt = document.getElementById('mp-count');
+  const amt = document.getElementById('mp-amount');
+  cnt.oninput = () => { if(price && cnt.value) amt.value = parseInt(cnt.value)*price; };
+  // Загружаем историю
+  try { await loadPayHistory(stuId); } catch(e){ console.warn('pay history error',e); }
+  openM('m-pay');
+}
+
+async function loadPayHistory(stuId) {
+  const{data:pays}=await sb.from('payments').select('*').eq('student_id',stuId).order('created_at',{ascending:false}).limit(10);
+  const{data:done}=await sb.from('lessons').select('id').eq('student_id',stuId).eq('status','done');
+  const totalPaid=(pays||[]).reduce((a,p)=>a+(p.lessons_count||0),0);
+  const totalUsed=(done||[]).length;
+  const left=Math.max(totalPaid-totalUsed,0);
+  const balClr=left<=2?'var(--r)':left<=4?'var(--o)':'var(--g)';
+  const h=document.getElementById('mp-history');
+  if(!(pays||[]).length){h.innerHTML='<div style="font-size:13px;color:var(--t2);text-align:center;padding:12px">Пополнений ещё не было</div>';return;}
+  h.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">История платежей</div>
+    <div style="background:var(--gl);border-radius:var(--rs);padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;font-weight:700;color:var(--t)">Баланс: <span style="color:${balClr};font-family:'Fraunces',serif;font-size:20px">${left}</span> уроков</div>
+      <div style="font-size:12px;color:var(--t2)">Всего оплачено: ${totalPaid} · Проведено: ${totalUsed}</div>
+    </div>
+    ${(pays||[]).map(p=>`<div class="pay-hist-item">
+      <div style="width:36px;height:36px;background:var(--gl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💰</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px">+${p.lessons_count} уроков${p.amount?` · ${p.amount}₽`:''}</div>
+        <div style="font-size:11px;color:var(--t2)">${p.note||''}${p.note?' · ':''}${new Date(p.created_at).toLocaleDateString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <button onclick="deletePayment('${p.id}')" style="background:var(--rl);color:var(--r);border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">Удалить</button>
+    </div>`).join('')}`;
+}
+
+async function savePayment() {
+  const btn=document.getElementById('mp-save-btn');
+  if(btn.disabled) return;
+  btn.disabled=true; btn.textContent='Сохраняем...';
+  const count=parseInt(document.getElementById('mp-count').value);
+  const amount=parseInt(document.getElementById('mp-amount').value)||0;
+  const note=document.getElementById('mp-note').value.trim();
+  if(!_payState?.stuId){toast('Ошибка: ученик не выбран');btn.disabled=false;btn.textContent='Сохранить';return;}
+  if(!count||count<1){toast('Укажите количество уроков');btn.disabled=false;btn.textContent='Сохранить';return;}
+  const{error}=await sb.from('payments').insert({
+    student_id:_payState.stuId, teacher_id:me.id,
+    lessons_count:count, amount:amount||null, note:note||null
+  });
+  if(error){toast('Ошибка: '+error.message);return;}
+  // Уведомляем родителей параллельно
+  sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',_payState.stuId).single().then(({data:stu})=>{
+    const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
+    if(!pids.length) return;
+    const title=`💰 Оплата получена — ${_payState.stuName}`;
+    const body=`Пополнение: ${count} уроков${amount?' ('+amount+'₽)':''}${note?' · '+note:''}`;
+    Promise.all(pids.map(pid=>sb.from('notifications').insert({recipient_id:pid,type:'payment',title,body}))).catch(()=>{});
+    fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:pids,title,body})}).catch(()=>{});
+  }).catch(()=>{});
+  btn.disabled=false; btn.textContent='Сохранить';
+  closeM('m-pay');
+  // Перерисовываем список после закрытия модалки — через setTimeout чтобы не конфликтовать
+  setTimeout(async () => {
+    tStudents(document.getElementById('ac'));
+    // Проверяем баланс для предупреждения
+    const{data:allPays}=await sb.from('payments').select('lessons_count').eq('student_id',_payState.stuId);
+    const{data:allDone}=await sb.from('lessons').select('id').eq('student_id',_payState.stuId).eq('status','done');
+    const left=Math.max((allPays||[]).reduce((a,p)=>a+(p.lessons_count||0),0)-(allDone||[]).length,0);
+    toast(left<=2?`⚠️ Осталось ${left} уроков — пора пополнить!`:`✅ Пополнено: +${count} уроков`);
+  }, 350);
+}
+
+async function deletePayment(payId) {
+  if(!confirm('Удалить эту запись об оплате?')) return;
+  const{error}=await sb.from('payments').delete().eq('id',payId).eq('teacher_id',me.id);
+  if(error){toast('Ошибка: '+error.message);return;}
+  toast('✅ Запись удалена');
+  await loadPayHistory(_payState.stuId);
+  // Обновляем список в фоне без зависания
+  setTimeout(() => tStudents(document.getElementById('ac')), 100);
+}
+
+
+async function delStu() {
+  if(!editStuId) return;
+  const{error}=await sb.from('students').delete().eq('id',editStuId);
+  if(error){toast('Ошибка: '+error.message);return;}
+  closeM('m-stu'); invalidateStudents(); toast('Ученик удалён'); tSc('students',1);
+}
+// Word CRUD
+function selLv(btn) { wLevel=parseInt(btn.dataset.lv); document.querySelectorAll('.lo').forEach(b=>b.classList.toggle('active',b.dataset.lv==wLevel)); }
+async function openAddWord() {
+  ['wi-en','wi-ru','wi-topic'].forEach(id=>document.getElementById(id).value='');
+  wLevel=0; document.querySelectorAll('.lo').forEach(b=>b.classList.toggle('active',b.dataset.lv=='0'));
+  await popStuSelect(wStuId);
+  openM('m-word');
+}
+async function saveWord() {
+  const word=document.getElementById('wi-en').value.trim();
+  const tr=document.getElementById('wi-ru').value.trim();
+  if(!word||!tr){toast('Заполни слово и перевод');return;}
+  const sid=document.getElementById('wi-stu')?.value||null;
+  const{error}=await sb.from('words').insert({word,translation:tr,topic:document.getElementById('wi-topic').value.trim()||'Разное',level:wLevel,next_review:new Date().toISOString(),student_record_id:sid});
+  if(error){toast('Ошибка: '+error.message);return;}
+  closeM('m-word'); toast('Слово добавлено ✓'); tSc('words',3);
+}
+
+// ── HOMEWORK DONE ──
+function markHwDone(lessonId) {
+  // Показываем модалку с опцией прикрепить фото
+  const mo=document.createElement('div');
+  mo.className='mo open'; mo.id='m-hwdone';
+  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:4px">📝 Домашнее задание</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Можешь прикрепить фото выполненного задания</div>
+    <div id="hw-preview" style="margin-bottom:12px"></div>
+    <label style="display:flex;align-items:center;gap:10px;padding:12px;border:1.5px dashed var(--b);border-radius:12px;cursor:pointer;margin-bottom:16px">
+      <span style="font-size:22px">📷</span>
+      <div><div style="font-weight:600;font-size:14px">Прикрепить фото</div><div style="font-size:12px;color:var(--t2)">Необязательно</div></div>
+      <input type="file" accept="image/*" capture="environment" style="display:none" onchange="hwPhotoSelect(this,'${lessonId}')">
+    </label>
+    <button class="btn bp" style="width:100%;margin-bottom:8px" onclick="submitHwDone('${lessonId}')">✅ Отметить как выполнено</button>
+    <button class="btn bs" style="width:100%" onclick="document.getElementById('m-hwdone')?.remove()">Отмена</button>
+  </div>`;
+  document.body.appendChild(mo);
+  mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
+}
+
+let hwPhotoFile=null;
+function hwPhotoSelect(input, lessonId) {
+  const file=input.files[0]; if(!file) return;
+  hwPhotoFile=file;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const prev=document.getElementById('hw-preview');
+    if(prev) prev.innerHTML=`<img src="${e.target.result}" style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-bottom:4px">
+      <div style="font-size:12px;color:var(--g);font-weight:600">✓ Фото выбрано</div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitHwDone(lessonId) {
+  const btn=document.querySelector('#m-hwdone .btn.bp');
+  if(btn){btn.disabled=true;btn.textContent='Сохраняем...';}
+  let photoUrl=null;
+  if(hwPhotoFile){
+    const ext=hwPhotoFile.name.split('.').pop();
+    const path=`hw/${lessonId}_${Date.now()}.${ext}`;
+    const{data:up,error:ue}=await sb.storage.from('lesso-files').upload(path,hwPhotoFile,{upsert:true});
+    if(!ue){
+      const{data:pub}=sb.storage.from('lesso-files').getPublicUrl(path);
+      photoUrl=pub?.publicUrl||null;
+    }
+  }
+  const upd={hw_done:true};
+  if(photoUrl) upd.hw_photo=photoUrl;
+  const{error}=await sb.from('lessons').update(upd).eq('id',lessonId);
+  document.getElementById('m-hwdone')?.remove();
+  hwPhotoFile=null;
+  if(error){toast('Ошибка 😢');return;}
+  // Уведомляем учителя
+  // Уведомления после ДЗ — параллельно
+  sb.from('lessons').select('teacher_id,title,student_id').eq('id',lessonId).single().then(async({data:lesson})=>{
+    if(!lesson) return;
+    const body=(lesson.title||'Урок')+(photoUrl?' (с фото)':'');
+    const recipients=[lesson.teacher_id];
+    if(lesson.student_id){
+      const{data:sr}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',lesson.student_id).single();
+      if(sr?.parent_user_id) recipients.push(sr.parent_user_id);
+      if(sr?.parent_user_id2) recipients.push(sr.parent_user_id2);
+    }
+    await Promise.all(recipients.filter(Boolean).map(rid=>sb.from('notifications').insert({
+      recipient_id:rid,type:'homework',title:'ДЗ выполнено: '+me.name,body
+    })));
+  });
+  toast('Отлично! ДЗ отмечено ✅');
+  if(me.role==='student') setTimeout(()=>sSc('home',0),400);
+}
+
+// ── BLOCK STUDENT ──
+async function togStuActive(stuId, currentlyActive) {
+  const newVal=!currentlyActive;
+  const{error}=await sb.from('students').update({active:newVal}).eq('id',stuId);
+  if(error){toast('Ошибка: '+error.message);return;}
+  const btn=document.getElementById('si-active-btn');
+  if(btn){
+    btn.textContent=newVal?'✅ Активен':'🚫 Заблокирован';
+    btn.style.background=newVal?'#dcfce7':'#fee2e2';
+    btn.style.color=newVal?'#16a34a':'#ef4444';
+    btn.onclick=()=>togStuActive(stuId,newVal);
+  }
+  invalidateStudents(); toast(newVal?'Доступ восстановлен ✅':'Ученик заблокирован 🚫');
+}
+
+// ── REMIND ──
+async function sendReminder(stuId, stuName) {
+  const{data:ls}=await sb.from('lessons').select('*').eq('student_id',stuId).order('date',{ascending:false}).limit(1);
+  const next=ls?.[0];
+  const dateStr=next?fd(next.date):'ближайшем занятии';
+  const zoom=next?.zoom_link?`\nСсылка Zoom: ${next.zoom_link}`:'';
+  const topic=next?.title?`\nТема: ${next.title}`:'';
+  const msg=`Добрый день! Напоминаем о занятии ${dateStr}.${topic}${zoom}\n\nПожалуйста, подтвердите.`;
+  const mo=document.createElement('div');
+  mo.className='mo open'; mo.id='m-remind';
+  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:12px">🔔 Напоминание: ${stuName}</div>
+    <textarea id="remind-text" style="width:100%;box-sizing:border-box;height:130px;border:1.5px solid var(--b);border-radius:12px;padding:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;resize:none;outline:none">${msg}</textarea>
+    <div style="font-size:12px;color:var(--t2);margin:8px 0 16px">Скопируйте и отправьте родителю/ученику в мессенджер</div>
+    <button class="btn bp" style="width:100%;margin-bottom:8px" onclick="navigator.clipboard.writeText(document.getElementById('remind-text').value);toast('Скопировано ✓')">📋 Скопировать</button>
+    <button class="btn bs" style="width:100%" onclick="document.getElementById('m-remind')?.remove()">Закрыть</button>
+  </div>`;
+  document.body.appendChild(mo);
+  mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
+}
+
+// ── STUDENT ──
+function buildStudent() {
+  setNav([
+    {fn:"sSc('home',0)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>`,lbl:'Главная'},
+    {fn:"sSc('lessons',1)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,lbl:'Уроки'},
+    {fn:"sSc('cards',2)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="3"/><path d="M16 2H8M12 2v4"/></svg>`,lbl:'Карточки'},
+    {fn:"sSc('words',3)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6.25V19.25M12 6.25C10.83 5.48 9.25 5 7.5 5C5.75 5 4.17 5.48 3 6.25V19.25C4.17 18.48 5.75 18 7.5 18C9.25 18 10.83 18.48 12 19.25M12 6.25C13.17 5.48 14.75 5 16.5 5C18.25 5 19.83 5.48 21 6.25V19.25C19.83 18.48 18.25 18 16.5 18C14.75 18 13.17 18.48 12 19.25"/></svg>`,lbl:'Слова'},
+    {fn:"sSc('chats',4)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,lbl:'Чаты'}
+  ]);
+  sSc('home',0);
+}
+function sSc(n,i) {
+  actNav(i); document.getElementById('fab')?.remove(); const c=document.getElementById('ac');
+  if(n==='home') sHome(c);
+  else if(n==='lessons') sLessons(c);
+  else if(n==='cards') sCards(c);
+  else if(n==='words') sWords(c);
+  else if(n==='chats') sChats(c);
+}
+async function sHome(el) {
+  el.innerHTML=`<div class="page"><div style="text-align:center;padding:60px 0"><div class="sp"></div></div></div>`;
+  const[{data:ls},{data:ws}]=await Promise.all([
+    sb.from('lessons').select('id,title,date,homework,hw_done,hw_photo,zoom_link,grade,status').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(10),
+    sb.from('words').select('level').eq('student_record_id',me.student_id)
+  ]);
+  const known=(ws||[]).filter(w=>w.level===3).length;
+  const toRev=(ws||[]).filter(w=>w.level<3).length;
+  const pending=(ls||[]).find(l=>l.homework && !l.hw_done);
+  const next=(ls||[]).find(l=>l.status==='planned'||l.status==='active');
+  el.innerHTML=`<div class="page"><div class="stitle">Привет, ${me.name}! 👋</div>
+    <div class="ssub">${toRev>0?`${toRev} слов для повторения`:'Все слова повторены! 🎉'}</div>
+    <div class="srow">
+      <div class="sbox blue"><div class="sv">${ws?.length||0}</div><div class="sl">Всего слов</div></div>
+      <div class="sbox green"><div class="sv">${known}</div><div class="sl">Знаю хорошо</div></div>
+    </div>
+    ${next?`<div class="card" style="border-color:var(--a);background:var(--al)">
+      <div class="clbl">📅 Следующий урок</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:4px">${next.title}</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:8px">${fd(next.date)}</div>
+      ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" class="btn bp bsm" style="display:inline-block">🎥 Zoom</a>`:''}
+    </div>`:''}
+    ${pending?`<div class="card" style="border-color:#fbbf24;background:#fffbeb">
+      <div class="clbl">📝 Домашнее задание</div>
+      <div style="font-weight:600;font-size:15px">${pending.homework}</div>
+      <div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(pending.date)}</div>
+      <button class="btn bp bsm" style="margin-top:10px" onclick="markHwDone('${pending.id}')">Сделал ✓</button>
+    </div>`:''}
+    ${toRev>0?`<div class="card" style="display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-weight:700">Повторить слова</div><div style="font-size:13px;color:var(--t2)">${toRev} карточек ждут</div></div>
+      <button class="btn bp bsm" onclick="sSc('cards',2)">Начать →</button>
+    </div>`:''}
+  </div>`;
+  checkUnread();
+}
+async function sLessons(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Мои уроки</div><div class="ssub">История занятий</div><div style="text-align:center;padding:40px"><div class="sp"></div></div></div>`;
+  const{data}=await sb.from('lessons').select('id,title,date,status,paid,grade,homework,hw_done,hw_photo,zoom_link,lesson_time').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false});
+  el.innerHTML=`<div class="page"><div class="stitle">Мои уроки</div><div class="ssub">История занятий</div><div id="sl-list"></div><div style="height:80px"></div></div>`;
+  const l=document.getElementById('sl-list');
+  if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
+  l.innerHTML=data.map(ls=>`<div class="lc">
+    <div class="lct"><div><div class="lcti">${ls.title}</div><div class="lcm">${fd(ls.date)}</div></div>${ls.grade?`<div class="grade g${ls.grade}">${ls.grade}</div>`:''}</div>
+    ${ls.homework?`<div style="margin-top:8px;font-size:13px;color:var(--o);font-weight:600">📝 ${ls.homework}</div>
+      <div style="margin-top:6px">${ls.hw_done
+        ? `<span style="font-size:13px;color:#16a34a;font-weight:700">✅ Выполнено</span>`
+        : `<button class="bdg bgg" style="cursor:pointer;border:none;font-size:12px" onclick="markHwDone('${ls.id}')">Сделал ✓</button>`
+      }</div>`:''}
+    <div class="lcf" style="margin-top:10px">
+      ${ls.zoom_link?`<a href="${ls.zoom_link}" target="_blank" class="bdg bb">🎥 Zoom</a>`:''}
+      <button class="bdg bgr" style="cursor:pointer;border:none" onclick="openLessonChat('${ls.id}','${ls.title.replace(/'/g,"\\'")}')">💬 Чат</button>
+      <button class="bdg bb" style="cursor:pointer;border:none" onclick="togMats('${ls.id}')">📎 Материалы</button>
+    </div>
+    <div id="mat-${ls.id}" style="display:none;margin-top:8px"></div>
+  </div>`).join('');
+}
+async function togMats(lid) {
+  const w=document.getElementById('mat-'+lid); if(!w) return;
+  if(w.style.display!=='none'){w.style.display='none';return;}
+  w.style.display='block'; w.innerHTML='<div style="font-size:13px;color:var(--t3);padding:8px">Загрузка...</div>';
+  const{data}=await sb.from('materials').select('*').eq('lesson_id',lid).order('created_at');
+  if(!data?.length){w.innerHTML='<div style="font-size:13px;color:var(--t3);padding:8px">Материалов пока нет</div>';return;}
+  w.innerHTML=data.map(m=>`<div class="mitem">
+    <div class="mico">${m.file_type==='pdf'?'📄':m.file_type?.match(/jpg|png|jpeg/)?'🖼️':'📎'}</div>
+    <div style="flex:1"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
+    <a href="${m.file_url}" target="_blank" style="background:var(--al);color:var(--a);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none">Открыть</a>
+  </div>`).join('');
+}
+let rQ=[],rIdx=0,cFlip=false;
+async function sCards(el) {
+  const{data}=await sb.from('words').select('id,word,translation,level,topic,next_review').eq('student_record_id',me.student_id);
+  const now=new Date();
+  rQ=(data||[]).filter(w=>w.level<3||new Date(w.next_review)<=now);
+  if(!rQ.length) rQ=data||[];
+  rQ=rQ.sort(()=>Math.random()-.5).slice(0,20);
+  rIdx=0; el.innerHTML=`<div class="page"><div class="stitle">Карточки</div><div id="ca"></div></div>`;
+  renderCard();
+}
+function renderCard() {
+  const a=document.getElementById('ca'); if(!a) return;
+  if(!rQ.length){a.innerHTML=`<div class="empty"><div class="ei">📖</div><p>Слов пока нет</p></div>`;return;}
+  if(rIdx>=rQ.length){a.innerHTML=`<div class="empty"><div class="ei">🏆</div><p>Все карточки пройдены!<br>Молодец, ${me.name}!</p><br><button class="btn bp" style="max-width:200px;margin:0 auto" onclick="sSc('cards',2)">Ещё раз</button></div>`;return;}
+  const w=rQ[rIdx];
+  const dots=rQ.slice(0,Math.min(10,rQ.length)).map((_,i)=>`<div style="width:8px;height:8px;border-radius:50%;background:${i<rIdx?'var(--g)':i===rIdx?'var(--a)':'var(--b)'}"></div>`).join('');
+  cFlip=false;
+  a.innerHTML=`<div style="display:flex;gap:5px;align-items:center;justify-content:center;margin-bottom:14px">${dots}<span style="font-size:13px;color:var(--t2);font-weight:600;margin-left:4px">${rIdx+1}/${rQ.length}</span></div>
+    <div class="fcw"><div class="fc" id="fc" onclick="flipCard()">
+      <div class="fcf fcfr"><div class="fcc">${w.topic||'—'}</div><div class="fcw2">${w.word}</div><div class="fch">Нажми — увидишь перевод</div></div>
+      <div class="fcf fcbk"><div class="fcw2" style="color:var(--a)">${w.translation}</div><div class="fch">${w.word}</div></div>
+    </div></div>
+    <div id="fcb" style="display:none;margin-top:12px"><div style="display:flex;gap:10px">
+      <button style="flex:1;padding:13px;border-radius:var(--rs);border:1.5px solid #fecaca;background:var(--rl);color:var(--r);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer" onclick="markCard(false)">Не знаю 😕</button>
+      <button style="flex:1;padding:13px;border-radius:var(--rs);border:1.5px solid #bbf7d0;background:var(--gl);color:var(--g);font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:14px;cursor:pointer" onclick="markCard(true)">Знаю! ✓</button>
+    </div></div>
+    <p style="text-align:center;color:var(--t3);font-size:12px;margin-top:14px;font-weight:600">Нажми на карточку</p>`;
+}
+function flipCard() {
+  const f=document.getElementById('fc'); if(!f) return;
+  cFlip=!cFlip; f.classList.toggle('flipped',cFlip);
+  document.getElementById('fcb').style.display=cFlip?'block':'none';
+}
+async function markCard(knew) {
+  if(!rQ||!rQ.length||rIdx>=rQ.length)return;
+  const w=rQ[rIdx];
+  const nl=knew?Math.min(3,w.level+1):Math.max(0,w.level-1);
+  const d=new Date(); d.setDate(d.getDate()+([1,3,7,14][nl]||14));
+  await sb.from('words').update({level:nl,next_review:d.toISOString()}).eq('id',w.id);
+  rIdx++; renderCard();
+}
+async function sWords(el) {
+  const{data}=await sb.from('words').select('id,word,translation,level,topic').eq('student_record_id',me.student_id).order('level',{ascending:false});
+  el.innerHTML=`<div class="page"><div class="stitle">Мои слова</div><div class="ssub">${data?.length||0} слов в словаре</div><div id="sw-list"></div><div style="height:80px"></div></div>`;
+  const l=document.getElementById('sw-list');
+  if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📖</div><p>Слов пока нет</p></div>`;return;}
+  l.innerHTML=data.map(w=>`<div class="wi"><div class="ld lv${w.level}"></div><div><div class="wen">${w.word}</div><div class="wru">${w.translation}</div></div><div class="wch">${w.topic||'—'}</div></div>`).join('');
+}
+async function sChats(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Чаты</div><div class="ssub">Переписка с учителем</div><div id="sc-list">Загрузка...</div></div>`;
+  const l=document.getElementById('sc-list');
+  if(!me.teacher_id){l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет учителя</p></div>`;return;}
+  // Загружаем профиль учителя
+  const{data:tp}=await sb.from('profiles').select('id,name').eq('id',me.teacher_id).single();
+  const tname=tp?.name||'Учитель';
+  l.innerHTML=`
+    <div class="chitem" onclick="openChat('teacher_student','${me.student_id}','${me.name}','${me.name}')">
+      <div class="chav" style="background:var(--a)">${tname[0].toUpperCase()}</div>
+      <div style="flex:1"><div class="chname">👨‍🏫 ${tname}</div><div class="chlast">Личный чат с учителем</div></div>
+      ${chev()}
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--t2);margin:16px 0 8px">📋 Чаты по урокам</div>
+    <div id="sc-lessons">Загрузка...</div>`;
+  const{data:ls}=await sb.from('lessons').select('id,title,date').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(10);
+  const ll=document.getElementById('sc-lessons');
+  if(!ls?.length){ll.innerHTML=`<p style="font-size:13px;color:var(--t3)">Уроков пока нет</p>`;return;}
+  ll.innerHTML=ls.map(l_=>`<div class="chitem" onclick="openLessonChat('${l_.id}','${l_.title.replace(/'/g,"\'")}')">
+    <div class="chav" style="background:var(--o);width:40px;height:40px;font-size:14px">📚</div>
+    <div style="flex:1"><div class="chname">${l_.title}</div><div class="chlast">${fd(l_.date)}</div></div>
+    ${chev()}
+  </div>`).join('');
+  checkUnread();
+}
+
+// ── PARENT ──
+function buildParent() {
+  setNav([
+    {fn:"pSc('home',0)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>`,lbl:'Главная'},
+    {fn:"pSc('lessons',1)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,lbl:'Уроки'},
+    {fn:"pSc('progress',2)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 20h18M7 20V10M11 20V4M15 20V14M19 20V8"/></svg>`,lbl:'Прогресс'},
+    {fn:"pSc('chats',3)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>`,lbl:'Чат'}
+  ]);
+  pSc('home',0);
+}
+function pSc(n,i) {
+  actNav(i); document.getElementById('fab')?.remove(); const c=document.getElementById('ac');
+  if(n==='home') pHome(c);
+  else if(n==='lessons') pLessons(c);
+  else if(n==='progress') pProgress(c);
+  else if(n==='chats') pChats(c);
+}
+async function pHome(el) {
+  addFab(()=>openLinkChild());
+  const[{data:myStus1},{data:myStus2}]=await Promise.all([
+    sb.from('students').select('id').eq('parent_user_id',me.id),
+    sb.from('students').select('id').eq('parent_user_id2',me.id)
+  ]);
+  const allIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
+  const stuIds=allIds;
+  if(!stuIds.length){// Получаем имена детей для заголовка
+  const{data:stuNames}=await sb.from('students').select('name').in('id',stuIds);
+  const childrenLabel=(stuNames||[]).map(s=>s.name).join(', ')||'ученика';
+  el.innerHTML=`<div class="page"><div class="stitle">Прогресс: ${childrenLabel} 📊</div><div class="ssub">Обзор обучения</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
+  const[{data:ls},{data:ws},{data:stuFull},{data:payments},{data:doneLs}]=await Promise.all([
+    sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}),
+    sb.from('words').select('level,student_record_id').in('student_record_id',stuIds),
+    sb.from('students').select('id,name,subject,teacher_id,lesson_price').in('id',stuIds),
+    sb.from('payments').select('*').in('student_id',stuIds).order('created_at',{ascending:false}),
+    sb.from('lessons').select('student_id').in('student_id',stuIds).eq('status','done')
+  ]);
+  // Загружаем имена учителей
+  const tIds=[...new Set((stuFull||[]).map(s=>s.teacher_id).filter(Boolean))];
+  const{data:teachers}=tIds.length?await sb.from('profiles').select('id,name').in('id',tIds):{data:[]};
+  const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t.name]));
+  const known=(ws||[]).filter(w=>w.level===3).length;
+  const grades=(ls||[]).filter(l=>l.grade).map(l=>+l.grade);
+  const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1):'—';
+  const unpaid=(ls||[]).filter(l=>!l.paid).length;
+  const lastWithHw=(ls||[]).find(l=>l.homework);
+  const nextLesson=(ls||[]).find(l=>l.status==='planned'||l.status==='active');
+  // Статистика и баланс по каждому ученику
+  const stuStatMap={};
+  (stuFull||[]).forEach(s=>{
+    stuStatMap[s.id]={
+      name:s.name, subject:s.subject||'—', tName:tMap[s.teacher_id]||'',
+      paid:0, used:0, price:s.lesson_price||0,
+      lessons:[], grades:[], hwTotal:0, hwDone:0, words:0, wordsKnown:0
+    };
+  });
+  (payments||[]).forEach(p=>{if(stuStatMap[p.student_id])stuStatMap[p.student_id].paid+=p.lessons_count||0;});
+  (doneLs||[]).forEach(l=>{if(stuStatMap[l.student_id])stuStatMap[l.student_id].used++;});
+  (ls||[]).forEach(l=>{
+    if(!stuStatMap[l.student_id]) return;
+    const s=stuStatMap[l.student_id];
+    s.lessons.push(l);
+    if(l.grade) s.grades.push(+l.grade);
+    if(l.homework) s.hwTotal++;
+    if(l.hw_done) s.hwDone++;
+  });
+  (ws||[]).forEach(w=>{
+    if(!stuStatMap[w.student_record_id]) return;
+    stuStatMap[w.student_record_id].words++;
+    if(w.level===3) stuStatMap[w.student_record_id].wordsKnown++;
+  });
+  const childrenLabel=(stuFull||[]).map(s=>s.name).join(', ')||'ученика';
+  const stuNames=stuFull;
+  el.innerHTML=`<div class="page"><div class="stitle">Главная 🏠</div><div class="ssub">${childrenLabel}</div>
+    ${nextLesson?`<div class="card" style="border-color:var(--a);background:var(--al)">
+      <div class="clbl">📅 Следующий урок</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:4px">${nextLesson.title}</div>
+      <div style="font-size:13px;color:var(--t2)">${fd(nextLesson.date)}${nextLesson.time?' · '+nextLesson.time:''}</div>
+      ${nextLesson.zoom_link?`<button onclick="openZoom('${nextLesson.zoom_link}')" class="btn bp bsm" style="display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>Подключиться к Zoom</button>`:''}
+    </div>`:''}
+    ${lastWithHw?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)">
+      <div class="clbl">📝 Домашнее задание</div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:6px">${lastWithHw.homework}</div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:8px">${fd(lastWithHw.date)}</div>
+      ${lastWithHw.hw_done?'<span style="color:#16a34a;font-weight:700;font-size:13px">✅ Выполнено</span>':'<span style="color:#f59e0b;font-weight:600;font-size:13px">⏳ Ещё не выполнено</span>'}
+    </div>`:''}
+    ${Object.values(stuStatMap).filter(s=>s.paid>0).map(s=>{
+      const left=Math.max(s.paid-s.used,0);
+      const pct=s.paid>0?Math.round(left/s.paid*100):0;
+      const balClr=left<=2?'var(--r)':left<=4?'var(--o)':'var(--g)';
+      return `<div class="card" style="border-left:4px solid ${balClr}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <div style="font-weight:700;font-size:14px">${s.name}</div>
+            <div style="font-size:12px;color:var(--t2)">${s.subject}${s.tName?' · '+s.tName:''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:${balClr};line-height:1">${left}</div>
+            <div style="font-size:11px;color:var(--t2)">из ${s.paid} уроков</div>
+          </div>
+        </div>
+        <div class="pay-bar"><div class="pay-fill" style="width:${pct}%;background:${balClr}"></div></div>
+        ${left<=2?`<div style="font-size:12px;color:var(--r);font-weight:700;margin-top:6px">⚠️ Скоро закончатся — сообщите учителю</div>`:''}
+      </div>`;
+    }).join('')}
+    ${unpaid>0?`<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Не оплачено уроков: ${unpaid}</div></div>`:''}
+    <div class="card" style="border-color:var(--g);background:var(--gl);cursor:pointer" onclick="openPayInfo()">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:28px">💳</div>
+        <div style="flex:1">
+          <div style="font-weight:800;font-size:15px;color:var(--g)">Оплата сервиса</div>
+          <div style="font-size:12px;color:var(--t2);margin-top:2px">300₽/мес · Пополнить баланс</div>
+        </div>
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+  </div>`;
+}
+async function pLessons(el) {
+  const[{data:myStus1},{data:myStus2}]=await Promise.all([
+    sb.from('students').select('id').eq('parent_user_id',me.id),
+    sb.from('students').select('id').eq('parent_user_id2',me.id)
+  ]);
+  const stuIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
+  const{data}=stuIds.length?await sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}):{data:[]};
+  el.innerHTML=`<div class="page"><div class="stitle">История уроков</div><div class="ssub">Все занятия</div><div id="pl-list"></div><div style="height:80px"></div></div>`;
+  const l=document.getElementById('pl-list');
+  if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
+  l.innerHTML=data.map(ls=>`<div class="lc">
+    <div class="lct"><div><div class="lcti">${ls.title}</div><div class="lcm">${fd(ls.date)}</div></div>${ls.grade?`<div class="grade g${ls.grade}">${ls.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
+    <div class="lcf">
+      ${ls.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
+      ${ls.homework?`<span class="bdg bo">📝 ДЗ</span>${ls.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}
+    </div>
+    ${ls.homework?`<div style="margin-top:8px;font-size:13px;color:var(--t2)">${ls.homework}</div>`:''}
+    <div class="lcf" style="margin-top:8px">
+      <button class="bdg bgr" style="cursor:pointer;border:none" onclick="openLessonChat('${ls.id}','${ls.title.replace(/'/g,"\\'")}')">💬 Чат по уроку</button>
+      <button class="bdg bb" style="cursor:pointer;border:none" onclick="togMats('${ls.id}')">📎 Материалы</button>
+    </div>
+    <div id="mat-${ls.id}" style="display:none;margin-top:8px"></div>
+  </div>`).join('');
+}
+async function pProgress(el) {
+  const[{data:myStus1},{data:myStus2}]=await Promise.all([
+    sb.from('students').select('id').eq('parent_user_id',me.id),
+    sb.from('students').select('id').eq('parent_user_id2',me.id)
+  ]);
+  const stuIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
+  const{data:ws}=stuIds.length?await sb.from('words').select('level,topic').in('student_record_id',stuIds):{data:[]};
+  const lv=[0,0,0,0],tm={};
+  (ws||[]).forEach(w=>{lv[w.level]++;if(!tm[w.topic])tm[w.topic]={t:0,k:0};tm[w.topic].t++;if(w.level===3)tm[w.topic].k++;});
+  const tot=ws?.length||1;
+  el.innerHTML=`<div class="page"><div class="stitle">Прогресс по словам</div><div class="ssub">Детальная статистика</div>
+    <div class="card"><div class="clbl">Уровни знания</div>
+      ${['Новые','Учит','Почти знает','Знает'].map((l,i)=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="ld lv${i}"></div><div style="font-size:13px;font-weight:600;min-width:100px">${l}</div>
+        <div class="pb" style="flex:1"><div class="pbf" style="width:${Math.round(lv[i]/tot*100)}%;background:${['#cbd5e1','#f87171','#fb923c','#4ade80'][i]}"></div></div>
+        <div style="font-size:13px;color:var(--t2);font-weight:700">${lv[i]}</div>
+      </div>`).join('')}
+    </div>
+    <div class="card"><div class="clbl">По темам</div>
+      ${Object.entries(tm).map(([t,v])=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600;min-width:90px">${t}</div>
+        <div class="pb" style="flex:1"><div class="pbf" style="width:${Math.round(v.k/v.t*100)}%"></div></div>
+        <div style="font-size:12px;color:var(--t2);font-weight:700">${v.k}/${v.t}</div>
+      </div>`).join('')||'<p style="font-size:14px;color:var(--t2)">Нет данных</p>'}
+    </div>
+  </div>`;
+}
+async function pChats(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Чат с учителем</div><div class="ssub">Сообщения и вопросы</div><div id="pc-list">Загрузка...</div></div>`;
+  // Берём только учеников, привязанных к этому родителю (оба слота)
+  const[{data:myStus1},{data:myStus2}]=await Promise.all([
+    sb.from('students').select('*').eq('parent_user_id',me.id),
+    sb.from('students').select('*').eq('parent_user_id2',me.id)
+  ]);
+  const seen=new Set(); const myStus=[];
+  for(const s of [...(myStus1||[]),...(myStus2||[])]){ if(!seen.has(s.id)){seen.add(s.id);myStus.push(s);} }
+  const l=document.getElementById('pc-list');
+  if(!myStus?.length){
+    l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет привязанных учеников</p></div>`;
+    return;
+  }
+  const teacherIds=[...new Set(myStus.map(s=>s.teacher_id))];
+  const{data:teachers}=await sb.from('profiles').select('id,name').in('id',teacherIds);
+  const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t]));
+  l.innerHTML=myStus.map(s=>{
+    const tp=tMap[s.teacher_id];
+    const safeStuName=s.name.replace(/'/g,"\'").replace(/"/g,'&quot;');
+    const safeTname=(tp?.name||'Учитель').replace(/'/g,"\'").replace(/"/g,'&quot;');
+    return`<div class="chitem" onclick="openParentChat('${s.teacher_id}','${s.id}','${safeStuName}','${safeTname}')">
+    <div class="chav" style="background:#16a34a">${tp?.name?.[0]?.toUpperCase()||'У'}</div>
+    <div style="flex:1"><div class="chname">👨‍🏫 ${tp?.name||'Учитель'}</div><div class="chlast">Переписка по ученику: ${s.name}</div></div>
+    ${chev()}
+  </div>`;
+  }).join('');
+  checkUnread();
+}
+
+async function openLinkChild() {
+  // Показываем модал для привязки ученика по коду учителя + PIN
+  const mo = document.createElement('div');
+  mo.className='mo open'; mo.id='m-link-child';
+  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
+  mo.innerHTML=`
+    <div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+      <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">Привязать ребёнка</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Узнайте у учителя код учителя и PIN ребёнка</div>
+      <div style="margin-bottom:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">КОД УЧИТЕЛЯ</div>
+        <input id="lc-tcode" class="cinp" placeholder="Например: AB12" style="width:100%;box-sizing:border-box" maxlength="6">
+      </div>
+      <div style="margin-bottom:20px">
+        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px">PIN РЕБЁНКА</div>
+        <input id="lc-pin" class="cinp" type="tel" placeholder="4 цифры" style="width:100%;box-sizing:border-box" maxlength="4">
+      </div>
+      <div id="lc-err" class="err"></div>
+      <button class="btn bp" style="width:100%;margin-top:8px" onclick="doLinkChild()">Привязать</button>
+      <button class="btn bs" style="width:100%;margin-top:8px" onclick="document.getElementById('m-link-child')?.remove()">Отмена</button>
+    </div>`;
+  document.body.appendChild(mo);
+  mo.addEventListener('click', e => { if(e.target===mo) mo.remove(); });
+  setTimeout(()=>document.getElementById('lc-tcode')?.focus(),100);
+}
+
+async function doLinkChild() {
+  const linkBtn=document.querySelector('#m-link-child .btn.bp');
+  if(linkBtn){if(linkBtn.disabled)return;linkBtn.disabled=true;}
+  const tcode = document.getElementById('lc-tcode')?.value.trim().toUpperCase();
+  const pin   = document.getElementById('lc-pin')?.value.trim();
+  const err   = document.getElementById('lc-err');
+  err.classList.remove('show');
+  if(!tcode || pin.length<4){ err.textContent='Заполните все поля'; err.classList.add('show'); return; }
+  // Ищем учителя по коду
+  const{data:teacher}=await sb.from('profiles').select('id,name').eq('teacher_code',tcode).eq('role','teacher').single();
+  if(!teacher){ err.textContent='Учитель с таким кодом не найден'; err.classList.add('show'); if(linkBtn)linkBtn.disabled=false; return; }
+  // Ищем ученика у этого учителя по PIN
+  const{data:stu}=await sb.from('students').select('*').eq('teacher_id',teacher.id).eq('pin',pin).single();
+  if(!stu){ err.textContent='Неверный PIN ученика'; err.classList.add('show'); if(linkBtn)linkBtn.disabled=false; return; }
+  // Проверяем: уже привязан к этому родителю?
+  if(stu.parent_user_id === me.id || stu.parent_user_id2 === me.id){
+    err.textContent='Вы уже привязаны к этому ученику'; err.classList.add('show'); if(linkBtn)linkBtn.disabled=false; return;
+  }
+  // Привязываем: сначала первый слот, потом второй
+  let updateField = null;
+  if(!stu.parent_user_id) {
+    updateField = 'parent_user_id';
+  } else if(!stu.parent_user_id2) {
+    updateField = 'parent_user_id2';
+  } else {
+    err.textContent='У этого ученика уже привязаны 2 родителя'; err.classList.add('show'); if(linkBtn)linkBtn.disabled=false; return;
+  }
+  const{error}=await sb.from('students').update({[updateField]:me.id}).eq('id',stu.id);
+  if(error){ err.textContent='Ошибка: '+error.message; err.classList.add('show'); return; }
+  document.getElementById('m-link-child')?.remove();
+  toast('✅ '+stu.name+' привязан!');
+  pSc('home',0);
+}
+
+async function openParentChat(tid, stuId, stuName, tname) {
+  // Проверяем что этот ученик реально привязан к текущему родителю
+  const{data:stuCheck}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',stuId).single();
+  if(!stuCheck || (stuCheck.parent_user_id !== me.id && stuCheck.parent_user_id2 !== me.id)){
+    toast('Нет доступа к этому ученику'); return;
+  }
+  let { data: chat } = await sb.from('chats').select('*').eq('teacher_id',tid).eq('student_id',stuId).eq('type','teacher_parent').single();
+  if (!chat) {
+    const{data:nc}=await sb.from('chats').insert({teacher_id:tid,student_id:stuId,type:'teacher_parent'}).select().single();
+    chat=nc;
+  }
+  if (!chat) { toast('Ошибка создания чата'); return; }
+  activeChatId=chat.id; lessonChatId=null;
+  document.getElementById('chat-av').textContent=tname[0].toUpperCase();
+  document.getElementById('chat-av').style.background='#16a34a';
+  document.getElementById('chat-title').textContent=tname;
+  document.getElementById('chat-sub').textContent='Переписка по: '+stuName;
+  openM('m-chat');
+  await loadChatMsgs();
+  if(chatChannel) chatChannel.unsubscribe();
+  chatChannel=sb.channel('ch-'+chat.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:`chat_id=eq.${chat.id}`},()=>loadChatMsgs())
+    .subscribe();
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    // Проверяем обновление при каждом запуске
+    reg.update().catch(()=>{});
+  }).catch(()=>{});
+
+  // Слушаем сообщение от SW об обновлении
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'SW_UPDATED') {
+      // Показываем toast и перезагружаем через 1.5 сек
+      const t = document.getElementById('toast');
+      if (t) {
+        t.textContent = '🔄 Установлено обновление...';
+        t.classList.add('show');
       }
-      if (clients.openWindow) return clients.openWindow(url);
-    })
-  );
-});
+      setTimeout(() => window.location.reload(), 1500);
+    }
+  });
+
+  // Если SW обновился пока приложение было открыто — тоже перезагружаем
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
+}
+</script>
+</body>
+</html>
