@@ -329,12 +329,23 @@ function backSvg() { return `<svg width="16" height="16" fill="none" stroke="cur
 // ── Init ──
 (async () => {
   pg('pg-load');
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-    if (p) { me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code }; launchApp(); return; }
+  try {
+    // Таймаут 8 сек на инициализацию
+    const initTimeout = new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')), 8000));
+    const initWork = async () => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const { data: p } = await sb.from('profiles').select('id,role,name,teacher_code').eq('id', session.user.id).single();
+        if (p) { me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code }; launchApp(); return; }
+      }
+      renderRoles();
+    };
+    await Promise.race([initWork(), initTimeout]);
+  } catch(e) {
+    // Таймаут или ошибка — показываем роли
+    console.warn('Init error:', e);
+    renderRoles();
   }
-  renderRoles();
 })();
 
 // ── Roles ──
@@ -514,7 +525,8 @@ function launchApp() {
   if (me.role === 'teacher') buildTeacher();
   else if (me.role === 'parent') buildParent();
   else buildStudent();
-  subscribeNotifs();
+  // Уведомления грузим асинхронно — не блокируем запуск
+  setTimeout(() => subscribeNotifs(), 300);
 }
 async function doLogout() {
   if (me.role === 'teacher' || me.role === 'parent') await sb.auth.signOut();
@@ -672,6 +684,8 @@ function tSc(n,i) {
 }
 
 async function tHome(el) {
+  // Мгновенный скелетон пока грузятся данные
+  el.innerHTML=`<div class="page"><div class="stitle">Главная 👋</div><div class="ssub" style="color:var(--t2)">Загружаем данные...</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
   el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">—</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">—</div><div class="sl">Учеников</div></div></div><div class="card" id="th-next" style="display:none"></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r">Загрузка...</div></div></div>`;
   const [{count:lc},{count:sc},{data:rc},{data:ss}]=await Promise.all([
     sb.from('lessons').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
@@ -1497,6 +1511,7 @@ function sSc(n,i) {
   else if(n==='chats') sChats(c);
 }
 async function sHome(el) {
+  el.innerHTML=`<div class="page"><div style="text-align:center;padding:60px 0"><div class="sp"></div></div></div>`;
   console.log('sHome: teacher_id='+me.teacher_id+' student_id='+me.student_id);
   const[{data:ls},{data:ws}]=await Promise.all([
     sb.from('lessons').select('id,title,date,homework,hw_done,hw_photo,zoom_link,grade,status').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(10),
@@ -1654,6 +1669,7 @@ function pSc(n,i) {
   else if(n==='chats') pChats(c);
 }
 async function pHome(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Главная 👋</div><div class="ssub">Загружаем данные...</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
   addFab(()=>openLinkChild());
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
     sb.from('students').select('id').eq('parent_user_id',me.id),
