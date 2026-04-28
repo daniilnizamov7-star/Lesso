@@ -25,7 +25,6 @@ if(lnk){ const img=new Image();img.onerror=()=>{lnk.href=makeIcon(180);};img.src
 </script>
 <title>Lesso</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://yiqipulgofoschkccaxr.supabase.co" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f8f9fc;--w:#fff;--b:#e8eaf0;--t:#0f1520;--t2:#5a6478;--t3:#9aa0b0;--a:#2563eb;--al:#eff4ff;--ad:#1d4ed8;--g:#16a34a;--gl:#f0fdf4;--o:#ea580c;--ol:#fff7ed;--r:#dc2626;--rl:#fef2f2;--rd:16px;--rs:10px;--sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--shl:0 4px 24px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04)}
@@ -316,25 +315,22 @@ function backSvg() { return `<svg width="16" height="16" fill="none" stroke="cur
 (async () => {
 pg('pg-load');
 try {
-const initTimeout = new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')), 8000));
-const initWork = async () => {
-let session=null;
-for(let i=0;i<3;i++){
-const{data}=await sb.auth.getSession();
-session=data?.session;
-if(session) break;
-if(i<2) await new Promise(r=>setTimeout(r,500));
-}
-if(session){
-const{data:p}=await sb.from('profiles').select('id,role,name,teacher_code').eq('id',session.user.id).single();
-if(p){me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code};launchApp();return;}
-}
-renderRoles();
-};
-await Promise.race([initWork(), initTimeout]);
+  const { data } = await Promise.race([
+    sb.auth.getSession(),
+    new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 6000))
+  ]);
+  const session = data?.session;
+  if (session) {
+    const { data: p } = await Promise.race([
+      sb.from('profiles').select('id,role,name,teacher_code').eq('id',session.user.id).single(),
+      new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), 5000))
+    ]);
+    if (p) { me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code}; launchApp(); return; }
+  }
+  renderRoles();
 } catch(e) {
-console.warn('Init error:', e);
-renderRoles();
+  console.warn('Init:', e.message);
+  renderRoles();
 }
 })();
 sb.auth.onAuthStateChange(async(event, session) => {
@@ -358,24 +354,23 @@ document.getElementById('pg-roles').innerHTML = `<div class="auth-pg">
 <button onclick="showFeedbackForm()" style="flex:1;padding:11px 14px;border-radius:10px;border:1.5px solid var(--b);background:var(--w);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--t2);cursor:pointer">💬 Отзыв</button>
 </div>`;
 }
-function showInstruction() {
-  const mo=document.createElement('div'); mo.className='mo open'; mo.id='m-instr';
+function showInstruction(){
+  const mo=document.createElement('div');mo.className='mo open';mo.id='m-instr';
   mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;max-height:85dvh;display:flex;flex-direction:column;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
 <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
 <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:12px">📖 Как пользоваться Lesso</div>
 <div style="overflow-y:auto;flex:1">
-<div style="background:var(--al);border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-weight:800;font-size:14px;color:var(--a);margin-bottom:6px">👨‍🏫 Учитель</div><div style="font-size:13px;line-height:1.7">1. Зарегистрируйтесь и придумайте код (например: DAN1)<br>2. Добавьте учеников — нажмите «+» на вкладке «Ученики»<br>3. Назначьте каждому PIN из 4 цифр<br>4. Создавайте уроки, добавляйте ДЗ и материалы<br>5. Смотрите аналитику в разделе «Статистика»</div></div>
-<div style="background:var(--gl);border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-weight:800;font-size:14px;color:var(--g);margin-bottom:6px">👨‍👩‍👦 Родитель</div><div style="font-size:13px;line-height:1.7">1. Зарегистрируйтесь в разделе «Родитель»<br>2. Нажмите «+» и введите код учителя + PIN ребёнка<br>3. Следите за уроками, ДЗ и прогрессом<br>4. Пишите учителю в разделе «Чат»</div></div>
-<div style="background:var(--ol);border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-weight:800;font-size:14px;color:var(--o);margin-bottom:6px">🧒 Ученик</div><div style="font-size:13px;line-height:1.7">1. Введите код учителя и свой PIN (спроси у учителя)<br>2. На главной — ближайший урок и домашнее задание<br>3. Отмечай ДЗ выполненным (можно прикрепить фото)<br>4. Тренируй слова в разделе «Карточки»</div></div>
-<div style="background:#f5f3ff;border-radius:12px;padding:14px;margin-bottom:4px"><div style="font-weight:800;font-size:14px;color:#7c3aed;margin-bottom:6px">💡 Советы</div><div style="font-size:13px;line-height:1.7">• Установите как приложение: в браузере «Добавить на главный экран»<br>• Push-уведомления работают после установки</div></div>
+<div style="background:var(--al);border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-weight:800;font-size:14px;color:var(--a);margin-bottom:6px">👨‍🏫 Учитель</div><div style="font-size:13px;line-height:1.7">1. Зарегистрируйтесь и придумайте код (например: DAN1)<br>2. Добавьте учеников — нажмите «+» на вкладке «Ученики»<br>3. PIN из 4 цифр для каждого ученика<br>4. Создавайте уроки, ДЗ и материалы<br>5. Аналитика в разделе «Статистика»</div></div>
+<div style="background:var(--gl);border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-weight:800;font-size:14px;color:var(--g);margin-bottom:6px">👨‍👩‍👦 Родитель</div><div style="font-size:13px;line-height:1.7">1. Зарегистрируйтесь в разделе «Родитель»<br>2. Нажмите «+» → код учителя + PIN ребёнка<br>3. Следите за уроками, ДЗ и прогрессом<br>4. Пишите учителю в разделе «Чат»</div></div>
+<div style="background:var(--ol);border-radius:12px;padding:14px;margin-bottom:10px"><div style="font-weight:800;font-size:14px;color:var(--o);margin-bottom:6px">🧒 Ученик</div><div style="font-size:13px;line-height:1.7">1. Код учителя и PIN (спроси у учителя)<br>2. Главная — ближайший урок и ДЗ<br>3. Отмечай ДЗ выполненным, прикрепляй фото<br>4. Тренируй слова в разделе «Карточки»</div></div>
+<div style="background:#f5f3ff;border-radius:12px;padding:14px"><div style="font-weight:800;font-size:14px;color:#7c3aed;margin-bottom:6px">💡 Совет</div><div style="font-size:13px;line-height:1.7">Установите как приложение: в браузере «Добавить на главный экран» — работает офлайн и присылает уведомления</div></div>
 </div>
 <button class="btn bs" style="width:100%;margin-top:12px" onclick="document.getElementById('m-instr')?.remove()">Понятно!</button>
 </div>`;
-  document.body.appendChild(mo);
-  mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
+  document.body.appendChild(mo);mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
 }
-function showFeedbackForm() {
-  const mo=document.createElement('div'); mo.className='mo open'; mo.id='m-fb';
+function showFeedbackForm(){
+  const mo=document.createElement('div');mo.className='mo open';mo.id='m-fb';
   mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
 <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
 <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px">💬 Оставить отзыв</div>
@@ -388,8 +383,7 @@ function showFeedbackForm() {
 <button class="btn bp" style="width:100%;margin-bottom:8px" onclick="submitFeedback()">Отправить</button>
 <button class="btn bs" style="width:100%" onclick="document.getElementById('m-fb')?.remove()">Отмена</button>
 </div>`;
-  document.body.appendChild(mo);
-  mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
+  document.body.appendChild(mo);mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
   setTimeout(()=>setFbStar(5),50);
 }
 function setFbStar(n){window._fbStar=n;document.querySelectorAll('#fb-stars button').forEach(b=>{b.style.opacity=parseInt(b.dataset.s)<=n?'1':'.3';});}
@@ -402,8 +396,7 @@ async function submitFeedback(){
   btn.disabled=true;btn.textContent='Отправляем...';
   const{error}=await sb.from('feedback').insert({name:document.getElementById('fb-name')?.value.trim()||'Аноним',role:document.getElementById('fb-role')?.value||'other',stars:window._fbStar||5,text,status:'new'});
   if(error){err.textContent='Ошибка: '+error.message;err.classList.add('show');btn.disabled=false;btn.textContent='Отправить';return;}
-  document.getElementById('m-fb')?.remove();
-  toast('🙏 Спасибо за отзыв!');
+  document.getElementById('m-fb')?.remove();toast('🙏 Спасибо за отзыв!');
 }
 
 let authRole = '', authMode = 'login';
