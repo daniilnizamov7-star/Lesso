@@ -2023,22 +2023,28 @@ function openPayInfo() {
   toast('💳 Оплата: 300₽/мес · Свяжитесь с учителем');
 }
 if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('/sw.js').then(reg => {
-reg.update().catch(()=>{});
-}).catch(()=>{});
-navigator.serviceWorker.addEventListener('message', e => {
-if (e.data?.type === 'SW_UPDATED') {
-const t = document.getElementById('toast');
-if (t) {
-t.textContent = '🔄 Установлено обновление...';
-t.classList.add('show');
-}
-setTimeout(() => window.location.reload(), 1500);
-}
-});
-navigator.serviceWorker.addEventListener('controllerchange', () => {
-window.location.reload();
-});
+  let _swUpdated = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!_swUpdated) return; // не перезагружаем при обычном обновлении страницы
+    _swUpdated = false;
+    window.location.reload();
+  });
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    reg.update().catch(() => {});
+    reg.addEventListener('updatefound', () => {
+      const sw = reg.installing; if (!sw) return;
+      sw.addEventListener('statechange', () => {
+        if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+          _swUpdated = true;
+          sw.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
+    if (reg.waiting && navigator.serviceWorker.controller) {
+      _swUpdated = true;
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+  }).catch(() => {});
 }
 </script>
 </body>
