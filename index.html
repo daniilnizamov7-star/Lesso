@@ -26,21 +26,6 @@
     });
   </script>
   <title>Lesso</title>
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
-    const app = initializeApp({
-      apiKey: "AIzaSyBpU-blJhG8Jy6LgVk30PBem-FC2gU7d1Y",
-      authDomain: "lesso-app-41e45.firebaseapp.com",
-      projectId: "lesso-app-41e45",
-      storageBucket: "lesso-app-41e45.firebasestorage.app",
-      messagingSenderId: "117464511883",
-      appId: "1:117464511883:web:a6df8d18538e50a324ab8e"
-    });
-    window._fbMessaging = getMessaging(app);
-    window._fbGetToken = getToken;
-    window._fbOnMessage = onMessage;
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
   <style>
@@ -190,12 +175,6 @@
     .pl{font-size:13px;color:var(--t2);font-weight:600}
     .tog{width:44px;height:24px;border-radius:12px;background:var(--b);border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
     .tog.on{background:var(--g)}
-    .pay-progress{background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:8px;border:1px solid var(--b)}
-    .pay-counter{font-family:'Fraunces',serif;font-size:28px;font-weight:900;line-height:1}
-    .pay-bar{height:8px;background:var(--b);border-radius:4px;overflow:hidden;margin:8px 0}
-    .pay-fill{height:100%;border-radius:4px;transition:width .4s}
-    .pay-hist-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b)}
-    .pay-hist-item:last-child{border-bottom:none}
     .tog::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
     .tog.on::after{transform:translateX(20px)}
     .lrow{display:flex;gap:8px}
@@ -210,9 +189,8 @@
     .sname_{font-weight:700;font-size:15px}.smeta_{font-size:12px;color:var(--t2);margin-top:2px}
     .spinb{margin-left:auto;background:var(--bg);border:1px solid var(--b);border-radius:8px;padding:4px 10px;font-size:13px;font-weight:700;color:var(--t2);font-family:'Fraunces',serif}
     .mitem{display:flex;align-items:center;gap:12px;background:var(--w);border:1px solid var(--b);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;box-shadow:var(--sh)}
-    .mico{width:38px;height:38px;border-radius:10px;background:var(--al);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
-    .mname_{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.msize_{font-size:12px;color:var(--t2)}
-    .mopen{flex-shrink:0;background:var(--al);color:var(--a);border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;white-space:nowrap;font-family:inherit}
+    .mico{width:38px;height:38px;border-radius:10px;background:var(--rl);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px}
+    .mname_{font-weight:600;font-size:14px}.msize_{font-size:12px;color:var(--t2)}
     .titem{background:var(--w);border:1.5px solid var(--b);border-radius:var(--rd);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;box-shadow:var(--sh);margin-bottom:10px}
     .titem:hover{border-color:var(--a)}
     .empty{text-align:center;padding:48px 20px;color:var(--t2)}
@@ -236,15 +214,14 @@
 <!-- Modals -->
 <div class="mo" id="m-lesson"><div class="modal">
   <div class="mh"></div><div class="mt" id="mlt">Урок</div>
-  <div class="fg"><label class="fl">Ученик</label><select class="fs" id="li-stu" onchange="autoFillZoom(this.value)"></select></div>
+  <div class="fg"><label class="fl">Ученик</label><select class="fs" id="li-stu"></select></div>
   <div class="fg"><label class="fl">Тема урока</label><input class="fi" id="li-title" placeholder="Past Simple, числа..."></div>
   <div class="fg"><label class="fl">Дата</label><input class="fi" type="date" id="li-date"></div>
-  <div class="fg"><label class="fl">Время урока</label><input class="fi" type="time" id="li-time" placeholder="10:00"></div>
-  <div class="fg"><label class="fl">Ссылка Zoom</label><input class="fi" type="url" id="li-zoom" placeholder="https://zoom.us/j/..." oninput="document.getElementById('li-zoom-hint').style.display='none'"><div id="li-zoom-hint" style="display:none;align-items:center;gap:6px;margin-top:6px;font-size:12px;font-weight:600;color:var(--a);background:var(--al);border-radius:8px;padding:8px 10px"></div></div>
+  <div class="fg"><label class="fl">Ссылка Zoom</label><input class="fi" type="url" id="li-zoom" placeholder="https://zoom.us/j/..."></div>
   <div class="fg"><label class="fl">Домашнее задание</label><textarea class="fta" id="li-hw" placeholder="Выучить слова..."></textarea></div>
   <div id="li-hw-photo-wrap" style="display:none;margin-bottom:14px">
     <div class="fl" style="margin-bottom:6px">📷 Фото ДЗ от ученика</div>
-    <a id="li-hw-photo-link" href="" target="_blank" rel="noopener noreferrer"><img id="li-hw-photo-img" src="" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1.5px solid #bbf7d0"></a>
+    <a id="li-hw-photo-link" href="" target="_blank"><img id="li-hw-photo-img" src="" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1.5px solid #bbf7d0"></a>
   </div>
   <div class="fg"><label class="fl">Оценка</label>
     <select class="fs" id="li-grade"><option value="">— не ставить —</option><option value="5">5 — Отлично</option><option value="4">4 — Хорошо</option><option value="3">3 — Удовл.</option><option value="2">2 — Плохо</option></select>
@@ -290,15 +267,6 @@
   <div class="fg"><label class="fl">Предмет</label><input class="fi" id="si-subj" placeholder="Английский..."></div>
   <div class="fg"><label class="fl">PIN-код (4 цифры)</label><input class="fi" id="si-pin" type="number" placeholder="1234"></div>
   <div style="margin-top:4px;margin-bottom:14px;font-size:12px;color:var(--t2);line-height:1.5">👨‍👩‍👦 Родители привязываются сами через «Привязать ребёнка» в своём кабинете. PIN можно передать маме и папе — каждый привяжется отдельно.</div>
-  <div style="background:var(--al);border-radius:var(--rs);padding:12px;margin-bottom:14px">
-    <div style="font-size:11px;font-weight:700;color:var(--a);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">🎥 Zoom конференция</div>
-    <div class="fg" style="margin-bottom:10px"><label class="fl">ID конференции</label><input class="fi" id="si-zoom-id" placeholder="718 1849 4557" style="background:var(--w)"></div>
-    <div class="fg" style="margin-bottom:0"><label class="fl">Код доступа</label><input class="fi" id="si-zoom-pass" placeholder="7tfiYp" style="background:var(--w)"></div>
-  </div>
-  <div style="background:var(--gl);border-radius:var(--rs);padding:12px;margin-bottom:14px">
-    <div style="font-size:11px;font-weight:700;color:var(--g);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">💰 Пакет уроков</div>
-    <div class="fg" style="margin-bottom:10px"><label class="fl">Цена одного урока (₽)</label><input class="fi" id="si-price" type="number" placeholder="1000" min="0" style="background:var(--w)"></div>
-  </div>
   <div class="brow"><button class="btn bs" onclick="closeM('m-stu')">Отмена</button><button class="btn bp" onclick="saveStu()">Сохранить</button></div>
   <button class="btn bd" id="si-delbtn" style="display:none;margin-top:8px" onclick="delStu()">Удалить ученика</button>
 </div></div>
@@ -317,35 +285,20 @@
   </div>
 </div></div>
 
-<div class="mo" id="m-pay"><div class="modal">
-  <div class="mtitle">💰 Пополнение баланса</div>
-  <div class="ssub" id="mp-name" style="margin-bottom:16px"></div>
-  <div class="fg"><label class="fl">Количество уроков</label><input class="fi" id="mp-count" type="number" placeholder="10" min="1" max="100"></div>
-  <div class="fg"><label class="fl">Сумма (₽)</label><input class="fi" id="mp-amount" type="number" placeholder="10000" min="0"></div>
-  <div id="mp-price-hint" style="font-size:12px;color:var(--a);font-weight:600;margin-top:-8px;margin-bottom:12px;display:none"></div>
-  <div class="fg"><label class="fl">Комментарий (необязательно)</label><input class="fi" id="mp-note" placeholder="Оплата за апрель"></div>
-  <div class="brow"><button class="btn bs" onclick="closeM('m-pay')">Отмена</button><button class="btn bp" id="mp-save-btn" onclick="savePayment()">Сохранить</button></div>
-  <div id="mp-history" style="margin-top:16px"></div>
-</div></div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SU = 'https://yiqipulgofoschkccaxr.supabase.co';
 const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
 const sb = supabase.createClient(SU, SK);
 
-// Глобальный обработчик необработанных ошибок
-window.onerror = function(msg, src, line, col, err) {
-  console.error('Global error:', msg, err);
-  const ac = document.getElementById('ac');
-  if(ac && ac.innerHTML.includes('Загрузка')) {
-    ac.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:40px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Что-то пошло не так</div><div style="font-size:13px;color:var(--t2);margin-bottom:20px">${msg}</div><button class="btn bp bsm" onclick="location.reload()">Обновить</button></div>`;
-  }
-  return false;
-};
-window.addEventListener('unhandledrejection', e => {
-  console.error('Unhandled promise rejection:', e.reason);
-});
+// ── КЭШИРОВАНИЕ ──
+const _cache={stus:null,ts:0};
+async function getStudents(tid){
+  if(_cache.stus&&Date.now()-_cache.ts<30000)return _cache.stus;
+  const{data}=await sb.from('students').select('*').eq('teacher_id',tid).order('name');
+  _cache.stus=data||[];_cache.ts=Date.now();return _cache.stus;
+}
+function invalidateStudents(){_cache.stus=null;}
 
 let me = null; // {role, name, id, student_id, teacher_id, teacher_code}
 let editLessonId = null, editStuId = null;
@@ -373,44 +326,14 @@ function ft(d) { return new Date(d).toLocaleTimeString('ru-RU',{hour:'2-digit',m
 function chev() { return `<svg style="margin-left:auto;color:var(--t3);flex-shrink:0" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>`; }
 function backSvg() { return `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>`; }
 
-// ── Utils ──
-function lockBtn(id, text='...') {
-  const b = typeof id === 'string' ? document.getElementById(id) : id;
-  if(!b || b.disabled) return false;
-  b._origText = b.textContent;
-  b.disabled = true; b.textContent = text;
-  return true;
-}
-function unlockBtn(id) {
-  const b = typeof id === 'string' ? document.getElementById(id) : id;
-  if(!b) return;
-  b.disabled = false; b.textContent = b._origText || b.textContent;
-}
-
 // ── Init ──
 (async () => {
   pg('pg-load');
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-    if (p) {
-      // Проверка заморозки для родителя
-      if (p.suspended && p.role === 'parent') { await sb.auth.signOut(); showSuspended(); return; }
-      me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code, email: session.user.email };
-      subscribeToPush(session.user.id, session.access_token);
-      // Проверка оплаты для родителя
-      if(p.role === 'parent') {
-        const now = new Date();
-        const trialOk = p.trial_until && new Date(p.trial_until) > now;
-        const hasBalance = (p.balance||0) > 0;
-        if(!trialOk && !hasBalance) { showPayWall({...p, email: session.user.email}); return; }
-      }
-      launchApp(); return;
-    }
+    if (p) { me = { role: p.role, name: p.name, id: session.user.id, teacher_code: p.teacher_code }; launchApp(); return; }
   }
-  // Восстанавливаем сессию ученика
-  const stuSess = localStorage.getItem('stu_session');
-  if (stuSess) { try { me = JSON.parse(stuSess); launchApp(); return; } catch(e) { localStorage.removeItem('stu_session'); } }
   renderRoles();
 })();
 
@@ -418,150 +341,13 @@ function unlockBtn(id) {
 function renderRoles() {
   pg('pg-roles');
   document.getElementById('pg-roles').innerHTML = `<div class="auth-pg">
-    <div class="logo-big">Lesso</div>
-    <div class="logo-sub">Платформа для обучения</div>
+    <div class="logo-big">Lesso</div><div class="logo-sub">Платформа для обучения</div>
     <div class="rcards">
       <button class="rcard" onclick="showAuth('teacher')"><div class="ricon" style="background:#eff4ff">👨‍🏫</div><div><div class="rname">Учитель</div><div class="rdesc">Управление уроками и учениками</div></div>${chev()}</button>
       <button class="rcard" onclick="showAuth('parent')"><div class="ricon" style="background:#f0fdf4">👨‍👩‍👦</div><div><div class="rname">Родитель</div><div class="rdesc">Прогресс и контроль занятий</div></div>${chev()}</button>
       <button class="rcard" onclick="showTeachers()"><div class="ricon" style="background:#fff7ed">🧒</div><div><div class="rname">Ученик</div><div class="rdesc">Уроки, слова и карточки</div></div>${chev()}</button>
     </div>
-    <div style="display:flex;gap:10px;margin-top:8px">
-      <button onclick="openGuide()" style="flex:1;background:var(--al);color:var(--a);border:none;border-radius:var(--rs);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
-        📖 Как пользоваться
-      </button>
-      <button onclick="openPublicFeedback()" style="flex:1;background:var(--gl);color:var(--g);border:none;border-radius:var(--rs);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
-        💬 Оставить отзыв
-      </button>
-    </div>
-    <div style="text-align:center;margin-top:16px">
-      <a href="tel:+79911745113" style="font-size:14px;font-weight:700;color:var(--a);text-decoration:none">📞 +7 991 174-51-13</a>
-      <div style="font-size:11px;color:var(--t3);margin-top:4px">v1.0 · lesso-three.vercel.app</div>
-    </div>
   </div>`;
-}
-
-function openGuide() {
-  const mo = document.createElement('div');
-  mo.className='mo open'; mo.id='m-guide';
-  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
-  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom));max-height:88dvh;overflow-y:auto">
-    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
-    <div style="font-size:20px;font-weight:800;margin-bottom:4px">📖 Как пользоваться Lesso</div>
-    <div style="font-size:13px;color:var(--t2);margin-bottom:20px">Коротко о каждой роли</div>
-
-    <!-- Учитель -->
-    <div style="background:var(--al);border-radius:var(--rs);padding:14px;margin-bottom:12px">
-      <div style="font-size:15px;font-weight:800;margin-bottom:10px">👨‍🏫 Учитель</div>
-      <div style="font-size:13px;color:var(--t);line-height:1.7">
-        1. Зарегистрируйтесь и придумайте свой <b>код</b> (например ANNA1)<br>
-        2. Добавьте ученика: имя, предмет, PIN, цену урока и Zoom ID<br>
-        3. Создавайте уроки — ставьте оценки, задавайте ДЗ, прикрепляйте файлы<br>
-        4. Нажмите <b>«💰 Оплата»</b> чтобы внести пакет уроков — родитель увидит баланс<br>
-        5. В Аналитике смотрите посещаемость и прогресс каждого ученика
-      </div>
-    </div>
-
-    <!-- Родитель -->
-    <div style="background:var(--gl);border-radius:var(--rs);padding:14px;margin-bottom:12px">
-      <div style="font-size:15px;font-weight:800;margin-bottom:10px">👨‍👩‍👦 Родитель</div>
-      <div style="font-size:13px;color:var(--t);line-height:1.7">
-        1. Зарегистрируйтесь по email<br>
-        2. На главной нажмите <b>+</b> → введите код учителя и PIN ребёнка<br>
-        3. На <b>Главной</b> — следующий урок, ДЗ и баланс оплаченных уроков<br>
-        4. В <b>Уроках</b> — вся история занятий с оценками<br>
-        5. В <b>Прогрессе</b> — посещаемость, оценки, словарь ребёнка
-      </div>
-    </div>
-
-    <!-- Ученик -->
-    <div style="background:var(--ol);border-radius:var(--rs);padding:14px;margin-bottom:20px">
-      <div style="font-size:15px;font-weight:800;margin-bottom:10px">🧒 Ученик</div>
-      <div style="font-size:13px;color:var(--t);line-height:1.7">
-        1. Нажмите <b>«Ученик»</b> → введите код учителя и свой PIN<br>
-        2. На <b>Главной</b> — ближайший урок и кнопка Zoom<br>
-        3. В <b>Уроках</b> — отмечайте домашнее задание как выполненное<br>
-        4. В <b>Карточках</b> — учите слова как в игре<br>
-        5. В <b>Чате</b> — пишите учителю вопросы
-      </div>
-    </div>
-
-    <button onclick="document.getElementById('m-guide')?.remove()" class="btn bp" style="width:100%">Понятно 👍</button>
-  </div>`;
-  document.body.appendChild(mo);
-  mo.addEventListener('click', e => { if(e.target===mo) mo.remove(); });
-}
-
-function openPublicFeedback() {
-  const mo = document.createElement('div');
-  mo.className='mo open'; mo.id='m-pub-feedback';
-  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
-  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
-    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
-    <div style="font-size:20px;font-weight:800;margin-bottom:4px">💬 Отзыв и предложения</div>
-    <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Расскажите что работает, что нет — мы читаем каждое сообщение</div>
-    <div style="margin-bottom:12px">
-      <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px">ВЫ</div>
-      <select id="pf-role" class="fs" style="width:100%">
-        <option value="teacher">👨‍🏫 Репетитор</option>
-        <option value="parent">👨‍👩‍👦 Родитель</option>
-        <option value="student">🧒 Ученик</option>
-        <option value="other">Другое</option>
-      </select>
-    </div>
-    <div style="margin-bottom:12px">
-      <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px">ОЦЕНКА</div>
-      <div style="display:flex;gap:8px" id="pf-stars">
-        ${[1,2,3,4,5].map(i=>`<button onclick="pfStar(${i})" id="pf-star-${i}" style="flex:1;background:var(--bg);border:1.5px solid var(--b);border-radius:10px;padding:10px;font-size:20px;cursor:pointer">⭐</button>`).join('')}
-      </div>
-    </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px">СООБЩЕНИЕ</div>
-      <textarea id="pf-text" placeholder="Что понравилось? Что улучшить? Каких функций не хватает?" style="width:100%;min-height:110px;border:1.5px solid var(--b);border-radius:var(--rs);padding:10px 12px;font-family:inherit;font-size:14px;resize:none;outline:none;color:var(--t);box-sizing:border-box"></textarea>
-    </div>
-    <div id="pf-err" class="err"></div>
-    <button id="pf-btn" class="btn bp" style="width:100%" onclick="sendPublicFeedback()">Отправить</button>
-    <button class="btn bs" style="width:100%;margin-top:8px" onclick="document.getElementById('m-pub-feedback')?.remove()">Отмена</button>
-  </div>`;
-  document.body.appendChild(mo);
-  mo.addEventListener('click', e => { if(e.target===mo) mo.remove(); });
-}
-
-let pfRating = 0;
-function pfStar(n) {
-  pfRating = n;
-  [1,2,3,4,5].forEach(i => {
-    const btn = document.getElementById('pf-star-'+i);
-    if(btn) btn.style.background = i<=n ? 'var(--ol)' : 'var(--bg)';
-  });
-}
-
-async function sendPublicFeedback() {
-  const text = document.getElementById('pf-text')?.value.trim();
-  const role = document.getElementById('pf-role')?.value;
-  const err  = document.getElementById('pf-err');
-  if(!text) { err.textContent='Напишите сообщение'; err.classList.add('show'); return; }
-  if(!lockBtn('pf-btn','Отправляем...')) return;
-  const{error}=await sb.from('feedback').insert({
-    role, name:'Гость ('+role+')', rating:pfRating||null, text
-  });
-  if(error){ err.textContent='Ошибка: '+error.message; err.classList.add('show'); unlockBtn('pf-btn'); return; }
-  await fetch(`${SU}/functions/v1/send-push`,{
-    method:'POST',
-    headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},
-    body:JSON.stringify({user_ids:['01b9a57d-63e2-4e19-9fd2-be19dc4311a0'],title:'💬 Отзыв от '+role,body:(pfRating?'★'.repeat(pfRating)+' ':'')+text.slice(0,80)})
-  }).catch(()=>{});
-  document.getElementById('m-pub-feedback')?.remove();
-  // Показываем спасибо
-  const thanks = document.createElement('div');
-  thanks.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px';
-  thanks.innerHTML=`<div style="background:var(--w);border-radius:20px;padding:32px 24px;text-align:center;max-width:320px;width:100%">
-    <div style="font-size:56px;margin-bottom:12px">🎉</div>
-    <div style="font-size:20px;font-weight:800;margin-bottom:8px">Спасибо!</div>
-    <div style="font-size:14px;color:var(--t2);margin-bottom:20px">Ваш отзыв получен — мы читаем каждое сообщение и делаем Lesso лучше</div>
-    <button onclick="this.closest('div[style]').remove()" class="btn bp" style="width:100%">Закрыть</button>
-  </div>`;
-  document.body.appendChild(thanks);
-  thanks.addEventListener('click', e => { if(e.target===thanks) thanks.remove(); });
 }
 
 let authRole = '', authMode = 'login';
@@ -605,7 +391,7 @@ async function doAuth() {
   const err = document.getElementById('aerr');
   err.classList.remove('show');
   if (!em || !pw) { err.textContent = 'Заполните все поля'; err.classList.add('show'); return; }
-  if(!lockBtn('abtn','...')) return;
+  document.getElementById('abtn').textContent = '...';
   pg('pg-load');
   let res, uid;
   if (authMode === 'register') {
@@ -631,7 +417,7 @@ async function doAuth() {
     const displayName = authRole === 'teacher'
       ? (document.getElementById('aname')?.value.trim() || em.split('@')[0])
       : em.split('@')[0];
-    await sb.from('profiles').upsert({ id: uid, role: authRole, name: displayName, teacher_code: teacherCode, email: em });
+    await sb.from('profiles').upsert({ id: uid, role: authRole, name: displayName, teacher_code: teacherCode });
   } else {
     res = await sb.auth.signInWithPassword({ email: em, password: pw });
     if (res.error) { pg('pg-auth'); err.textContent = res.error.message.includes('Invalid') ? 'Неверный email или пароль' : res.error.message; err.classList.add('show'); document.getElementById('abtn').textContent = 'Войти'; return; }
@@ -649,20 +435,9 @@ async function doAuth() {
       document.getElementById('abtn').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
       return;
     }
-    if (p2.suspended && p2.role === 'parent') { await sb.auth.signOut(); showSuspended(); return; }
-    me = { role: p2.role, name: p2.name, id: uid, teacher_code: p2.teacher_code, email: em };
+    me = { role: p2.role, name: p2.name, id: uid, teacher_code: p2.teacher_code };
   } else {
-    if (p.suspended && p.role === 'parent') { await sb.auth.signOut(); showSuspended(); return; }
-    me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code, email: em };
-  }
-  subscribeToPush(uid, res.data.session?.access_token);
-  // Проверка paywall для родителя (при входе через форму)
-  const _finalP = (p && !pErr) ? p : null;
-  if (me.role === 'parent' && _finalP) {
-    const _now = new Date();
-    const _trialOk = _finalP.trial_until && new Date(_finalP.trial_until) > _now;
-    const _hasBal = (_finalP.balance||0) > 0;
-    if (!_trialOk && !_hasBal) { showPayWall({..._finalP, email: em}); return; }
+    me = { role: p.role, name: p.name, id: uid, teacher_code: p.teacher_code };
   }
   launchApp();
 }
@@ -679,15 +454,15 @@ async function showTeachers() {
     <div class="err" id="perr"></div>
     <div class="fg" style="margin-bottom:12px">
       <label class="fl">Код учителя</label>
-      <input class="fi" id="s-tcode" autocomplete="off" placeholder="Например: DAN1" maxlength="8" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+      <input class="fi" id="s-tcode" placeholder="Например: DAN1" maxlength="8" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
     </div>
     <div class="fg" style="margin-bottom:4px">
       <label class="fl">Твой PIN-код</label>
       <div class="pin-wrap" style="margin:8px 0 0">
-        <input class="pd" type="tel" inputmode="numeric" maxlength="1" id="p0" oninput="pi(this,0)" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
-        <input class="pd" type="tel" inputmode="numeric" maxlength="1" id="p1" oninput="pi(this,1)" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
-        <input class="pd" type="tel" inputmode="numeric" maxlength="1" id="p2" oninput="pi(this,2)" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
-        <input class="pd" type="tel" inputmode="numeric" maxlength="1" id="p3" oninput="pi(this,3)" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')">
+        <input class="pd" type="tel" maxlength="1" id="p0" oninput="pi(this,0)">
+        <input class="pd" type="tel" maxlength="1" id="p1" oninput="pi(this,1)">
+        <input class="pd" type="tel" maxlength="1" id="p2" oninput="pi(this,2)">
+        <input class="pd" type="tel" maxlength="1" id="p3" oninput="pi(this,3)">
       </div>
     </div>
     <button class="btn bp" style="margin-top:16px" onclick="doPin()">Войти</button>
@@ -718,8 +493,6 @@ async function doPin() {
   if (!stu) { pg('pg-teachers'); perr('Неверный PIN-код'); return; }
   if (stu.active === false) { pg('pg-teachers'); perr('Доступ заблокирован. Обратитесь к учителю.'); return; }
   me = { role: 'student', name: stu.name, id: stu.id, student_id: stu.id, teacher_id: teacher.id };
-  localStorage.setItem('stu_session', JSON.stringify(me));
-  subscribeToPush(stu.id, null);
   launchApp();
 }
 function perr(m) { const e = document.getElementById('perr'); if(e){e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000);} }
@@ -743,103 +516,10 @@ function launchApp() {
   else buildStudent();
   subscribeNotifs();
 }
-
-async function openFeedback() {
-  const mo = document.createElement('div');
-  mo.id = 'm-feedback';
-  mo.className = 'mo open';
-  mo.innerHTML = `<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
-    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
-    <div style="font-size:18px;font-weight:700;margin-bottom:4px">Ваш отзыв</div>
-    <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Помогите сделать Lesso лучше</div>
-    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px" id="fb-stars">
-      ${[1,2,3,4,5].map(i=>`<button onclick="fbStar(${i})" id="fbs-${i}" style="font-size:28px;background:none;border:none;cursor:pointer;opacity:0.3;transition:opacity .15s">⭐</button>`).join('')}
-    </div>
-    <textarea id="fb-text" placeholder="Что понравилось? Что улучшить?" style="width:100%;min-height:100px;border:1.5px solid var(--b);border-radius:var(--rs);padding:10px 12px;font-family:inherit;font-size:14px;resize:none;outline:none;color:var(--t)"></textarea>
-    <div class="err" id="fb-err" style="margin-top:8px"></div>
-    <button class="btn bp" style="width:100%;margin-top:12px" onclick="sendFeedback()">Отправить</button>
-    <button class="btn bs" style="width:100%;margin-top:8px" onclick="document.getElementById('m-feedback')?.remove()">Отмена</button>
-  </div>`;
-  document.body.appendChild(mo);
-  mo.addEventListener('click', e => { if(e.target===mo) mo.remove(); });
-}
-
-let fbRating = 0;
-function fbStar(n) {
-  fbRating = n;
-  [1,2,3,4,5].forEach(i => {
-    const s = document.getElementById('fbs-'+i);
-    if(s) s.style.opacity = i <= n ? '1' : '0.3';
-  });
-}
-
-async function sendFeedback() {
-  const text = document.getElementById('fb-text')?.value.trim();
-  const err = document.getElementById('fb-err');
-  if(!text) { err.textContent='Напишите отзыв'; err.classList.add('show'); return; }
-  const _fbBtn=document.querySelector('#m-feedback .btn.bp');
-  if(_fbBtn&&!lockBtn(_fbBtn,'Отправляем...')) return;
-  const { error } = await sb.from('feedback').insert({
-    role: me.role, name: me.name, rating: fbRating||null, text
-  });
-  if(error) { err.textContent='Ошибка: '+error.message; err.classList.add('show'); return; }
-  // Push Даниилу
-  await fetch(`${SU}/functions/v1/send-push`, {
-    method:'POST',
-    headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},
-    body:JSON.stringify({user_ids:['01b9a57d-63e2-4e19-9fd2-be19dc4311a0'],title:'Новый отзыв от '+me.name,body:(fbRating?'★'.repeat(fbRating)+' ':'')+text.slice(0,80)})
-  }).catch(()=>{});
-  document.getElementById('m-feedback')?.remove();
-  toast('Спасибо за отзыв! 🙏');
-}
-
-
-async function remindLesson(lessonId, lessonTitle, stuId) {
-  const { data: stu } = await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id', stuId).single();
-  if (!stu) { toast('Ученик не найден'); return; }
-  const msg = `Урок "${lessonTitle}" — не забудь подготовиться!`;
-  const title = '🔔 Напоминание об уроке';
-  // Ученик — по student_id
-  const stuRecipients = [stuId].filter(Boolean);
-  // Родители — по user_id (auth.users)
-  const parentRecipients = [stu.parent_user_id, stu.parent_user_id2].filter(Boolean);
-  const promises = [];
-  if (stuRecipients.length) {
-    promises.push(fetch(`${SU}/functions/v1/send-push`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${SK}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ student_ids: stuRecipients, title, body: msg })
-    }).catch(()=>{}));
-  }
-  if (parentRecipients.length) {
-    promises.push(fetch(`${SU}/functions/v1/send-push`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${SK}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_ids: parentRecipients, title, body: msg })
-    }).catch(()=>{}));
-  }
-  await Promise.all(promises);
-  toast('Напоминание отправлено 🔔');
-}
-
 async function doLogout() {
   if (me.role === 'teacher' || me.role === 'parent') await sb.auth.signOut();
-  localStorage.removeItem('stu_session');
   me = null; selTeacherId = null;
   renderRoles();
-}
-
-function showSuspended() {
-  pg('pg-roles');
-  document.getElementById('pg-roles').innerHTML = `<div class="auth-pg">
-    <div style="text-align:center;padding:0 20px;max-width:360px">
-      <div style="font-size:60px;margin-bottom:16px">⏸</div>
-      <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:900;margin-bottom:10px">Аккаунт приостановлен</div>
-      <div style="font-size:14px;color:var(--t2);margin-bottom:28px;line-height:1.6">Ваш доступ временно заморожен. Для восстановления свяжитесь с поддержкой:</div>
-      <a href="tel:+79911745113" style="display:block;background:var(--a);color:#fff;font-weight:700;font-size:16px;padding:14px 20px;border-radius:var(--rs);text-decoration:none;margin-bottom:10px">📞 +7 991 174-51-13</a>
-      <button onclick="renderRoles()" class="btn bs" style="width:100%;max-width:360px">← Назад</button>
-    </div>
-  </div>`;
 }
 
 // ── Nav ──
@@ -908,8 +588,7 @@ async function openNotifPanel() {
       ${notifs?.length?`<button onclick="clearAllNotifs('${rid}')" style="background:none;border:none;cursor:pointer;font-size:13px;color:var(--r);font-weight:600;font-family:inherit">Удалить все</button>`:''}
     </div>
     <div style="overflow-y:auto;flex:1" id="notif-list">${items}</div>
-    ${me.role!=='student'?`<button class="btn bp" style="width:100%;margin-top:8px;background:#f0fdf4;color:#16a34a;border:1.5px solid #bbf7d0" onclick="document.getElementById('m-notif')?.remove();openFeedback()">💬 Оставить отзыв</button>`:''}
-    <button class="btn bs" style="width:100%;margin-top:8px" onclick="document.getElementById('m-notif')?.remove()">Закрыть</button>
+    <button class="btn bs" style="width:100%;margin-top:12px" onclick="document.getElementById('m-notif')?.remove()">Закрыть</button>
   </div>`;
   document.body.appendChild(mo);
   mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
@@ -943,7 +622,9 @@ async function subscribeNotifs() {
       })
     .subscribe();
 }
+let _cuTimer=null;
 async function checkUnread() {
+  if(_cuTimer) return; _cuTimer=setTimeout(()=>{_cuTimer=null;},5000);
   const rid = me.role === 'student' ? me.student_id : me.id;
   if (!rid) return;
 
@@ -990,7 +671,7 @@ function tSc(n,i) {
   else if(n==='chats') tChats(c);
 }
 
-async function tHome(el) {  try {
+async function tHome(el) {
   el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">—</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">—</div><div class="sl">Учеников</div></div></div><div class="card" id="th-next" style="display:none"></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r">Загрузка...</div></div></div>`;
   const [{count:lc},{count:sc},{data:rc},{data:ss}]=await Promise.all([
     sb.from('lessons').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
@@ -1011,7 +692,7 @@ async function tHome(el) {  try {
       <div style="font-size:13px;color:var(--t2);margin-bottom:10px">${fd(next.date)}${next.student_id&&sm[next.student_id]?' · '+sm[next.student_id]:''}</div>
       <div style="display:flex;gap:8px">
         ${next.status!=='done'?`<button class="btn bp bsm" onclick="openLesson('${next.id}')">Открыть →</button>`:''}
-        ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" rel="noopener noreferrer" class="btn bs bsm" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> Zoom</a>`:''}
+        ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" class="btn bs bsm">🎥 Zoom</a>`:''}
       </div>`;
   }
   const r=document.getElementById('th-r');
@@ -1021,68 +702,25 @@ async function tHome(el) {  try {
     ${l.grade?`<div class="grade g${l.grade}">${l.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
     <div class="lcf">${l.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}${l.homework?`<span class="bdg bo">📝 ДЗ</span>${l.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}</div>
   </div>`).join('');
-
-  } catch(e) {
-    console.error('tHome error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
 }
 
-async function tStudents(el) {  try {
+async function tStudents(el) {
   el.innerHTML=`<div class="page"><div class="shdr"><div><div class="stitle">Ученики</div><div class="ssub">Управление</div></div></div><div id="ts-list">Загрузка...</div><div style="height:80px"></div></div>`;
   addFab(()=>openAddStu());
-  const{data}=await sb.from('students').select('*').eq('teacher_id',me.id).order('created_at');
+  const data = await getStudents(me.id);
   const l=document.getElementById('ts-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">👨‍🎓</div><p>Учеников пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
-  // Загружаем платежи для счётчиков
-  const stuIds=data.map(s=>s.id);
-  const{data:payments}=stuIds.length?await sb.from('payments').select('student_id,lessons_count,amount,created_at').in('student_id',stuIds).order('created_at',{ascending:false}):{data:[]};
-  const{data:doneLessons}=stuIds.length?await sb.from('lessons').select('student_id').eq('teacher_id',me.id).eq('status','done').in('student_id',stuIds):{data:[]};
-  // Считаем баланс по каждому ученику
-  const balMap={};
-  stuIds.forEach(id=>{ balMap[id]={paid:0,used:0}; });
-  (payments||[]).forEach(p=>{ if(balMap[p.student_id]) balMap[p.student_id].paid+=p.lessons_count||0; });
-  (doneLessons||[]).forEach(l=>{ if(balMap[l.student_id]) balMap[l.student_id].used++; });
-  l.innerHTML=data.map(s=>{
-    const bal=balMap[s.id]||{paid:0,used:0};
-    const left=Math.max(bal.paid-bal.used,0);
-    const pct=bal.paid>0?Math.round(left/bal.paid*100):0;
-    const balClr=left<=2?'var(--r)':left<=4?'var(--o)':'var(--g)';
-    return `<div class="scard" onclick="openEditStu('${s.id}')">
+  l.innerHTML=data.map(s=>`<div class="scard" onclick="openEditStu('${s.id}')">
     <div class="sav" style="${s.active===false?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
-    <div style="flex:1;min-width:0">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-        <div style="min-width:0">
-          <div class="sname_">${s.name}${s.active===false?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div>
-          <div class="smeta_">${s.subject||'—'}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
-          <div class="spinb">PIN: ${s.pin||'—'}</div>
-          <button class="bdg bo" style="cursor:pointer;border:none;font-size:13px" onclick="event.stopPropagation();sendReminder('${s.id}','${s.name.replace(/'/g,"\\'")}')">🔔</button>
-        </div>
-      </div>
-      ${bal.paid>0?`<div style="margin-top:8px">
-        <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:3px">
-          <span style="color:${balClr}">Осталось: ${left} из ${bal.paid} уроков</span>
-          ${left<=2&&bal.paid>0?'<span style="color:var(--r);font-size:10px">⚠️ Пополнить!</span>':''}
-        </div>
-        <div class="pay-bar"><div class="pay-fill" style="width:${pct}%;background:${balClr}"></div></div>
-      </div>`:''}
-      <div style="margin-top:10px">
-        <button class="btn bp bsm" style="cursor:pointer;font-size:12px;padding:6px 14px" onclick="event.stopPropagation();openPayment('${s.id}','${s.name.replace(/'/g,"\\'")}',${ s.lesson_price||0})">💰 Оплата</button>
-      </div>
+    <div style="flex:1"><div class="sname_">${s.name}${s.active===false?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div><div class="smeta_">${s.subject||'—'}</div></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="spinb">PIN: ${s.pin||'—'}</div>
+      <button class="bdg bo" style="cursor:pointer;border:none;font-size:13px" onclick="event.stopPropagation();sendReminder('${s.id}','${s.name.replace(/'/g,"\\'")}')">🔔</button>
     </div>
-  </div>`;}).join('');
-
-  } catch(e) {
-    console.error('tStudents error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
+  </div>`).join('');
 }
 
-async function tLessons(el) {  try {
+async function tLessons(el) {
   el.innerHTML=`<div class="page"><div class="stitle">Уроки</div><div class="ssub">История и планирование</div><div id="tl-list">Загрузка...</div><div style="height:80px"></div></div>`;
   addFab(()=>openAddLesson());
   const[{data:ss},{data:ls}]=await Promise.all([
@@ -1093,25 +731,18 @@ async function tLessons(el) {  try {
   const l=document.getElementById('tl-list');
   if(!ls?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
   l.innerHTML=ls.map(l_=>`<div class="lc" onclick="openLesson('${l_.id}')">
-    <div class="lct"><div><div class="lcti">${l_.title}</div><div class="lcm">${fd(l_.date)}${l_.time?' · '+l_.time:''} ${l_.student_id&&sm[l_.student_id]?' · '+sm[l_.student_id]:''}</div></div>
+    <div class="lct"><div><div class="lcti">${l_.title}</div><div class="lcm">${fd(l_.date)}${l_.student_id&&sm[l_.student_id]?' · '+sm[l_.student_id]:''}</div></div>
     ${l_.grade?`<div class="grade g${l_.grade}">${l_.grade}</div>`:''}</div>
     <div class="lcf">
       ${l_.status==='active'?'<span class="bdg br">🔴 Идёт</span>':l_.status==='done'?'<span class="bdg bgg">✓ Завершён</span>':''}
       ${l_.paid?'<span class="bdg bgg">Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
       ${l_.homework?`<span class="bdg bo">📝 ДЗ</span>${l_.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}
-      ${l_.status!=='done'&&l_.student_id?`<button class="bdg" style="background:var(--al);color:var(--a);border:none;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px" onclick="event.stopPropagation();remindLesson('${l_.id}','${(l_.title||'').replace(/'/g,"\'")}','${l_.student_id}')">🔔 Напомнить</button>`:''}
     </div>
   </div>`).join('');
-
-  } catch(e) {
-    console.error('tLessons error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
 }
 
 let allW=[], wStuId=null, wStus=[];
-async function tWords(el) {  try {
+async function tWords(el) {
   const{data:ss}=await sb.from('students').select('id,name').eq('teacher_id',me.id);
   wStus=ss||[]; wStuId=wStus[0]?.id||null;
   el.innerHTML=`<div class="page"><div class="stitle">Словарь</div><div class="ssub">Слова по ученикам</div>
@@ -1120,12 +751,6 @@ async function tWords(el) {  try {
     <div id="tw-list">Загрузка...</div><div style="height:80px"></div></div>`;
   addFab(()=>openAddWord());
   await loadW(wStuId);
-
-  } catch(e) {
-    console.error('tWords error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
 }
 async function switchWStu(btn) {
   document.querySelectorAll('#wstu-tabs .fc2').forEach(b=>b.classList.remove('active'));
@@ -1147,8 +772,8 @@ function renderW(f) {
 // ── Teacher Chats ──
 
 // ── TEACHER STATS ──
-async function tStats(el) {  try {
-  el.innerHTML=`<div class="page"><div class="stitle">Статистика 📊</div><div class="ssub">Аналитика по ученикам</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
+async function tStats(el) {
+  el.innerHTML=`<div class="page"><div class="stitle">Статистика 📊</div><div class="ssub">Аналитика по ученикам</div><div id="ts-loading" style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
 
   const [{data:students},{data:lessons}] = await Promise.all([
     sb.from('students').select('*').eq('teacher_id', me.id),
@@ -1169,39 +794,31 @@ async function tStats(el) {  try {
   }
 
   // Общие цифры
-  const totalLessons  = lsns.length;
-  const doneLessons   = lsns.filter(l=>l.status==='done').length;
-  const paidLessons   = lsns.filter(l=>l.paid).length;
-  const unpaidLessons = lsns.filter(l=>!l.paid && l.status==='done').length;
-  const hwTotal       = lsns.filter(l=>l.homework).length;
-  const hwDone        = lsns.filter(l=>l.hw_done).length;
-  const grades        = lsns.filter(l=>l.grade).map(l=>+l.grade);
-  const avgGrade      = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
-  const wordsTotal    = wds.length;
-  const wordsKnown    = wds.filter(w=>w.level===3).length;
-
-  // Посещаемость (attendance) — отменённые = не done, не planned
-  const cancelLessons = lsns.filter(l=>l.status==='cancelled').length;
-  const attendRate = doneLessons+cancelLessons > 0
-    ? Math.round(doneLessons/(doneLessons+cancelLessons)*100) : (doneLessons>0?100:0);
+  const totalLessons = lsns.length;
+  const doneLessons  = lsns.filter(l=>l.status==='done').length;
+  const paidLessons  = lsns.filter(l=>l.paid).length;
+  const unpaidLessons= lsns.filter(l=>!l.paid && l.status==='done').length;
+  const hwTotal      = lsns.filter(l=>l.homework).length;
+  const hwDone       = lsns.filter(l=>l.hw_done).length;
+  const grades       = lsns.filter(l=>l.grade).map(l=>l.grade);
+  const avgGrade     = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : '—';
+  const wordsTotal   = wds.length;
+  const wordsKnown   = wds.filter(w=>w.level===3).length;
 
   // Статистика по ученикам
   const stuMap = {};
   stus.forEach(s => {
     stuMap[s.id] = {
-      id: s.id,
       name: s.name,
       subject: s.subject||'—',
       active: s.active !== false,
-      parent_user_id: s.parent_user_id,
-      parent_user_id2: s.parent_user_id2,
       lessons: [], words: [], grades: []
     };
   });
   lsns.forEach(l => {
     if(l.student_id && stuMap[l.student_id]) {
       stuMap[l.student_id].lessons.push(l);
-      if(l.grade) stuMap[l.student_id].grades.push(+l.grade);
+      if(l.grade) stuMap[l.student_id].grades.push(l.grade);
     }
   });
   wds.forEach(w => {
@@ -1213,30 +830,26 @@ async function tStats(el) {  try {
   const months = [];
   for(let i=5;i>=0;i--) {
     const d = new Date(); d.setMonth(d.getMonth()-i);
-    months.push({ key: d.toISOString().slice(0,7), label: d.toLocaleDateString('ru',{month:'short'}), count: 0, done: 0 });
+    months.push({
+      key: d.toISOString().slice(0,7),
+      label: d.toLocaleDateString('ru',{month:'short'}),
+      count: 0
+    });
   }
   lsns.forEach(l => {
     const mk = l.date?.slice(0,7);
     const m  = months.find(m=>m.key===mk);
-    if(m) { m.count++; if(l.status==='done') m.done++; }
+    if(m) m.count++;
   });
   const maxM = Math.max(...months.map(m=>m.count), 1);
 
-  // Детальный прогресс по ученикам
+  // Рейтинг учеников по прогрессу (слов знает % + средняя оценка)
   const ranked = Object.values(stuMap).map(s => {
-    const wKnown    = s.words.filter(w=>w.level===3).length;
-    const wTotal    = s.words.length;
-    const avg       = s.grades.length ? s.grades.reduce((a,b)=>a+b,0)/s.grades.length : 0;
-    const doneL     = s.lessons.filter(l=>l.status==='done').length;
-    const cancelL   = s.lessons.filter(l=>l.status==='cancelled').length;
-    const attendPct = doneL+cancelL>0 ? Math.round(doneL/(doneL+cancelL)*100) : (doneL>0?100:0);
-    const hwT       = s.lessons.filter(l=>l.homework).length;
-    const hwD       = s.lessons.filter(l=>l.hw_done).length;
-    const unpaid    = s.lessons.filter(l=>!l.paid&&l.status==='done').length;
-    const score     = (wTotal ? wKnown/wTotal*40 : 0) + (avg/5*40) + (attendPct/100*20);
-    // Последние 5 оценок для mini-graph
-    const lastGrades = s.lessons.filter(l=>l.grade).slice(0,5).map(l=>+l.grade).reverse();
-    return {...s, wKnown, wTotal, avg: avg?avg.toFixed(1):'—', attendPct, hwT, hwD, unpaid, score: Math.round(score), lastGrades};
+    const wKnown = s.words.filter(w=>w.level===3).length;
+    const wTotal = s.words.length;
+    const avg    = s.grades.length ? (s.grades.reduce((a,b)=>a+b,0)/s.grades.length) : 0;
+    const score  = (wTotal ? wKnown/wTotal*50 : 0) + (avg/5*50);
+    return {...s, wKnown, wTotal, avg: avg?avg.toFixed(1):'—', score: Math.round(score)};
   }).sort((a,b)=>b.score-a.score);
 
   // Строим HTML
@@ -1254,47 +867,15 @@ async function tStats(el) {  try {
       <div class="sbox ${unpaidLessons>0?'orange':'green'}"><div class="sv">${unpaidLessons}</div><div class="sl">Не оплачено</div></div>
     </div>
 
-    <!-- Посещаемость (общая) -->
-    <div class="card">
-      <div class="clbl">📋 Посещаемость</div>
-      <div style="display:flex;align-items:center;gap:14px;margin-top:10px">
-        <div style="position:relative;width:72px;height:72px;flex-shrink:0">
-          <svg width="72" height="72" viewBox="0 0 72 72" style="transform:rotate(-90deg)">
-            <circle cx="36" cy="36" r="28" fill="none" stroke="var(--b)" stroke-width="8"/>
-            <circle cx="36" cy="36" r="28" fill="none" stroke="${attendRate>=80?'var(--g)':attendRate>=60?'var(--o)':'var(--r)'}" stroke-width="8"
-              stroke-dasharray="${Math.round(2*Math.PI*28*attendRate/100)} ${Math.round(2*Math.PI*28*(100-attendRate)/100)}"
-              stroke-linecap="round"/>
-          </svg>
-          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:17px;font-weight:900;color:${attendRate>=80?'var(--g)':attendRate>=60?'var(--o)':'var(--r)'}">${attendRate}%</div>
-        </div>
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:6px">Завершено: <strong>${doneLessons}</strong> из <strong>${doneLessons+cancelLessons}</strong> уроков</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <span class="bdg bgg">✓ Проведено: ${doneLessons}</span>
-            ${cancelLessons>0?`<span class="bdg br">✗ Отменено: ${cancelLessons}</span>`:''}
-            <span class="bdg bgr">📅 Запланировано: ${lsns.filter(l=>l.status==='planned'||!l.status).length}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Активность по месяцам -->
     <div class="card">
       <div class="clbl">📅 Уроков по месяцам</div>
       <div style="display:flex;align-items:flex-end;gap:8px;height:80px;margin-top:8px">
         ${months.map(m=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
           <div style="font-size:11px;font-weight:700;color:var(--a)">${m.count||''}</div>
-          <div style="width:100%;border-radius:6px 6px 0 0;overflow:hidden">
-            <div style="height:${Math.round(m.done/maxM*56)+2}px;min-height:${m.done?2:0}px;background:var(--g);border-radius:4px 4px 0 0"></div>
-            <div style="height:${Math.round((m.count-m.done)/maxM*56)}px;min-height:${(m.count-m.done)>0?2:0}px;background:var(--al)"></div>
-            ${!m.count?`<div style="height:4px;background:var(--b);border-radius:4px 4px 0 0"></div>`:''}
-          </div>
+          <div style="width:100%;border-radius:6px 6px 0 0;height:${Math.round(m.count/maxM*60)+4}px;min-height:4px;background:${m.count?'var(--a)':'var(--b)'}"></div>
           <div style="font-size:10px;color:var(--t3);font-weight:600">${m.label}</div>
         </div>`).join('')}
-      </div>
-      <div style="display:flex;gap:10px;margin-top:8px">
-        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:var(--g)"></div>Завершено</div>
-        <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)"><div style="width:10px;height:10px;border-radius:2px;background:var(--al)"></div>Запланировано</div>
       </div>
     </div>
 
@@ -1321,9 +902,9 @@ async function tStats(el) {  try {
           <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--g)">${paidLessons}</div>
           <div style="font-size:11px;font-weight:700;color:var(--g)">Оплачено</div>
         </div>
-        <div style="flex:1;background:${unpaidLessons>0?'var(--rl)':'var(--bg)'};border-radius:var(--rs);padding:12px;text-align:center">
-          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:${unpaidLessons>0?'var(--r)':'var(--t3)'}">${unpaidLessons}</div>
-          <div style="font-size:11px;font-weight:700;color:${unpaidLessons>0?'var(--r)':'var(--t3)'}">Не оплачено</div>
+        <div style="flex:1;background:var(--rl);border-radius:var(--rs);padding:12px;text-align:center">
+          <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--r)">${unpaidLessons}</div>
+          <div style="font-size:11px;font-weight:700;color:var(--r)">Не оплачено</div>
         </div>
       </div>
     </div>
@@ -1334,7 +915,7 @@ async function tStats(el) {  try {
       <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
         <div style="flex:1">
           <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:4px">
-            <span style="color:var(--a)">Знают хорошо: ${wordsKnown}</span>
+            <span style="color:var(--a)">Знает хорошо: ${wordsKnown}</span>
             <span style="color:var(--t3)">Всего: ${wordsTotal}</span>
           </div>
           <div class="pb"><div class="pbf" style="width:${wordsTotal?Math.round(wordsKnown/wordsTotal*100):0}%"></div></div>
@@ -1343,263 +924,44 @@ async function tStats(el) {  try {
       </div>
     </div>
 
-    <!-- Прогресс по каждому ученику -->
+    <!-- Рейтинг учеников -->
     <div class="card">
-      <div class="clbl">🏆 Прогресс учеников</div>
+      <div class="clbl">🏆 По ученикам</div>
       ${ranked.map((s,i)=>{
-        const medal   = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-        const wPct    = s.wTotal ? Math.round(s.wKnown/s.wTotal*100) : 0;
-        const hwPct   = s.hwT ? Math.round(s.hwD/s.hwT*100) : 0;
-        const attClr  = s.attendPct>=80?'var(--g)':s.attendPct>=60?'var(--o)':'var(--r)';
-        const scoreClr= s.score>=70?'var(--g)':s.score>=40?'var(--o)':'var(--r)';
-        // Мини-график последних оценок
-        const miniGr = s.lastGrades.length >= 2
-          ? `<div style="display:flex;align-items:flex-end;gap:3px;height:24px;margin-left:auto">
-              ${s.lastGrades.map(g=>`<div style="width:12px;border-radius:2px 2px 0 0;height:${Math.round(g/5*22)+2}px;background:${g>=4?'var(--g)':g===3?'var(--o)':'var(--r)'}"></div>`).join('')}
-            </div>` : '';
-        return `<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--b);${i===0?'border-top:none;margin-top:6px;padding-top:0':''}">
-          <!-- Шапка ученика -->
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;cursor:pointer" onclick="toggleStuDetail('sd-${s.id}',this)">
-            <div class="sav" style="width:38px;height:38px;font-size:16px;flex-shrink:0;${!s.active?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
-            <div style="flex:1;min-width:0">
-              <div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px">${medal} ${s.name.replace(/</g,'&lt;').replace(/>/g,'&gt;')}${!s.active?'<span style="color:#ef4444;font-size:10px">заблокирован</span>':''}</div>
-              <div style="font-size:12px;color:var(--t2)">${s.subject} · ${s.lessons.length} уроков</div>
+        const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+        const wPct  = s.wTotal ? Math.round(s.wKnown/s.wTotal*100) : 0;
+        return `<div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--b);${i===0?'border-top:none;margin-top:8px;padding-top:0':''}" >
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <div class="sav" style="width:38px;height:38px;font-size:16px;${!s.active?'background:#ef4444':''}">${s.name[0].toUpperCase()}</div>
+            <div style="flex:1">
+              <div style="font-weight:700;font-size:14px">${medal} ${s.name.replace(/</g,'&lt;').replace(/>/g,'&gt;')}${!s.active?' <span style="color:#ef4444;font-size:11px">заблокирован</span>':''}</div>
+              <div style="font-size:12px;color:var(--t2)">${s.subject}</div>
             </div>
-            ${miniGr}
-            <svg style="color:var(--t3);flex-shrink:0;transition:transform .2s" id="sd-arrow-${s.id}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <!-- Краткие метрики -->
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
-            <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
+            <div style="text-align:right">
               <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:${s.avg!=='—'?'var(--a)':'var(--t3)'}">${s.avg!=='—'?s.avg:'—'}</div>
-              <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">ср. оценка</div>
-            </div>
-            <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
-              <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:${attClr}">${s.attendPct}%</div>
-              <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">посещ.</div>
-            </div>
-            <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
-              <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:900;color:var(--a)">${wPct}%</div>
-              <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">слов знает</div>
+              <div style="font-size:10px;color:var(--t3);font-weight:600">ср. оценка</div>
             </div>
           </div>
-          <!-- Общий прогресс-бар -->
-          <div class="pb" style="margin-bottom:8px"><div class="pbf" style="width:${s.score}%;background:${scoreClr}"></div></div>
-          <!-- Детали (раскрывающиеся) -->
-          <div id="sd-${s.id}" style="display:none;margin-top:10px">
-            <!-- Посещаемость детально -->
-            <div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px">
-              <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📋 Посещаемость</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-                <span class="bdg bgg">✓ Проведено: ${s.lessons.filter(l=>l.status==='done').length}</span>
-                <span class="bdg bgr">📅 Запланировано: ${s.lessons.filter(l=>l.status==='planned'||!l.status).length}</span>
-                ${s.lessons.filter(l=>l.status==='cancelled').length>0?`<span class="bdg br">✗ Отменено: ${s.lessons.filter(l=>l.status==='cancelled').length}</span>`:''}
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div class="pb" style="flex:1;margin:0"><div class="pbf" style="width:${s.attendPct}%;background:${attClr}"></div></div>
-                <div style="font-weight:700;font-size:13px;color:${attClr};min-width:36px;text-align:right">${s.attendPct}%</div>
-              </div>
-            </div>
-            <!-- ДЗ детально -->
-            <div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px">
-              <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📝 Домашние задания</div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div class="pb" style="flex:1;margin:0"><div class="pbf" style="width:${hwPct}%;background:var(--g)"></div></div>
-                <div style="font-weight:700;font-size:13px;color:var(--g);min-width:36px;text-align:right">${s.hwD}/${s.hwT}</div>
-              </div>
-            </div>
-            <!-- История оценок -->
-            ${s.lastGrades.length ? `<div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px">
-              <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📈 Последние оценки</div>
-              <div style="display:flex;align-items:flex-end;gap:6px;height:48px">
-                ${s.lastGrades.map((g,gi)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
-                  <div style="font-size:11px;font-weight:800;color:${g>=4?'var(--g)':g===3?'var(--o)':'var(--r)'}">${g}</div>
-                  <div style="width:100%;border-radius:4px 4px 0 0;height:${Math.round(g/5*34)+4}px;background:${g>=4?'var(--g)':g===3?'var(--o)':'var(--r)'}"></div>
-                </div>`).join('')}
-              </div>
-            </div>` : ''}
-            <!-- Оплата -->
-            ${s.unpaid>0?`<div style="background:var(--rl);border-radius:var(--rs);padding:10px;margin-bottom:8px;font-size:13px;font-weight:600;color:var(--r)">💰 Задолженность: ${s.unpaid} урок(а) не оплачено</div>`:''}
-            <!-- Слова -->
-            <div style="background:var(--bg);border-radius:var(--rs);padding:12px;margin-bottom:8px">
-              <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📖 Словарный запас</div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
-                <span class="bdg bgg">✓ Знает: ${s.wKnown}</span>
-                <span class="bdg bgr">Всего: ${s.wTotal}</span>
-              </div>
-              ${s.wTotal?`<div class="pb" style="margin:0"><div class="pbf" style="width:${wPct}%"></div></div>`:'<div style="font-size:12px;color:var(--t3)">Слов не добавлено</div>'}
-            </div>
-            <!-- Кнопка отчёта родителю -->
-            ${s.parent_user_id||s.parent_user_id2 ? `<button class="btn bs bsm" style="width:100%;font-size:13px" onclick="sendWeeklyReport('${s.id}','${s.name.replace(/'/g,"\\'")}')">
-              📩 Отправить отчёт родителю
-            </button>` : ''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <span class="bdg bb">📅 ${s.lessons.length} уроков</span>
+            <span class="bdg ${s.words.length?'bgg':'bgr'}">📖 ${s.words.length} слов</span>
+            <span class="bdg ${wPct>=70?'bgg':wPct>=40?'bo':'bgr'}">✓ ${wPct}% знает</span>
+            ${s.lessons.filter(l=>!l.paid&&l.status==='done').length>0?`<span class="bdg br">💰 ${s.lessons.filter(l=>!l.paid&&l.status==='done').length} не оплачено</span>`:''}
           </div>
+          <div class="pb"><div class="pbf" style="width:${s.score}%;background:${s.score>=70?'var(--g)':s.score>=40?'var(--o)':'var(--r)'}"></div></div>
         </div>`;
       }).join('')}
     </div>
 
     <div style="height:80px"></div>
   </div>`;
-
-  } catch(e) {
-    console.error('tStats error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
 }
 
-// ── FINANCE ──
-let _payState = {stuId:null, stuName:'', price:0};
-
-async function openPayment(stuId, stuName, price) {
-  _payState = {stuId, stuName, price};
-  document.getElementById('mp-name').textContent = stuName;
-  document.getElementById('mp-count').value = '';
-  document.getElementById('mp-amount').value = '';
-  document.getElementById('mp-note').value = '';
-  // Подсказка по цене
-  const hint = document.getElementById('mp-price-hint');
-  if(price) { hint.style.display='block'; hint.textContent=`Цена урока: ${price}₽`; }
-  else hint.style.display='none';
-  // Автоподсчёт суммы при вводе количества
-  const cnt = document.getElementById('mp-count');
-  const amt = document.getElementById('mp-amount');
-  cnt.oninput = () => { if(price && cnt.value) amt.value = parseInt(cnt.value)*price; };
-  // Загружаем историю
-  await loadPayHistory(stuId);
-  openM('m-pay');
-}
-
-async function loadPayHistory(stuId) {
-  const{data:pays}=await sb.from('payments').select('*').eq('student_id',stuId).order('created_at',{ascending:false}).limit(10);
-  const{data:done}=await sb.from('lessons').select('id').eq('student_id',stuId).eq('status','done');
-  const totalPaid=(pays||[]).reduce((a,p)=>a+(p.lessons_count||0),0);
-  const totalUsed=(done||[]).length;
-  const left=Math.max(totalPaid-totalUsed,0);
-  const balClr=left<=2?'var(--r)':left<=4?'var(--o)':'var(--g)';
-  const h=document.getElementById('mp-history');
-  if(!(pays||[]).length){h.innerHTML='<div style="font-size:13px;color:var(--t2);text-align:center;padding:12px">Пополнений ещё не было</div>';return;}
-  h.innerHTML=`<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">История платежей</div>
-    <div style="background:var(--gl);border-radius:var(--rs);padding:10px 14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
-      <div style="font-size:13px;font-weight:700;color:var(--t)">Баланс: <span style="color:${balClr};font-family:'Fraunces',serif;font-size:20px">${left}</span> уроков</div>
-      <div style="font-size:12px;color:var(--t2)">Всего оплачено: ${totalPaid} · Проведено: ${totalUsed}</div>
-    </div>
-    ${(pays||[]).map(p=>`<div class="pay-hist-item">
-      <div style="width:36px;height:36px;background:var(--gl);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💰</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-weight:700;font-size:13px">+${p.lessons_count} уроков${p.amount?` · ${p.amount}₽`:''}</div>
-        <div style="font-size:11px;color:var(--t2)">${p.note||''}${p.note?' · ':''}${new Date(p.created_at).toLocaleDateString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
-      </div>
-      <button onclick="deletePayment('${p.id}')" style="background:var(--rl);color:var(--r);border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0">Удалить</button>
-    </div>`).join('')}`;
-}
-
-async function savePayment() {
-  const btn=document.getElementById('mp-save-btn');
-  if(btn.disabled) return;
-  btn.disabled=true; btn.textContent='Сохраняем...';
-  const count=parseInt(document.getElementById('mp-count').value);
-  const amount=parseInt(document.getElementById('mp-amount').value)||0;
-  const note=document.getElementById('mp-note').value.trim();
-  if(!count||count<1){toast('Укажите количество уроков');btn.disabled=false;btn.textContent='Сохранить';return;}
-  const{error}=await sb.from('payments').insert({
-    student_id:_payState.stuId, teacher_id:me.id,
-    lessons_count:count, amount:amount||null, note:note||null
-  });
-  if(error){toast('Ошибка: '+error.message);return;}
-  // Уведомляем родителя
-  const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',_payState.stuId).single();
-  const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
-  const title=`💰 Оплата получена — ${_payState.stuName}`;
-  const body=`Пополнение: ${count} уроков${amount?' ('+amount+'₽)':''}${note?' · '+note:''}`;
-  for(const pid of pids){
-    await sb.from('notifications').insert({recipient_id:pid,type:'payment',title,body}).catch(()=>{});
-  }
-  if(pids.length){
-    fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:pids,title,body})}).catch(()=>{});
-  }
-  btn.disabled=false; btn.textContent='Сохранить';
-  closeM('m-pay');
-  // Перерисовываем список после закрытия модалки — через setTimeout чтобы не конфликтовать
-  setTimeout(async () => {
-    tStudents(document.getElementById('ac'));
-    // Проверяем баланс для предупреждения
-    const{data:allPays}=await sb.from('payments').select('lessons_count').eq('student_id',_payState.stuId);
-    const{data:allDone}=await sb.from('lessons').select('id').eq('student_id',_payState.stuId).eq('status','done');
-    const left=Math.max((allPays||[]).reduce((a,p)=>a+(p.lessons_count||0),0)-(allDone||[]).length,0);
-    toast(left<=2?`⚠️ Осталось ${left} уроков — пора пополнить!`:`✅ Пополнено: +${count} уроков`);
-  }, 350);
-}
-
-async function deletePayment(payId) {
-  if(!confirm('Удалить эту запись об оплате?')) return;
-  const{error}=await sb.from('payments').delete().eq('id',payId).eq('teacher_id',me.id);
-  if(error){toast('Ошибка: '+error.message);return;}
-  toast('✅ Запись удалена');
-  await loadPayHistory(_payState.stuId);
-  // Обновляем список в фоне без зависания
-  setTimeout(() => tStudents(document.getElementById('ac')), 100);
-}
-
-function toggleStuDetail(id, header) {
-  const el = document.getElementById(id);
-  const arrow = document.getElementById('sd-arrow-'+id.replace('sd-',''));
-  if(!el) return;
-  const open = el.style.display === 'block';
-  el.style.display = open ? 'none' : 'block';
-  if(arrow) arrow.style.transform = open ? '' : 'rotate(90deg)';
-}
-
-async function sendWeeklyReport(stuId, stuName) {
-  const btn = event.target;
-  btn.disabled = true; btn.textContent = 'Отправляем...';
-  try {
-    // Данные ученика из stuMap (уже загружены)
-    const {data:stu} = await sb.from('students').select('*').eq('id',stuId).single();
-    const {data:lessons} = await sb.from('lessons').select('*').eq('teacher_id',me.id).eq('student_id',stuId).order('date',{ascending:false}).limit(30);
-    const {data:words} = await sb.from('words').select('level').eq('student_record_id',stuId);
-
-    const ls = lessons || [];
-    const done = ls.filter(l=>l.status==='done').length;
-    const total = ls.length;
-    const cancelled = ls.filter(l=>l.status==='cancelled').length;
-    const attendPct = done+cancelled > 0 ? Math.round(done/(done+cancelled)*100) : 0;
-    const grades = ls.filter(l=>l.grade).map(l=>+l.grade);
-    const avg = grades.length ? (grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1) : 'нет';
-    const wTotal = (words||[]).length;
-    const wKnown = (words||[]).filter(w=>w.level===3).length;
-    const hwT = ls.filter(l=>l.homework).length;
-    const hwD = ls.filter(l=>l.hw_done).length;
-    const lastLesson = ls.find(l=>l.status==='done');
-    const nextLesson = ls.find(l=>!l.status||l.status==='planned');
-
-    const title = `📊 Еженедельный отчёт — ${stuName}`;
-    const body = `Посещаемость: ${attendPct}% (${done}/${done+cancelled})\nСредняя оценка: ${avg}\nДЗ: ${hwD}/${hwT}\nСловарь: ${wKnown}/${wTotal} слов усвоено${lastLesson?`\nПоследний урок: ${lastLesson.title}`:''} ${nextLesson?`\nСледующий: ${nextLesson.title} (${nextLesson.date||''})` : ''}`;
-
-    const pids = [stu?.parent_user_id, stu?.parent_user_id2].filter(Boolean);
-    for(const pid of pids) {
-      await sb.from('notifications').insert({recipient_id:pid, type:'weekly_report', title, body});
-    }
-    if(pids.length) {
-      await fetch(`${SU}/functions/v1/send-push`,{
-        method:'POST',
-        headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},
-        body: JSON.stringify({user_ids:pids, title, body})
-      }).catch(()=>{});
-    }
-    toast('📩 Отчёт отправлен родителю!');
-  } catch(e) {
-    toast('Ошибка отправки: '+e.message);
-  } finally {
-    btn.disabled = false; btn.textContent = '📩 Отправить отчёт родителю';
-  }
-}
-
-async function tChats(el) {  try {
+async function tChats(el) {
   document.getElementById('fab')?.remove();
   el.innerHTML=`<div class="page"><div class="stitle">Чаты</div><div class="ssub">Сообщения с учениками и родителями</div><div id="tc-list">Загрузка...</div></div>`;
   // Загружаем учеников учителя
-  const{data:stus}=await sb.from('students').select('*').eq('teacher_id',me.id);
+  const{data:stus}=await {data: await getStudents(me.id)};
   const l=document.getElementById('tc-list');
   if(!stus?.length){l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Сначала добавьте учеников</p></div>`;return;}
   // Для каждого ученика показываем два чата
@@ -1626,12 +988,6 @@ async function tChats(el) {  try {
     document.getElementById('tc-list').appendChild(lessonDiv);
   }
   checkUnread();
-
-  } catch(e) {
-    console.error('tChats error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
 }
 
 // ── Open Chat ──
@@ -1718,11 +1074,9 @@ function renderMsgs(data) {
   const myId = me.role === 'student' ? me.student_id : me.id;
   wrap.innerHTML=data.map(m=>{
     const mine = m.sender_id === myId || (me.role==='student' && m.sender_role==='student' && m.sender_name===me.name);
-    const safeText = (m.text||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    const safeName = (m.sender_name||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     return `<div class="msg ${mine?'mine':'theirs'}">
-      ${!mine?`<div class="msg-who">${safeName}</div>`:''}
-      <div class="msg-bbl">${safeText}</div>
+      ${!mine?`<div class="msg-who">${m.sender_name}</div>`:''}
+      <div class="msg-bbl">${m.text}</div>
       <div class="msg-time">${ft(m.created_at)}</div>
     </div>`;
   }).join('');
@@ -1730,20 +1084,6 @@ function renderMsgs(data) {
   requestAnimationFrame(() => { wrap.scrollTop = wrap.scrollHeight; });
 }
 
-
-async function pushToUsers(userIds, title, body) {
-  if (!userIds || !userIds.length) return;
-  try {
-    await fetch(`${SU}/functions/v1/send-push`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${SK}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ user_ids: userIds, title, body })
-    });
-  } catch(e) { console.warn('Push send error:', e); }
-}
 async function sendMsg() {
   const inp=document.getElementById('chat-inp');
   const text=inp.value.trim(); if(!text) return;
@@ -1770,17 +1110,17 @@ async function sendMsg() {
     if(me.role==='student'){
       // Ученик → уведомление учителю
       const tid=me.teacher_id;
-      if(tid) { await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId}); pushToUsers([tid], me.name+' написал в уроке', text); }
+      if(tid) await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId});
     } else if(me.role==='teacher'){
       // Учитель → уведомление ученику по этому уроку
       const{data:les}=await sb.from('lessons').select('student_id').eq('id',lessonChatId).single();
-      if(les?.student_id) { await sb.from('notifications').insert({recipient_id:les.student_id,type:'new_message',title:'Учитель написал в уроке',body:text,lesson_id:lessonChatId}); pushToUsers([les.student_id], 'Учитель написал в уроке', text); }
+      if(les?.student_id) await sb.from('notifications').insert({recipient_id:les.student_id,type:'new_message',title:'Учитель написал в уроке',body:text,lesson_id:lessonChatId});
     }
   }
   // Уведомление от ученика в личном чате
   if(activeChatId && me.role==='student'){
     const tid=me.teacher_id;
-    if(tid) { await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' пишет',body:text}); pushToUsers([tid], me.name+' пишет', text); }
+    if(tid) await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' пишет',body:text});
   }
 
   // Обновляем last_message и отправляем уведомление
@@ -1795,22 +1135,20 @@ async function sendMsg() {
           const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',chat.student_id).single();
           const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
           for(const pid of pids) await sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель пишет ('+stu.name+')',body:text});
-          pushToUsers(pids, 'Учитель пишет ('+stu.name+')', text);
         } else {
           // Учитель → ученику: уведомляем student_id + обоих родителей
           await sb.from('notifications').insert({recipient_id:chat.student_id,type:'new_message',title:'Учитель пишет',body:text});
           const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',chat.student_id).single();
           const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
           for(const pid of pids) await sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель написал '+stu.name,body:text});
-          pushToUsers([chat.student_id,...pids], 'Учитель пишет', text);
         }
       } else if(me.role==='student'){
         // Ученик → учителю
-        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:me.name+' пишет',body:text}); pushToUsers([chat.teacher_id], me.name+' пишет', text);
+        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:me.name+' пишет',body:text});
       } else if(me.role==='parent'){
         // Родитель → учителю
         const{data:stu}=await sb.from('students').select('name').eq('id',chat.student_id).single();
-        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:'Родитель ('+( stu?.name||'')+') пишет',body:text}); pushToUsers([chat.teacher_id], 'Родитель ('+(stu?.name||'')+') пишет', text);
+        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:'Родитель ('+( stu?.name||'')+') пишет',body:text});
       }
     }
   }
@@ -1824,7 +1162,7 @@ function onFileSelect(input) {
   const sz=f.size>1024*1024?(f.size/1024/1024).toFixed(1)+' МБ':Math.round(f.size/1024)+' КБ';
   document.getElementById('li-fprev').innerHTML=`<div class="mitem">
     <div class="mico">${f.type.includes('pdf')?'📄':f.type.includes('image')?'🖼️':'📎'}</div>
-    <div style="flex:1;min-width:0;overflow:hidden"><div class="mname_">${f.name}</div><div class="msize_">${sz}</div></div>
+    <div style="flex:1"><div class="mname_">${f.name}</div><div class="msize_">${sz}</div></div>
     <button onclick="pendFile=null;document.getElementById('li-fprev').innerHTML='';document.getElementById('li-file').value=''" style="background:none;border:none;cursor:pointer;color:var(--t3);font-size:20px">×</button>
   </div>`;
 }
@@ -1841,61 +1179,21 @@ async function loadLessonMats(lid) {
   const w=document.getElementById('li-mats'); if(!w) return;
   w.innerHTML=(data||[]).map(m=>`<div class="mitem">
     <div class="mico">${m.file_type==='pdf'?'📄':m.file_type?.match(/jpg|png|jpeg/)?'🖼️':'📎'}</div>
-    <div style="flex:1;min-width:0;overflow:hidden"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
-    <a href="${m.file_url}" target="_blank" rel="noopener noreferrer" class="mopen">Открыть</a>
+    <div style="flex:1"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
+    <a href="${m.file_url}" target="_blank" style="background:var(--al);color:var(--a);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none">Открыть</a>
   </div>`).join('');
 }
 async function popStuSelect(selId) {
-  const{data}=await sb.from('students').select('id,name,zoom_id,zoom_pass').eq('teacher_id',me.id);
+  const{data}=await sb.from('students').select('id,name').eq('teacher_id',me.id);
   const s=document.getElementById('li-stu'); if(!s) return;
   s.innerHTML=(data||[]).map(st=>`<option value="${st.id}"${st.id===selId?' selected':''}>${st.name}</option>`).join('')||'<option value="">Нет учеников</option>';
   // Word modal student select
   const ws=document.getElementById('wi-stu'); if(ws) ws.innerHTML=s.innerHTML;
-  // Автоподстановка Zoom для выбранного ученика
-  window._stuZoomMap = Object.fromEntries((data||[]).map(st=>[st.id,{zoom_id:st.zoom_id,zoom_pass:st.zoom_pass}]));
-  autoFillZoom(selId);
-}
-function zoomHref(link) {
-  // Извлекаем confno и pwd из https ссылки и строим zoommtg:// для прямого открытия без пароля
-  if(!link) return link;
-  try {
-    const m = link.match(/zoom\.us\/j\/(\d+)/);
-    const p = link.match(/[?&]pwd=([^&]+)/);
-    if(m) {
-      const confno = m[1];
-      const pwd = p ? p[1] : null;
-      return `zoommtg://zoom.us/join?confno=${confno}${pwd?'&pwd='+pwd:''}`;
-    }
-  } catch(e){}
-  return link;
-}
-function openZoom(link) {
-  if(!link) return;
-  // Пробуем zoommtg:// — если Zoom установлен откроется сразу без пароля
-  const deep = zoomHref(link);
-  window.location.href = deep;
-  // Fallback через 2.5с — если Zoom не установлен открываем браузер
-  setTimeout(() => { window.open(link, '_blank', 'noopener'); }, 2500);
-}
-function autoFillZoom(stuId) {
-  if(!stuId||!window._stuZoomMap) return;
-  const z=window._stuZoomMap[stuId];
-  if(!z) return;
-  const zf=document.getElementById('li-zoom');
-  const zh=document.getElementById('li-zoom-hint');
-  if(z.zoom_id) {
-    // Формируем zoom ссылку из ID
-    const zid=z.zoom_id.replace(/\s/g,'');
-    if(zf) zf.value=`https://zoom.us/j/${zid}${z.zoom_pass?'?pwd='+encodeURIComponent(z.zoom_pass):''}`;
-    if(zh) { zh.style.display='flex'; zh.innerHTML=`<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> ID: <strong>${z.zoom_id}</strong>&nbsp;&nbsp;Код: <strong>${z.zoom_pass||'—'}</strong>`; }
-  }
 }
 async function openAddLesson() {
   editLessonId=null;
   document.getElementById('mlt').textContent='Новый урок';
-  ['li-title','li-zoom','li-notes','li-time'].forEach(id=>document.getElementById(id).value='');
-  // Сбрасываем zoom-подсказку
-  const zhint=document.getElementById('li-zoom-hint'); if(zhint) zhint.style.display='none';
+  ['li-title','li-zoom','li-notes'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('li-hw').value='';
   const _wrap=document.getElementById('li-hw-photo-wrap'); if(_wrap) _wrap.style.display='none';
   document.getElementById('li-date').value=new Date().toISOString().split('T')[0];
@@ -1915,7 +1213,6 @@ async function openLesson(id) {
   document.getElementById('mlt').textContent='Урок';
   document.getElementById('li-title').value=l.title;
   document.getElementById('li-date').value=l.date;
-  document.getElementById('li-time').value=l.time||'';
   document.getElementById('li-zoom').value=l.zoom_link||'';
   document.getElementById('li-hw').value=l.homework||'';
   // hw photo
@@ -1937,34 +1234,27 @@ async function saveLesson() {
   const title=document.getElementById('li-title').value.trim();
   const date=document.getElementById('li-date').value;
   if(!title||!date){toast('Заполни название и дату');return;}
-  const _slBtn=document.querySelector('#m-lesson .btn.bp');
-  if(_slBtn&&!lockBtn(_slBtn,'Сохраняем...')) return;
   const stuId=document.getElementById('li-stu')?.value||null;
-  const lessonTime=document.getElementById('li-time').value||null;
-  const payload={title,date,time:lessonTime,teacher_id:me.id,student_id:stuId,zoom_link:(()=>{const z=document.getElementById('li-zoom').value.trim();return z&&(z.startsWith('https://')||z.startsWith('http://')||z.startsWith('zoommtg://'))?z:null})(),homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
+  const payload={title,date,teacher_id:me.id,student_id:stuId,zoom_link:document.getElementById('li-zoom').value.trim()||null,homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
   let error, lid=editLessonId;
   if(editLessonId){({error}=await sb.from('lessons').update(payload).eq('id',editLessonId));}
   else{const r=await sb.from('lessons').insert({...payload,status:'planned'}).select('id').single();error=r.error;lid=r.data?.id;}
-  if(error){const _b=document.querySelector('#m-lesson .btn.bp');if(_b)unlockBtn(_b);toast('Ошибка: '+error.message);return;}
+  if(error){toast('Ошибка: '+error.message);return;}
   // Upload file
   if(pendFile&&lid){
     const fd=await uploadFile(pendFile,lid);
     if(fd) await sb.from('materials').insert({lesson_id:lid,teacher_id:me.id,name:fd.name,file_url:fd.url,file_type:fd.type,file_size:fd.size});
     pendFile=null;
   }
+  // Notify on homework
   if(stuId){
+    // Уведомляем ученика о новом уроке
+    await sb.from('notifications').insert({recipient_id:stuId,type:'lesson_created',title:'Новый урок: '+title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
+    // Уведомляем родителя если привязан
     const{data:stuRec}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',stuId).single();
     const parentIds=[stuRec?.parent_user_id,stuRec?.parent_user_id2].filter(Boolean);
-    if(!editLessonId){
-      // Новый урок — уведомляем ученика и родителей
-      await sb.from('notifications').insert({recipient_id:stuId,type:'lesson_created',title:'Новый урок: '+title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
-      for(const pid of parentIds) await sb.from('notifications').insert({recipient_id:pid,type:'lesson_created',title:'Новый урок: '+title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
-      pushToUsers([stuId,...parentIds], 'Новый урок: '+title, date+(payload.homework?' · ДЗ: '+payload.homework:''));
-    } else if(payload.grade){
-      // Редактирование с оценкой — уведомляем ученика и родителей
-      await sb.from('notifications').insert({recipient_id:stuId,type:'grade',title:'Оценка за урок: '+title,body:'Оценка: '+payload.grade,lesson_id:lid});
-      for(const pid of parentIds) await sb.from('notifications').insert({recipient_id:pid,type:'grade',title:'Оценка за урок: '+title,body:'Оценка: '+payload.grade,lesson_id:lid});
-      pushToUsers([stuId,...parentIds], 'Новая оценка: '+payload.grade, title);
+    for(const pid of parentIds){
+      await sb.from('notifications').insert({recipient_id:pid,type:'lesson_created',title:'Новый урок у '+payload.title,body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid});
     }
   }
   closeM('m-lesson'); toast('Урок сохранён ✓'); tSc('lessons',2);
@@ -2003,7 +1293,7 @@ async function togStatus(btn) {
 function openAddStu() {
   editStuId=null;
   document.getElementById('mstu-t').textContent='Новый ученик';
-  ['si-name','si-subj','si-pin','si-zoom-id','si-zoom-pass','si-price'].forEach(id=>document.getElementById(id).value='');
+  ['si-name','si-subj','si-pin'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('si-delbtn').style.display='none';
   openM('m-stu');
 }
@@ -2014,9 +1304,6 @@ async function openEditStu(id) {
   document.getElementById('si-name').value=s.name;
   document.getElementById('si-subj').value=s.subject||'';
   document.getElementById('si-pin').value=s.pin||'';
-  document.getElementById('si-zoom-id').value=s.zoom_id||'';
-  document.getElementById('si-zoom-pass').value=s.zoom_pass||'';
-  document.getElementById('si-price').value=s.lesson_price||'';
   document.getElementById('si-delbtn').style.display='block';
   // active toggle
   let ab=document.getElementById('si-active-row');
@@ -2036,22 +1323,26 @@ async function saveStu() {
   const pin=document.getElementById('si-pin').value.toString().trim();
   if(!name){toast('Введи имя');return;}
   if(!pin||pin.length!==4||isNaN(pin)){toast('PIN — 4 цифры');return;}
-  const _ssBtn=document.querySelector('#m-stu .btn.bp');
-  if(_ssBtn&&!lockBtn(_ssBtn,'Сохраняем...')) return;
   if(!editStuId){
+    const[{count},{data:prof}]=await Promise.all([
+      sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
+      sb.from('profiles').select('students_limit').eq('id',me.id).single()
+    ]);
+    const lim=prof?.students_limit??1;
+    if(count>=lim){toast(`Лимит ${lim} уч. Пишите: +7 991 174-51-13`);return;}
   }
   const{data:ex}=await sb.from('students').select('id').eq('teacher_id',me.id).eq('pin',pin).neq('id',editStuId||'00000000-0000-0000-0000-000000000000');
-  if(ex?.length){const _b=document.querySelector('#m-stu .btn.bp');if(_b)unlockBtn(_b);toast('Такой PIN уже занят');return;}
-  const payload={name,pin,subject:document.getElementById('si-subj').value.trim()||'Английский',teacher_id:me.id,zoom_id:document.getElementById('si-zoom-id').value.trim()||null,zoom_pass:document.getElementById('si-zoom-pass').value.trim()||null,lesson_price:parseInt(document.getElementById('si-price').value)||null};
+  if(ex?.length){toast('Такой PIN уже занят');return;}
+  const payload={name,pin,subject:document.getElementById('si-subj').value.trim()||'Английский',teacher_id:me.id};
   const{error}=editStuId?await sb.from('students').update(payload).eq('id',editStuId):await sb.from('students').insert(payload);
   if(error){toast('Ошибка: '+error.message);return;}
-  const _b2=document.querySelector('#m-stu .btn.bp');if(_b2)unlockBtn(_b2);closeM('m-stu'); toast('Ученик сохранён ✓'); tSc('students',1);
+  closeM('m-stu'); invalidateStudents(); toast('Ученик сохранён ✓'); tSc('students',1);
 }
 async function delStu() {
   if(!editStuId) return;
   const{error}=await sb.from('students').delete().eq('id',editStuId);
   if(error){toast('Ошибка: '+error.message);return;}
-  closeM('m-stu'); toast('Ученик удалён'); tSc('students',1);
+  closeM('m-stu'); invalidateStudents(); toast('Ученик удалён'); tSc('students',1);
 }
 // Word CRUD
 function selLv(btn) { wLevel=parseInt(btn.dataset.lv); document.querySelectorAll('.lo').forEach(b=>b.classList.toggle('active',b.dataset.lv==wLevel)); }
@@ -2065,12 +1356,10 @@ async function saveWord() {
   const word=document.getElementById('wi-en').value.trim();
   const tr=document.getElementById('wi-ru').value.trim();
   if(!word||!tr){toast('Заполни слово и перевод');return;}
-  const _swBtn=document.querySelector('#m-word .btn.bp');
-  if(_swBtn&&!lockBtn(_swBtn,'...')) return;
   const sid=document.getElementById('wi-stu')?.value||null;
   const{error}=await sb.from('words').insert({word,translation:tr,topic:document.getElementById('wi-topic').value.trim()||'Разное',level:wLevel,next_review:new Date().toISOString(),student_record_id:sid});
   if(error){toast('Ошибка: '+error.message);return;}
-  const _wb=document.querySelector('#m-word .btn.bp');if(_wb)unlockBtn(_wb);closeM('m-word'); toast('Слово добавлено ✓'); tSc('words',3);
+  closeM('m-word'); toast('Слово добавлено ✓'); tSc('words',3);
 }
 
 // ── HOMEWORK DONE ──
@@ -2137,7 +1426,6 @@ async function submitHwDone(lessonId) {
       title:'ДЗ выполнено: '+me.name,
       body:(lesson.title||'Урок')+(photoUrl?' (с фото)':'')
     });
-    pushToUsers([lesson.teacher_id], 'ДЗ выполнено: '+me.name, (lesson.title||'Урок')+(photoUrl?' (с фото)':''));
   }
   // Уведомляем обоих родителей
   if(lesson?.student_id){
@@ -2163,7 +1451,7 @@ async function togStuActive(stuId, currentlyActive) {
     btn.style.color=newVal?'#16a34a':'#ef4444';
     btn.onclick=()=>togStuActive(stuId,newVal);
   }
-  toast(newVal?'Доступ восстановлен ✅':'Ученик заблокирован 🚫');
+  invalidateStudents(); toast(newVal?'Доступ восстановлен ✅':'Ученик заблокирован 🚫');
 }
 
 // ── REMIND ──
@@ -2208,15 +1496,12 @@ function sSc(n,i) {
   else if(n==='words') sWords(c);
   else if(n==='chats') sChats(c);
 }
-async function sHome(el) {  try {
+async function sHome(el) {
+  console.log('sHome: teacher_id='+me.teacher_id+' student_id='+me.student_id);
   const[{data:ls},{data:ws}]=await Promise.all([
     sb.from('lessons').select('id,title,date,homework,hw_done,hw_photo,zoom_link,grade,status').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false}).limit(10),
     sb.from('words').select('level').eq('student_record_id',me.student_id)
   ]);
-  // zoom_pass подгружаем отдельно — чтобы не ломать главную если колонки ещё нет
-  let homeZoomPass=null;
-  try{ const{data:sd}=await sb.from('students').select('zoom_pass').eq('id',me.student_id).single(); homeZoomPass=sd?.zoom_pass||null; }catch(e){}
-  if(ls) ls.forEach(l=>{ if(l.zoom_link&&homeZoomPass) l.zoom_pass_hint=homeZoomPass; });
   const known=(ws||[]).filter(w=>w.level===3).length;
   const toRev=(ws||[]).filter(w=>w.level<3).length;
   const pending=(ls||[]).find(l=>l.homework && !l.hw_done);
@@ -2231,10 +1516,7 @@ async function sHome(el) {  try {
       <div class="clbl">📅 Следующий урок</div>
       <div style="font-weight:700;font-size:15px;margin-bottom:4px">${next.title}</div>
       <div style="font-size:13px;color:var(--t2);margin-bottom:8px">${fd(next.date)}</div>
-      ${next.zoom_link?`<div style="margin-top:10px">
-        ${next.zoom_pass_hint?`<div style="font-size:12px;color:var(--a);font-weight:600;margin-bottom:6px">Код доступа: <strong>${next.zoom_pass_hint}</strong></div>`:''}
-        <button onclick="openZoom('${next.zoom_link}')" class="btn bp" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>Подключиться к Zoom</button>
-      </div>`:''}
+      ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" class="btn bp bsm" style="display:inline-block">🎥 Zoom</a>`:''}
     </div>`:''}
     ${pending?`<div class="card" style="border-color:#fbbf24;background:#fffbeb">
       <div class="clbl">📝 Домашнее задание</div>
@@ -2248,19 +1530,9 @@ async function sHome(el) {  try {
     </div>`:''}
   </div>`;
   checkUnread();
-
-  } catch(e) {
-    console.error('sHome error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
 }
-async function sLessons(el) {  try {
+async function sLessons(el) {
   const{data}=await sb.from('lessons').select('*').eq('teacher_id',me.teacher_id).eq('student_id',me.student_id).order('date',{ascending:false});
-  // zoom_pass подгружаем отдельно — чтобы не ломать уроки если колонки ещё нет
-  let stuZoomPass=null;
-  try{ const{data:sd}=await sb.from('students').select('zoom_pass').eq('id',me.student_id).single(); stuZoomPass=sd?.zoom_pass||null; }catch(e){}
-  if(data) data.forEach(l=>{ if(l.zoom_link&&stuZoomPass) l.zoom_pass_hint=stuZoomPass; });
   el.innerHTML=`<div class="page"><div class="stitle">Мои уроки</div><div class="ssub">История занятий</div><div id="sl-list"></div><div style="height:80px"></div></div>`;
   const l=document.getElementById('sl-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
@@ -2272,18 +1544,12 @@ async function sLessons(el) {  try {
         : `<button class="bdg bgg" style="cursor:pointer;border:none;font-size:12px" onclick="markHwDone('${ls.id}')">Сделал ✓</button>`
       }</div>`:''}
     <div class="lcf" style="margin-top:10px">
-      ${ls.zoom_link?`<div style="display:flex;flex-direction:column;gap:4px">${ls.zoom_pass_hint?`<div style="font-size:11px;font-weight:700;color:var(--a);background:var(--al);padding:4px 10px;border-radius:8px;display:inline-block">🔑 Код доступа: ${ls.zoom_pass_hint}</div>`:''}    <button onclick="openZoom('${ls.zoom_link}')" class="btn bp bsm" style="display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg> Подключиться к Zoom</button></div>`:''}
+      ${ls.zoom_link?`<a href="${ls.zoom_link}" target="_blank" class="bdg bb">🎥 Zoom</a>`:''}
       <button class="bdg bgr" style="cursor:pointer;border:none" onclick="openLessonChat('${ls.id}','${ls.title.replace(/'/g,"\\'")}')">💬 Чат</button>
       <button class="bdg bb" style="cursor:pointer;border:none" onclick="togMats('${ls.id}')">📎 Материалы</button>
     </div>
     <div id="mat-${ls.id}" style="display:none;margin-top:8px"></div>
   </div>`).join('');
-
-  } catch(e) {
-    console.error('sLessons error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
 }
 async function togMats(lid) {
   const w=document.getElementById('mat-'+lid); if(!w) return;
@@ -2293,12 +1559,12 @@ async function togMats(lid) {
   if(!data?.length){w.innerHTML='<div style="font-size:13px;color:var(--t3);padding:8px">Материалов пока нет</div>';return;}
   w.innerHTML=data.map(m=>`<div class="mitem">
     <div class="mico">${m.file_type==='pdf'?'📄':m.file_type?.match(/jpg|png|jpeg/)?'🖼️':'📎'}</div>
-    <div style="flex:1;min-width:0;overflow:hidden"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
-    <a href="${m.file_url}" target="_blank" rel="noopener noreferrer" class="mopen">Открыть</a>
+    <div style="flex:1"><div class="mname_">${m.name}</div><div class="msize_">${m.file_size||''}</div></div>
+    <a href="${m.file_url}" target="_blank" style="background:var(--al);color:var(--a);border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none">Открыть</a>
   </div>`).join('');
 }
 let rQ=[],rIdx=0,cFlip=false;
-async function sCards(el) {  try {
+async function sCards(el) {
   const{data}=await sb.from('words').select('*').eq('student_record_id',me.student_id);
   const now=new Date();
   rQ=(data||[]).filter(w=>w.level<3||new Date(w.next_review)<=now);
@@ -2306,12 +1572,6 @@ async function sCards(el) {  try {
   rQ=rQ.sort(()=>Math.random()-.5).slice(0,20);
   rIdx=0; el.innerHTML=`<div class="page"><div class="stitle">Карточки</div><div id="ca"></div></div>`;
   renderCard();
-
-  } catch(e) {
-    console.error('sCards error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
 }
 function renderCard() {
   const a=document.getElementById('ca'); if(!a) return;
@@ -2343,18 +1603,12 @@ async function markCard(knew) {
   await sb.from('words').update({level:nl,next_review:d.toISOString()}).eq('id',w.id);
   rIdx++; renderCard();
 }
-async function sWords(el) {  try {
+async function sWords(el) {
   const{data}=await sb.from('words').select('*').eq('student_record_id',me.student_id).order('level',{ascending:false});
   el.innerHTML=`<div class="page"><div class="stitle">Мои слова</div><div class="ssub">${data?.length||0} слов в словаре</div><div id="sw-list"></div><div style="height:80px"></div></div>`;
   const l=document.getElementById('sw-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📖</div><p>Слов пока нет</p></div>`;return;}
   l.innerHTML=data.map(w=>`<div class="wi"><div class="ld lv${w.level}"></div><div><div class="wen">${w.word}</div><div class="wru">${w.translation}</div></div><div class="wch">${w.topic||'—'}</div></div>`).join('');
-
-  } catch(e) {
-    console.error('sWords error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
 }
 async function sChats(el) {
   el.innerHTML=`<div class="page"><div class="stitle">Чаты</div><div class="ssub">Переписка с учителем</div><div id="sc-list">Загрузка...</div></div>`;
@@ -2399,7 +1653,7 @@ function pSc(n,i) {
   else if(n==='progress') pProgress(c);
   else if(n==='chats') pChats(c);
 }
-async function pHome(el) {  try {
+async function pHome(el) {
   addFab(()=>openLinkChild());
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
     sb.from('students').select('id').eq('parent_user_id',me.id),
@@ -2407,143 +1661,45 @@ async function pHome(el) {  try {
   ]);
   const allIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
   const stuIds=allIds;
-  if(!stuIds.length){
-    el.innerHTML=`<div class="page"><div class="stitle">Главная 🏠</div><div class="ssub">Добро пожаловать!</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы привязать ребёнка</span></p></div>
-      <div class="card" style="border-color:var(--g);background:var(--gl);cursor:pointer" onclick="openPayInfo()">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="font-size:28px">💳</div>
-          <div style="flex:1"><div style="font-weight:800;font-size:15px;color:var(--g)">Оплата сервиса</div><div style="font-size:12px;color:var(--t2);margin-top:2px">300₽/мес · 1 ребёнок</div></div>
-          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-        </div>
-      </div>
-    </div>`;
-    return;
-  }
-  const[{data:ls},{data:ws},{data:stuFull},{data:payments},{data:doneLs}]=await Promise.all([
+  if(!stuIds.length){el.innerHTML=`<div class="page"><div class="stitle">Прогресс ученика 📊</div><div class="ssub">Обзор обучения</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
+  const[{data:ls},{data:ws}]=await Promise.all([
     sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}),
-    sb.from('words').select('level,student_record_id').in('student_record_id',stuIds),
-    sb.from('students').select('id,name,subject,teacher_id,lesson_price').in('id',stuIds),
-    sb.from('payments').select('*').in('student_id',stuIds).order('created_at',{ascending:false}),
-    sb.from('lessons').select('student_id').in('student_id',stuIds).eq('status','done')
+    sb.from('words').select('level').in('student_record_id',stuIds)
   ]);
-  // Загружаем имена учителей
-  const tIds=[...new Set((stuFull||[]).map(s=>s.teacher_id).filter(Boolean))];
-  const{data:teachers}=tIds.length?await sb.from('profiles').select('id,name').in('id',tIds):{data:[]};
-  const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t.name]));
   const known=(ws||[]).filter(w=>w.level===3).length;
-  const grades=(ls||[]).filter(l=>l.grade).map(l=>+l.grade);
+  const grades=(ls||[]).filter(l=>l.grade).map(l=>l.grade);
   const avg=grades.length?(grades.reduce((a,b)=>a+b,0)/grades.length).toFixed(1):'—';
   const unpaid=(ls||[]).filter(l=>!l.paid).length;
-  const lastWithHw=(ls||[]).find(l=>l.homework);
+  const lastWithHw=(ls||[]).find(l=>l.homework); // последний урок с ДЗ
   const nextLesson=(ls||[]).find(l=>l.status==='planned'||l.status==='active');
-  // Статистика и баланс по каждому ученику
-  const stuStatMap={};
-  (stuFull||[]).forEach(s=>{
-    stuStatMap[s.id]={
-      name:s.name, subject:s.subject||'—', tName:tMap[s.teacher_id]||'',
-      paid:0, used:0, price:s.lesson_price||0,
-      lessons:[], grades:[], hwTotal:0, hwDone:0, words:0, wordsKnown:0
-    };
-  });
-  (payments||[]).forEach(p=>{if(stuStatMap[p.student_id])stuStatMap[p.student_id].paid+=p.lessons_count||0;});
-  (doneLs||[]).forEach(l=>{if(stuStatMap[l.student_id])stuStatMap[l.student_id].used++;});
-  (ls||[]).forEach(l=>{
-    if(!stuStatMap[l.student_id]) return;
-    const s=stuStatMap[l.student_id];
-    s.lessons.push(l);
-    if(l.grade) s.grades.push(+l.grade);
-    if(l.homework) s.hwTotal++;
-    if(l.hw_done) s.hwDone++;
-  });
-  (ws||[]).forEach(w=>{
-    if(!stuStatMap[w.student_record_id]) return;
-    stuStatMap[w.student_record_id].words++;
-    if(w.level===3) stuStatMap[w.student_record_id].wordsKnown++;
-  });
-  const childrenLabel=(stuFull||[]).map(s=>s.name).join(', ')||'ученика';
-  const stuNames=stuFull;
-  el.innerHTML=`<div class="page"><div class="stitle">Главная 🏠</div><div class="ssub">${childrenLabel}</div>
+  el.innerHTML=`<div class="page"><div class="stitle">Прогресс ученика 📊</div><div class="ssub">Обзор обучения</div>
+    <div class="srow">
+      <div class="sbox blue"><div class="sv">${ls?.length||0}</div><div class="sl">Уроков</div></div>
+      <div class="sbox green"><div class="sv">${avg}</div><div class="sl">Средняя оценка</div></div>
+      <div class="sbox orange"><div class="sv">${ws?.length||0}</div><div class="sl">Слов</div></div>
+      <div class="sbox blue"><div class="sv">${known}</div><div class="sl">Знает хорошо</div></div>
+    </div>
     ${nextLesson?`<div class="card" style="border-color:var(--a);background:var(--al)">
       <div class="clbl">📅 Следующий урок</div>
       <div style="font-weight:700;font-size:15px;margin-bottom:4px">${nextLesson.title}</div>
-      <div style="font-size:13px;color:var(--t2)">${fd(nextLesson.date)}${nextLesson.time?' · '+nextLesson.time:''}</div>
-      ${nextLesson.zoom_link?`<button onclick="openZoom('${nextLesson.zoom_link}')" class="btn bp bsm" style="display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 10l4.553-2.069A1 1 0 0121 8.86v6.28a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg>Подключиться к Zoom</button>`:''}
+      <div style="font-size:13px;color:var(--t2)">${fd(nextLesson.date)}</div>
     </div>`:''}
-    ${lastWithHw?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)">
-      <div class="clbl">📝 Домашнее задание</div>
-      <div style="font-weight:600;font-size:15px;margin-bottom:6px">${lastWithHw.homework}</div>
-      <div style="font-size:12px;color:var(--t2);margin-bottom:8px">${fd(lastWithHw.date)}</div>
-      ${lastWithHw.hw_done?'<span style="color:#16a34a;font-weight:700;font-size:13px">✅ Выполнено</span>':'<span style="color:#f59e0b;font-weight:600;font-size:13px">⏳ Ещё не выполнено</span>'}
-    </div>`:''}
-    ${Object.values(stuStatMap).filter(s=>s.paid>0).map(s=>{
-      const left=Math.max(s.paid-s.used,0);
-      const pct=s.paid>0?Math.round(left/s.paid*100):0;
-      const balClr=left<=2?'var(--r)':left<=4?'var(--o)':'var(--g)';
-      return `<div class="card" style="border-left:4px solid ${balClr}">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <div>
-            <div style="font-weight:700;font-size:14px">${s.name}</div>
-            <div style="font-size:12px;color:var(--t2)">${s.subject}${s.tName?' · '+s.tName:''}</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:${balClr};line-height:1">${left}</div>
-            <div style="font-size:11px;color:var(--t2)">из ${s.paid} уроков</div>
-          </div>
-        </div>
-        <div class="pay-bar"><div class="pay-fill" style="width:${pct}%;background:${balClr}"></div></div>
-        ${left<=2?`<div style="font-size:12px;color:var(--r);font-weight:700;margin-top:6px">⚠️ Скоро закончатся — сообщите учителю</div>`:''}
-      </div>`;
-    }).join('')}
     ${unpaid>0?`<div class="card" style="border-color:#fbbf24;background:#fffbeb"><div style="font-weight:700;color:#92400e">⚠️ Не оплачено уроков: ${unpaid}</div></div>`:''}
-    <div class="card" style="border-color:var(--g);background:var(--gl);cursor:pointer" onclick="openPayInfo()">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="font-size:28px">💳</div>
-        <div style="flex:1">
-          <div style="font-weight:800;font-size:15px;color:var(--g)">Оплата сервиса</div>
-          <div style="font-size:12px;color:var(--t2);margin-top:2px">300₽/мес · Пополнить баланс</div>
-        </div>
-        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-      </div>
-    </div>
+    ${lastWithHw?.homework?`<div class="card" style="border-color:var(--o);background:var(--ol)"><div class="clbl">📝 Текущее ДЗ</div><div style="font-weight:600;font-size:15px">${lastWithHw.homework}</div><div style="font-size:12px;color:var(--t2);margin-top:6px">${fd(lastWithHw.date)}</div><div style="margin-top:8px">${lastWithHw.hw_done?'<span style="color:#16a34a;font-weight:700;font-size:13px">✅ Ребёнок отметил как выполнено</span>':'<span style="color:#f59e0b;font-weight:600;font-size:13px">⏳ Ещё не выполнено</span>'}</div></div>`:''}
   </div>`;
-
-  } catch(e) {
-    console.error('pHome error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
 }
-async function pLessons(el) {  try {
+async function pLessons(el) {
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
-    sb.from('students').select('id,name,subject,teacher_id').eq('parent_user_id',me.id),
-    sb.from('students').select('id,name,subject,teacher_id').eq('parent_user_id2',me.id)
+    sb.from('students').select('id').eq('parent_user_id',me.id),
+    sb.from('students').select('id').eq('parent_user_id2',me.id)
   ]);
-  const seen=new Set(); const allStus=[];
-  for(const s of [...(myStus1||[]),...(myStus2||[])]){ if(!seen.has(s.id)){seen.add(s.id);allStus.push(s);} }
-  const stuIds=allStus.map(s=>s.id);
-  const stuMap=Object.fromEntries(allStus.map(s=>[s.id,s]));
+  const stuIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
   const{data}=stuIds.length?await sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}):{data:[]};
-  const teacherIds=[...new Set(allStus.map(s=>s.teacher_id).filter(Boolean))];
-  const{data:teachers}=teacherIds.length?await sb.from('profiles').select('id,name').in('id',teacherIds):{data:[]};
-  const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t.name]));
   el.innerHTML=`<div class="page"><div class="stitle">История уроков</div><div class="ssub">Все занятия</div><div id="pl-list"></div><div style="height:80px"></div></div>`;
   const l=document.getElementById('pl-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
-  l.innerHTML=data.map(ls=>{
-    const stu=stuMap[ls.student_id];
-    const stuName=stu?.name||'';
-    const subject=stu?.subject||'';
-    const tName=stu?.teacher_id?tMap[stu.teacher_id]||'':'';
-    return `<div class="lc">
-    <div class="lct"><div>
-      <div class="lcti">${ls.title}</div>
-      <div class="lcm">${fd(ls.date)}${ls.time?' · '+ls.time:''}</div>
-      ${stuName||subject||tName?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">
-        ${stuName?`<span class="bdg bb">🧒 ${stuName}</span>`:''}
-        ${subject?`<span class="bdg bgr">${subject}</span>`:''}
-        ${tName?`<span class="bdg bgg">👨‍🏫 ${tName}</span>`:''}
-      </div>`:''}
-    </div>${ls.grade?`<div class="grade g${ls.grade}">${ls.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
+  l.innerHTML=data.map(ls=>`<div class="lc">
+    <div class="lct"><div><div class="lcti">${ls.title}</div><div class="lcm">${fd(ls.date)}</div></div>${ls.grade?`<div class="grade g${ls.grade}">${ls.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
     <div class="lcf">
       ${ls.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
       ${ls.homework?`<span class="bdg bo">📝 ДЗ</span>${ls.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}
@@ -2554,144 +1710,36 @@ async function pLessons(el) {  try {
       <button class="bdg bb" style="cursor:pointer;border:none" onclick="togMats('${ls.id}')">📎 Материалы</button>
     </div>
     <div id="mat-${ls.id}" style="display:none;margin-top:8px"></div>
-  </div>`;}).join('');
-
-  } catch(e) {
-    console.error('pLessons error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
+  </div>`).join('');
 }
-async function pProgress(el) {  try {
-  el.innerHTML=`<div class="page"><div class="stitle">Прогресс 📊</div><div class="ssub">Детальная статистика</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
+async function pProgress(el) {
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
-    sb.from('students').select('id,name,subject,teacher_id').eq('parent_user_id',me.id),
-    sb.from('students').select('id,name,subject,teacher_id').eq('parent_user_id2',me.id)
+    sb.from('students').select('id').eq('parent_user_id',me.id),
+    sb.from('students').select('id').eq('parent_user_id2',me.id)
   ]);
-  const seen=new Set(); const allStus=[];
-  for(const s of [...(myStus1||[]),...(myStus2||[])]){ if(!seen.has(s.id)){seen.add(s.id);allStus.push(s);} }
-  const stuIds=allStus.map(s=>s.id);
-  if(!stuIds.length){el.innerHTML=`<div class="page"><div class="stitle">Прогресс 📊</div><div class="empty"><div class="ei">📊</div><p>Нет привязанных учеников</p></div></div>`;return;}
-  // Загружаем данные
-  const tIds=[...new Set(allStus.map(s=>s.teacher_id).filter(Boolean))];
-  const[{data:ls},{data:ws},{data:teachers}]=await Promise.all([
-    sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}),
-    sb.from('words').select('level,topic,student_record_id').in('student_record_id',stuIds),
-    tIds.length?sb.from('profiles').select('id,name').in('id',tIds):{data:[]}
-  ]);
-  const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t.name]));
-  // Считаем статистику по каждому ученику
-  const stuMap={};
-  allStus.forEach(s=>{
-    stuMap[s.id]={
-      name:s.name, subject:s.subject||'—', tName:tMap[s.teacher_id]||'',
-      lessons:[], grades:[], done:0, cancelled:0, hwT:0, hwD:0,
-      words:[], topics:{}
-    };
-  });
-  (ls||[]).forEach(l=>{
-    if(!stuMap[l.student_id]) return;
-    const s=stuMap[l.student_id];
-    s.lessons.push(l);
-    if(l.grade) s.grades.push(+l.grade);
-    if(l.status==='done') s.done++;
-    if(l.status==='cancelled') s.cancelled++;
-    if(l.homework) s.hwT++;
-    if(l.hw_done) s.hwD++;
-  });
-  (ws||[]).forEach(w=>{
-    if(!stuMap[w.student_record_id]) return;
-    const s=stuMap[w.student_record_id];
-    s.words.push(w);
-    const tp=w.topic||'Разное';
-    if(!s.topics[tp]) s.topics[tp]={t:0,k:0};
-    s.topics[tp].t++;
-    if(w.level===3) s.topics[tp].k++;
-  });
-  const html=Object.values(stuMap).map(s=>{
-    const avg=s.grades.length?(s.grades.reduce((a,b)=>a+b,0)/s.grades.length).toFixed(1):'—';
-    const attendPct=s.done+s.cancelled>0?Math.round(s.done/(s.done+s.cancelled)*100):s.done>0?100:0;
-    const attClr=attendPct>=80?'var(--g)':attendPct>=60?'var(--o)':'var(--r)';
-    const hwPct=s.hwT?Math.round(s.hwD/s.hwT*100):0;
-    const wTotal=s.words.length;
-    const wKnown=s.words.filter(w=>w.level===3).length;
-    const wPct=wTotal?Math.round(wKnown/wTotal*100):0;
-    const lv=[0,0,0,0];
-    s.words.forEach(w=>lv[w.level]++);
-    const recentGrades=s.grades.slice(-5);
-    return `<div class="card" style="margin-bottom:12px">
-      <!-- Шапка -->
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-        <div class="sav" style="width:44px;height:44px;font-size:20px;flex-shrink:0">${s.name[0].toUpperCase()}</div>
-        <div>
-          <div style="font-weight:800;font-size:16px">${s.name}</div>
-          <div style="font-size:12px;color:var(--t2)">${s.subject}${s.tName?' · 👨‍🏫 '+s.tName:''}</div>
-        </div>
-      </div>
-      <!-- Метрики 3 в ряд -->
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
-        <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
-          <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:${avg!=='—'?'var(--a)':'var(--t3)'}">${avg}</div>
-          <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">ср. оценка</div>
-        </div>
-        <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
-          <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:${attClr}">${attendPct}%</div>
-          <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">посещ.</div>
-        </div>
-        <div style="background:var(--bg);border-radius:var(--rs);padding:10px;text-align:center">
-          <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:var(--g)">${hwPct}%</div>
-          <div style="font-size:10px;color:var(--t2);font-weight:700;margin-top:2px">ДЗ сдано</div>
-        </div>
-      </div>
-      <!-- Последние оценки -->
-      ${recentGrades.length>=2?`<div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📈 Последние оценки</div>
-        <div style="display:flex;align-items:flex-end;gap:6px;height:44px">
-          ${recentGrades.map(g=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
-            <div style="font-size:11px;font-weight:800;color:${g>=4?'var(--g)':g===3?'var(--o)':'var(--r)'}">${g}</div>
-            <div style="width:100%;border-radius:4px 4px 0 0;height:${Math.round(g/5*34)+4}px;background:${g>=4?'var(--g)':g===3?'var(--o)':'var(--r)'}"></div>
-          </div>`).join('')}
-        </div>
-      </div>`:''}
-      <!-- Словарь -->
-      ${wTotal>0?`<div style="margin-bottom:14px">
-        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">📖 Словарный запас (${wTotal} слов)</div>
-        ${['Новые','Учит','Почти знает','Знает'].map((lbl,i)=>lbl!=='Новые'&&lbl!=='Учит'?`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <div style="font-size:12px;font-weight:600;min-width:90px;color:${i===3?'var(--g)':'var(--o)'}">${lbl}</div>
-          <div class="pb" style="flex:1;margin:0"><div class="pbf" style="width:${wTotal?Math.round(lv[i]/wTotal*100):0}%;background:${i===3?'var(--g)':'var(--o)'}"></div></div>
-          <div style="font-size:12px;color:var(--t2);font-weight:700;min-width:24px;text-align:right">${lv[i]}</div>
-        </div>`:''  ).join('')}
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-          <div class="pb" style="flex:1;margin:0"><div class="pbf" style="width:${wPct}%"></div></div>
-          <div style="font-size:12px;color:var(--a);font-weight:700">${wKnown}/${wTotal}</div>
-        </div>
-        <!-- Темы -->
-        ${Object.entries(s.topics).length>0?`<div style="margin-top:8px">
-          <div style="font-size:11px;font-weight:700;color:var(--t3);margin-bottom:6px">По темам:</div>
-          ${Object.entries(s.topics).map(([tp,v])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
-            <div style="font-size:12px;font-weight:600;min-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${tp}</div>
-            <div class="pb" style="flex:1;margin:0"><div class="pbf" style="width:${Math.round(v.k/v.t*100)}%"></div></div>
-            <div style="font-size:11px;color:var(--t2);font-weight:700;min-width:32px;text-align:right">${v.k}/${v.t}</div>
-          </div>`).join('')}
-        </div>`:''}
-      </div>`:'<div style="font-size:13px;color:var(--t2);margin-bottom:14px">Слов пока не добавлено</div>'}
-      <!-- Уроки общий итог -->
-      <div style="border-top:1px solid var(--b);padding-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-        <span class="bdg bgg">✓ Проведено: ${s.done}</span>
-        <span class="bdg bgr">📅 Всего: ${s.lessons.length}</span>
-        ${s.cancelled>0?`<span class="bdg br">✗ Отменено: ${s.cancelled}</span>`:''}
-      </div>
-    </div>`;
-  }).join('');
-  el.innerHTML=`<div class="page"><div class="stitle">Прогресс 📊</div><div class="ssub">Детальная статистика</div>${html}<div style="height:80px"></div></div>`;
-
-  } catch(e) {
-    console.error('pProgress error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
+  const stuIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
+  const{data:ws}=stuIds.length?await sb.from('words').select('level,topic').in('student_record_id',stuIds):{data:[]};
+  const lv=[0,0,0,0],tm={};
+  (ws||[]).forEach(w=>{lv[w.level]++;if(!tm[w.topic])tm[w.topic]={t:0,k:0};tm[w.topic].t++;if(w.level===3)tm[w.topic].k++;});
+  const tot=ws?.length||1;
+  el.innerHTML=`<div class="page"><div class="stitle">Прогресс по словам</div><div class="ssub">Детальная статистика</div>
+    <div class="card"><div class="clbl">Уровни знания</div>
+      ${['Новые','Учит','Почти знает','Знает'].map((l,i)=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="ld lv${i}"></div><div style="font-size:13px;font-weight:600;min-width:100px">${l}</div>
+        <div class="pb" style="flex:1"><div class="pbf" style="width:${Math.round(lv[i]/tot*100)}%;background:${['#cbd5e1','#f87171','#fb923c','#4ade80'][i]}"></div></div>
+        <div style="font-size:13px;color:var(--t2);font-weight:700">${lv[i]}</div>
+      </div>`).join('')}
+    </div>
+    <div class="card"><div class="clbl">По темам</div>
+      ${Object.entries(tm).map(([t,v])=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600;min-width:90px">${t}</div>
+        <div class="pb" style="flex:1"><div class="pbf" style="width:${Math.round(v.k/v.t*100)}%"></div></div>
+        <div style="font-size:12px;color:var(--t2);font-weight:700">${v.k}/${v.t}</div>
+      </div>`).join('')||'<p style="font-size:14px;color:var(--t2)">Нет данных</p>'}
+    </div>
+  </div>`;
 }
-async function pChats(el) {  try {
+async function pChats(el) {
   el.innerHTML=`<div class="page"><div class="stitle">Чат с учителем</div><div class="ssub">Сообщения и вопросы</div><div id="pc-list">Загрузка...</div></div>`;
   // Берём только учеников, привязанных к этому родителю (оба слота)
   const[{data:myStus1},{data:myStus2}]=await Promise.all([
@@ -2705,8 +1753,8 @@ async function pChats(el) {  try {
     l.innerHTML=`<div class="empty"><div class="ei">💬</div><p>Нет привязанных учеников</p></div>`;
     return;
   }
-  const teacherIds=[...new Set(myStus.map(s=>s.teacher_id).filter(Boolean))];
-  const{data:teachers}=teacherIds.length?await sb.from('profiles').select('id,name').in('id',teacherIds):{data:[]};
+  const teacherIds=[...new Set(myStus.map(s=>s.teacher_id))];
+  const{data:teachers}=await sb.from('profiles').select('id,name').in('id',teacherIds);
   const tMap=Object.fromEntries((teachers||[]).map(t=>[t.id,t]));
   l.innerHTML=myStus.map(s=>{
     const tp=tMap[s.teacher_id];
@@ -2719,108 +1767,6 @@ async function pChats(el) {  try {
   </div>`;
   }).join('');
   checkUnread();
-
-  } catch(e) {
-    console.error('pChats error:', e);
-    const _el = typeof el !== 'undefined' ? el : document.getElementById('ac');
-    if(_el) _el.innerHTML = `<div style="padding:40px 20px;text-align:center"><div style="font-size:36px;margin-bottom:12px">⚠️</div><div style="font-weight:700;margin-bottom:8px">Ошибка загрузки</div><div style="font-size:13px;color:#5a6478;margin-bottom:20px">${e.message}</div><button onclick="location.reload()" style="background:#2563eb;color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer">Обновить страницу</button></div>`;
-  }
-}
-
-function showPayWall(profile) {
-  const email = profile.email||profile.name||'';
-  const eid = profile.id||'';
-  const ename = (profile.name||'').replace(/'/g,'');
-  pg('pg-roles');
-  const html = '<div class="auth-pg">'
-    + '<div style="text-align:center;margin-bottom:20px">'
-    + '<div style="font-size:56px;margin-bottom:12px">🔒</div>'
-    + '<div style="font-family:\'Fraunces\',serif;font-size:24px;font-weight:900;margin-bottom:8px">Пробный период закончился</div>'
-    + '<div style="font-size:14px;color:var(--t2);line-height:1.6">Пополните баланс для продолжения</div>'
-    + '</div>'
-    + '<div style="background:var(--gl);border-radius:var(--rd);padding:16px;margin-bottom:12px">'
-    + '<div style="display:flex;justify-content:space-around;text-align:center">'
-    + '<div><div style="font-family:\'Fraunces\',serif;font-size:26px;font-weight:900;color:var(--g)">300₽</div><div style="font-size:11px;color:var(--t2);margin-top:2px">1 ребёнок/мес</div></div>'
-    + '<div style="width:1px;background:rgba(0,0,0,.1)"></div>'
-    + '<div><div style="font-family:\'Fraunces\',serif;font-size:26px;font-weight:900;color:var(--g)">500₽</div><div style="font-size:11px;color:var(--t2);margin-top:2px">2+ детей/мес</div></div>'
-    + '</div></div>'
-    + '<div style="background:var(--al);border-radius:var(--rd);padding:14px;margin-bottom:12px">'
-    + '<div style="font-size:13px;font-weight:800;margin-bottom:8px">📋 Как оплатить:</div>'
-    + '<div style="font-size:13px;color:var(--t2);line-height:1.9">'
-    + '1. Переведите сумму на номер:<br>'
-    + '<strong style="color:var(--t);font-size:16px">+7 991 174-51-13</strong><br>'
-    + '2. В комментарии напишите:<br>'
-    + '<strong style="color:var(--a)">' + email + '</strong>'
-    + '</div></div>'
-    + '<button onclick="copyPayTemplate(\'' + email.replace(/'/g,"\\'") + '\')" style="width:100%;padding:12px;background:var(--w);color:var(--a);border:1.5px solid var(--a);border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px">📋 Скопировать комментарий к переводу</button>'
-    + '<button class="btn bp" style="width:100%;padding:14px;font-family:inherit;font-size:15px;justify-content:center" onclick="sendPayRequest(\'' + eid + '\',\'' + email.replace(/'/g,"\\'") + '\',\'' + ename + '\')">✅ Я оплатил — уведомить</button>'
-    + '<button class="btn bs" style="width:100%;padding:12px;margin-top:8px;font-family:inherit;font-size:14px;cursor:pointer" onclick="doLogout()">Выйти</button>'
-    + '</div>';
-  document.getElementById('pg-roles').innerHTML = html;
-}
-
-function copyPayTemplate(email) {
-  const text = 'Lesso оплата. ' + email;
-  navigator.clipboard.writeText(text)
-    .then(function(){ toast('📋 Скопировано! Вставьте в комментарий к переводу'); })
-    .catch(function(){ prompt('Скопируйте и вставьте в комментарий:', text); });
-}
-
-async function sendPayRequest(userId, email, name, fromApp=false) {
-  const childCount = parseInt(prompt('Сколько детей привязано?','1'))||1;
-  if(!childCount) return; // пользователь нажал Отмена
-  const amount = childCount>=2?500:300;
-  const{error}=await sb.from('payment_requests').insert({user_id:userId,email,name,children_count:childCount,amount});
-  if(error&&!error.message.includes('duplicate')){alert('Ошибка: '+error.message);return;}
-  // Пуш администратору
-  await fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:['01b9a57d-63e2-4e19-9fd2-be19dc4311a0'],title:'💰 Заявка на оплату',body:name+' · '+email+' · '+amount+'₽'})}).catch(()=>{});
-  if(fromApp) {
-    // Вызван из внутреннего экрана — просто показываем toast, не выбрасываем из приложения
-    toast('✅ Уведомление отправлено! Активируем в течение нескольких часов.');
-    return;
-  }
-  // Вызван из paywall — показываем экран подтверждения
-  pg('pg-roles');
-  document.getElementById('pg-roles').innerHTML=`<div class="auth-pg" style="text-align:center">
-    <div style="font-size:64px;margin-bottom:16px">🎉</div>
-    <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:8px">Спасибо!</div>
-    <div style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:24px">Мы получили ваше уведомление и активируем доступ в течение нескольких часов. После активации вы получите уведомление.</div>
-    <button class="btn bp" style="width:100%;padding:14px;font-family:inherit;font-size:15px" onclick="doLogout()">Понятно</button>
-  </div>`;
-}
-
-async function openPayInfo() {
-  // Берём email из текущей сессии Supabase Auth
-  const { data: { session } } = await sb.auth.getSession();
-  const email = session?.user?.email || me.email || me.name || '';
-  const safeEmail = email.replace(/'/g,"\\'");
-  const safeName = (me.name||'').replace(/'/g,"\\'");
-  const mo = document.createElement('div');
-  mo.className='mo open'; mo.id='m-pay-info';
-  mo.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:flex;align-items:flex-end;justify-content:center';
-  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
-    <div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
-    <div style="font-size:20px;font-weight:800;margin-bottom:4px">💳 Оплата сервиса</div>
-    <div style="font-size:13px;color:var(--t2);margin-bottom:16px">Lesso — 300₽/мес (1 ребёнок) · 500₽/мес (2+)</div>
-    <div style="background:var(--al);border-radius:var(--rs);padding:14px;margin-bottom:14px">
-      <div style="font-size:12px;font-weight:700;color:var(--t3);margin-bottom:8px">КАК ОПЛАТИТЬ</div>
-      <div style="font-size:14px;line-height:1.9">
-        1. Переведите на номер:<br>
-        <strong style="font-size:16px">+7 991 174-51-13</strong><br>
-        2. В комментарии напишите:<br>
-        <strong style="color:var(--a)">${email}</strong>
-      </div>
-    </div>
-    <button onclick="navigator.clipboard.writeText('Lesso оплата. ${email}').then(()=>toast('📋 Скопировано!')).catch(()=>prompt('Скопируйте:','Lesso оплата. ${email}'))" style="width:100%;padding:12px;background:var(--bg);color:var(--a);border:1.5px solid var(--a);border-radius:var(--rs);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:10px">
-      📋 Скопировать комментарий
-    </button>
-    <button class="btn bp" style="width:100%;padding:14px;justify-content:center" onclick="document.getElementById('m-pay-info')?.remove();sendPayRequest('${me.id}','${safeEmail}','${safeName}',true)">
-      ✅ Я оплатил — уведомить
-    </button>
-    <button class="btn bs" style="width:100%;padding:12px;margin-top:8px;cursor:pointer" onclick="document.getElementById('m-pay-info')?.remove()">Закрыть</button>
-  </div>`;
-  document.body.appendChild(mo);
-  mo.addEventListener('click', e=>{ if(e.target===mo) mo.remove(); });
 }
 
 async function openLinkChild() {
@@ -2856,18 +1802,15 @@ async function doLinkChild() {
   const err   = document.getElementById('lc-err');
   err.classList.remove('show');
   if(!tcode || pin.length<4){ err.textContent='Заполните все поля'; err.classList.add('show'); return; }
-  const _lcBtn=document.querySelector('#m-link-child .btn.bp');
-  if(_lcBtn&&!lockBtn(_lcBtn,'Ищем...')) return;
-  const unlock=()=>{ if(_lcBtn) unlockBtn(_lcBtn); };
   // Ищем учителя по коду
   const{data:teacher}=await sb.from('profiles').select('id,name').eq('teacher_code',tcode).eq('role','teacher').single();
-  if(!teacher){ err.textContent='Учитель с таким кодом не найден'; err.classList.add('show'); unlock(); return; }
+  if(!teacher){ err.textContent='Учитель с таким кодом не найден'; err.classList.add('show'); return; }
   // Ищем ученика у этого учителя по PIN
   const{data:stu}=await sb.from('students').select('*').eq('teacher_id',teacher.id).eq('pin',pin).single();
-  if(!stu){ err.textContent='Неверный PIN ученика'; err.classList.add('show'); unlock(); return; }
+  if(!stu){ err.textContent='Неверный PIN ученика'; err.classList.add('show'); return; }
   // Проверяем: уже привязан к этому родителю?
   if(stu.parent_user_id === me.id || stu.parent_user_id2 === me.id){
-    err.textContent='Вы уже привязаны к этому ученику'; err.classList.add('show'); unlock(); return;
+    err.textContent='Вы уже привязаны к этому ученику'; err.classList.add('show'); return;
   }
   // Привязываем: сначала первый слот, потом второй
   let updateField = null;
@@ -2876,10 +1819,10 @@ async function doLinkChild() {
   } else if(!stu.parent_user_id2) {
     updateField = 'parent_user_id2';
   } else {
-    err.textContent='У этого ученика уже привязаны 2 родителя'; err.classList.add('show'); unlock(); return;
+    err.textContent='У этого ученика уже привязаны 2 родителя'; err.classList.add('show'); return;
   }
   const{error}=await sb.from('students').update({[updateField]:me.id}).eq('id',stu.id);
-  if(error){ err.textContent='Ошибка: '+error.message; err.classList.add('show'); unlock(); return; }
+  if(error){ err.textContent='Ошибка: '+error.message; err.classList.add('show'); return; }
   document.getElementById('m-link-child')?.remove();
   toast('✅ '+stu.name+' привязан!');
   pSc('home',0);
@@ -2911,76 +1854,6 @@ async function openParentChat(tid, stuId, stuName, tname) {
 }
 
 if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
-
-// ── Push уведомления ──
-const VAPID_KEY = 'BNCSoLkkfhzVKEN10CwONn3yOYOHkOxJ3qRhsJ9SYlnu7txmbubdONc9VvmFEWtMefuOAQi7ZlU4utgnGAPMrdc';
-
-let _pushSubscribed = false;
-async function subscribeToPush(userId, sessionToken) {
-  if (_pushSubscribed) return;
-  if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
-  try {
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') return;
-
-    // FCM требует отдельный SW — регистрируем firebase-messaging-sw.js
-    const fbSwReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-
-    let fbGetToken = null, fbMessaging = null;
-    for (let i = 0; i < 3; i++) {
-      if (window._fbGetToken && window._fbMessaging) {
-        fbGetToken = window._fbGetToken;
-        fbMessaging = window._fbMessaging;
-        break;
-      }
-      await new Promise(r => setTimeout(r, 1000));
-    }
-    if (!fbGetToken || !fbMessaging) { console.warn('Push: Firebase не загрузился'); return; }
-
-    const fcmToken = await fbGetToken(fbMessaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: fbSwReg });
-    if (!fcmToken) { console.warn('Push: FCM токен не получен'); return; }
-
-    const isStudent = me.role === 'student';
-    const authToken = sessionToken || SK;
-    const tokenPayload = isStudent
-      ? [{ student_id: userId, fcm_token: fcmToken }]
-      : [{ user_id: userId, fcm_token: fcmToken }];
-    const conflictCol = isStudent ? 'student_id,fcm_token' : 'user_id,fcm_token';
-    const res = await fetch(`${SU}/rest/v1/push_tokens?on_conflict=${conflictCol}`, {
-      method: 'POST',
-      headers: {
-        'apikey': SK,
-        'Authorization': `Bearer ${authToken}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal'
-      },
-      body: JSON.stringify(tokenPayload)
-    });
-    if (!res.ok) { console.error('Push: ошибка сохранения токена:', await res.text()); return; }
-    _pushSubscribed = true;
-    console.log('Push: подписка оформлена');
-
-    if (window._fbOnMessage) {
-      window._fbOnMessage(fbMessaging, (payload) => {
-        showPushToast(payload.notification?.title || 'Lesso', payload.notification?.body || '');
-      });
-    }
-  } catch (err) { console.error('Push ошибка:', err); }
-}
-
-function showPushToast(title, body) {
-  const old = document.getElementById('push-toast');
-  if (old) old.remove();
-  const t = document.createElement('div');
-  t.id = 'push-toast';
-  t.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:#1e293b;color:#fff;padding:14px 18px;border-radius:12px;max-width:320px;box-shadow:0 8px 24px rgba(0,0,0,.3);font-size:14px;line-height:1.5;cursor:pointer';
-  const safeTitle=(title||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  const safeBody=(body||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  t.innerHTML = `<strong style="display:block;margin-bottom:4px">${safeTitle}</strong>${safeBody ? `<span style="opacity:.85">${safeBody}</span>` : ''}` ;
-  t.onclick = () => t.remove();
-  document.body.appendChild(t);
-  setTimeout(() => { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 5000);
-}
 </script>
 </body>
 </html>
