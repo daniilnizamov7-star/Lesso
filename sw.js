@@ -1,4 +1,4 @@
-const CACHE = 'lesso-v6';
+const CACHE = 'lesso-v7';
 const ASSETS = [
   '/',
   '/index.html',
@@ -16,7 +16,9 @@ const BYPASS = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(c => c.addAll(ASSETS))
+      .then(() => self.skipWaiting()) // активируемся сразу не ждём закрытия вкладок
   );
 });
 
@@ -24,7 +26,13 @@ self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
       .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
+      .then(() => self.clients.claim()) // берём контроль над всеми вкладками
+      .then(() => {
+        // Сообщаем всем открытым вкладкам — есть обновление, перезагрузись
+        return self.clients.matchAll({ type: 'window' }).then(clients => {
+          clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
+        });
+      })
   );
 });
 
