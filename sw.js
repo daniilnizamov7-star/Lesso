@@ -1,5 +1,5 @@
 // Lesso SW — auto-update, network-first
-// BUILD: 2026-04-28T10:00:00Z (обновляй при каждом деплое — браузер увидит изменение и обновит SW)
+// BUILD: 2026-04-28T10:00:01Z (обновляй при каждом деплое — браузер увидит изменение и обновит SW)
 const CACHE_NAME = 'lesso-v10';
 
 self.addEventListener('install', () => {
