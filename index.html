@@ -321,7 +321,22 @@ function chev() { return `<svg style="margin-left:auto;color:var(--t3);flex-shri
 function backSvg() { return `<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>`; }
 (async () => {
 pg('pg-load');
-// Показываем кнопку выхода если грузится дольше 8 сек
+
+// Мгновенный старт из кэша — не ждём Supabase
+const _cached = sessionStorage.getItem('lesso_me');
+if (_cached) {
+  try {
+    me = JSON.parse(_cached);
+    launchApp();
+    // Фоном проверяем сессию
+    sb.auth.getSession().then(({data}) => {
+      if (!data?.session) { me=null; sessionStorage.removeItem('lesso_me'); renderRoles(); }
+    }).catch(()=>{});
+    return;
+  } catch(e) { sessionStorage.removeItem('lesso_me'); }
+}
+
+// Нет кэша — грузим с сервера
 const _slowTimer = setTimeout(() => {
   const el = document.getElementById('pg-load-slow');
   const load = document.getElementById('pg-load');
@@ -336,7 +351,11 @@ try {
       .select('id,role,name,teacher_code')
       .eq('id', session.user.id)
       .single();
-    if (p) { me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code}; launchApp(); return; }
+    if (p) {
+      me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code};
+      sessionStorage.setItem('lesso_me', JSON.stringify(me));
+      launchApp(); return;
+    }
   }
   renderRoles();
 } catch(e) {
@@ -348,12 +367,13 @@ try {
 sb.auth.onAuthStateChange(async(event, session) => {
 if(event==='SIGNED_IN' && !me && session) {
 const{data:p}=await sb.from('profiles').select('id,role,name,teacher_code').eq('id',session.user.id).single();
-if(p){ me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code}; launchApp(); }
+if(p){ me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code}; sessionStorage.setItem('lesso_me',JSON.stringify(me)); launchApp(); }
 }
 });
 async function doSignOut() {
   try { await sb.auth.signOut(); } catch(e) {}
   me = null;
+  sessionStorage.removeItem('lesso_me');
   renderRoles();
 }
 function renderRoles() {
@@ -557,7 +577,19 @@ me = { role: 'student', name: stu.name, id: stu.id, student_id: stu.id, teacher_
 launchApp();
 }
 function perr(m) { const e = document.getElementById('perr'); if(e){e.textContent=m;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000);} }
+// Перехват кнопки «Назад» на Android
+window.addEventListener('popstate', () => {
+  // Если есть открытая модалка — закрываем её
+  const mo = document.querySelector('.mo.open');
+  if (mo) { mo.remove(); history.pushState(null,'',location.href); return; }
+  // Если в приложении — пушим снова чтобы не выходить
+  if (me) { history.pushState(null,'',location.href); }
+});
+// Добавляем запись в историю чтобы было куда «назад»
+function pushHistory() { history.pushState(null,'',location.href); }
+
 function launchApp() {
+pushHistory();
 pg('pg-app');
 document.getElementById('pg-app').innerHTML = `
 <header class="hdr">
@@ -2064,6 +2096,15 @@ chatChannel=sb.channel('ch-'+chat.id)
 .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:`chat_id=eq.${chat.id}`},()=>loadChatMsgs())
 .subscribe();
 }
+async function copyMyEmail(){
+  try {
+    const{data}=await sb.auth.getUser();
+    const email=data?.user?.email;
+    if(!email){toast('❌ Email не найден');return;}
+    await navigator.clipboard.writeText(email);
+    toast('📧 Email скопирован: '+email);
+  } catch(e){toast('❌ Не удалось скопировать');}
+}
 function openPayInfo(){
   const mo=document.createElement('div');mo.className='mo open';mo.id='m-pay';
   mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
@@ -2093,7 +2134,8 @@ function openPayInfo(){
   </div>
 </div>
 <div style="font-size:12px;color:var(--t2);margin-bottom:16px;line-height:1.6">Во время оплаты напишите в комментарии ваш email — баланс пополним в течение нескольких часов.</div>
-<button onclick="navigator.clipboard?.writeText('+79911745113').then(()=>toast('📋 Номер скопирован!'))" style="width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--a);background:var(--al);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--a);cursor:pointer;margin-bottom:8px">📋 Скопировать номер</button>
+<button onclick="navigator.clipboard?.writeText('+79911745113').then(()=>toast('📋 Номер скопирован — откройте банк!'))" style="width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--a);background:var(--al);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--a);cursor:pointer;margin-bottom:8px">📋 Скопировать номер для перевода</button>
+<button onclick="copyMyEmail()" style="width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--b);background:var(--f);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--t);cursor:pointer;margin-bottom:8px">📧 Скопировать мой email</button>
 <button class="btn bs" style="width:100%" onclick="document.getElementById('m-pay')?.remove()">Закрыть</button>
 </div>`;
   document.body.appendChild(mo);
