@@ -80,11 +80,14 @@ async function loadFeedback(filter, btn) {
     </div>
   `).join('');
 
-  // Помечаем новые как прочитанные автоматически
-  const newIds = data.filter(f => f.status === 'new').map(f => f.id);
-  if(newIds.length) {
-    await sb.from('feedback').update({status:'read'}).in('id', newIds);
-  }
+  // ⚠️ Закомментировано: авто-пометка при загрузке списка ломает фильтр «Новые» и UX.
+// Пометка происходит только по явной кнопке «✓ Прочитан» или при открытии карточки.
+/*
+const newIds = data.filter(f => f.status === 'new').map(f => f.id);
+if(newIds.length) {
+  await sb.from('feedback').update({status:'read'}).in('id', newIds);
+}
+*/
 }
 
 function toggleReply(id) {
