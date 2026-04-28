@@ -283,10 +283,44 @@ html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-
 </div>
 </div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 <script>
 const SU = 'https://yiqipulgofoschkccaxr.supabase.co';
 const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlpcWlwdWxnb2Zvc2Noa2NjYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzMjExMjksImV4cCI6MjA4OTg5NzEyOX0.Op4iBjGSOBcKh4pkVSd75_l8Fle3Cz15nBh9KF21YhI';
 const sb = supabase.createClient(SU, SK);
+
+// Firebase инициализация
+const fbApp = firebase.initializeApp({
+  apiKey: "AIzaSyBpU-blJhG8Jy6LgVk30PBem-FC2gU7d1Y",
+  authDomain: "lesso-app-41e45.firebaseapp.com",
+  projectId: "lesso-app-41e45",
+  storageBucket: "lesso-app-41e45.firebasestorage.app",
+  messagingSenderId: "117464511883",
+  appId: "1:117464511883:web:a6df8d18538e50a324ab8e"
+});
+const fbMsg = firebase.messaging(fbApp);
+const VAPID_KEY = 'BNCSoLkkfhzVKEN10CwONn3yOYOHkOxJ3qRhsJ9SYlnu7txmbubdONc9VvmFEWtMefuOAQi7ZlU4utgnGAPMrdc';
+
+async function initPush(userId) {
+  try {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+    if (window._pushSubscribed) return;
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') return;
+    // Используем firebase-messaging-sw.js
+    const swReg = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js')
+      || await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const token = await fbMsg.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
+    if (!token || !userId) return;
+    window._pushSubscribed = true;
+    await sb.from('push_tokens').upsert(
+      { user_id: userId, fcm_token: token, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id,fcm_token' }
+    );
+    console.log('Push: токен сохранён');
+  } catch(e) { console.warn('Push init:', e.message); }
+}
 const _cache={stus:null,ts:0};
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function escq(s){return esc(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
@@ -591,6 +625,9 @@ function pushHistory() { history.pushState(null,'',location.href); }
 function launchApp() {
 pushHistory();
 pg('pg-app');
+// Инициализируем push после входа
+// Запрашиваем разрешение на push после входа
+setTimeout(() => { if(me?.id) initPush(me.id); }, 2000);
 document.getElementById('pg-app').innerHTML = `
 <header class="hdr">
 <div class="logo">Lesso</div>
@@ -2133,7 +2170,7 @@ function openPayInfo(){
     <div style="font-size:14px;font-weight:700">Даниил Низамов</div>
   </div>
 </div>
-<div style="font-size:12px;color:var(--t2);margin-bottom:16px;line-height:1.6">Во время оплаты напишите в комментарии ваш email — баланс пополним в течение нескольких часов.</div>
+<div style="font-size:12px;color:var(--t2);margin-bottom:16px;line-height:1.6">После оплаты напишите учителю в чате — баланс пополним в течение нескольких часов.</div>
 <button onclick="navigator.clipboard?.writeText('+79911745113').then(()=>toast('📋 Номер скопирован — откройте банк!'))" style="width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--a);background:var(--al);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--a);cursor:pointer;margin-bottom:8px">📋 Скопировать номер для перевода</button>
 <button onclick="copyMyEmail()" style="width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--b);background:var(--f);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--t);cursor:pointer;margin-bottom:8px">📧 Скопировать мой email</button>
 <button class="btn bs" style="width:100%" onclick="document.getElementById('m-pay')?.remove()">Закрыть</button>
