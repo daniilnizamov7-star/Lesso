@@ -228,7 +228,7 @@
   <div class="fg"><label class="fl">Ученик</label><select class="fs" id="li-stu"></select></div>
   <div class="fg"><label class="fl">Тема урока</label><input class="fi" id="li-title" placeholder="Past Simple, числа..."></div>
   <div class="fg"><label class="fl">Дата</label><input class="fi" type="date" id="li-date"></div>
-  <div class="fg"><label class="fl">Время урока</label><input class="fi" type="time" id="li-time" placeholder="10:00"></div>
+  <div class="fg"><label class="fl">Время урока</label><input class="fi" type="time" id="li-time"></div>
   <div class="fg"><label class="fl">Ссылка Zoom</label><input class="fi" type="url" id="li-zoom" placeholder="https://zoom.us/j/..."></div>
   <div class="fg"><label class="fl">Домашнее задание</label><textarea class="fta" id="li-hw" placeholder="Выучить слова..."></textarea></div>
   <div id="li-hw-photo-wrap" style="display:none;margin-bottom:14px">
@@ -317,6 +317,8 @@ const sb = supabase.createClient(SU, SK);
 
 // ── КЭШИРОВАНИЕ ──
 const _cache={stus:null,ts:0};
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escq(s){return esc(s).replace(/'/g,'&#39;').replace(/"/g,'&quot;');}
 async function getStudents(tid){
   if(_cache.stus&&Date.now()-_cache.ts<30000)return _cache.stus;
   const{data}=await sb.from('students').select('*').eq('teacher_id',tid).order('name');
@@ -751,7 +753,7 @@ async function tHome(el) {
 async function tStudents(el) {
   el.innerHTML=`<div class="page"><div class="shdr"><div><div class="stitle">Ученики</div><div class="ssub">Управление</div></div></div><div id="ts-list">Загрузка...</div><div style="height:80px"></div></div>`;
   addFab(()=>openAddStu());
-  const{data}=await sb.from('students').select('*').eq('teacher_id',me.id).order('created_at');
+  const{data}=await sb.from('students').select('id,name,subject,pin,active,lesson_price,parent_user_id,parent_user_id2').eq('teacher_id',me.id).order('name');
   const l=document.getElementById('ts-list');
   if(!data?.length){l.innerHTML=`<div class="empty"><div class="ei">👨‍🎓</div><p>Учеников пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
   // Загружаем платежи для счётчиков
@@ -1180,53 +1182,44 @@ async function sendMsg() {
   else if(lessonChatId) payload.lesson_id=lessonChatId;
   const{error}=await sb.from('chat_messages').insert(payload);
   if(error){toast('Ошибка: '+error.message);return;}
-  // Уведомление учителю если пишет ученик через lesson chat
+
+  // Все уведомления и обновление чата — в фон, не блокируем UI
+  _sendNotifs(text).catch(()=>{});
+}
+
+async function _sendNotifs(text) {
+  const notifs=[];
   if(lessonChatId){
     if(me.role==='student'){
-      // Ученик → уведомление учителю
-      const tid=me.teacher_id;
-      if(tid) await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId});
+      if(me.teacher_id) notifs.push({recipient_id:me.teacher_id,type:'new_message',title:me.name+' написал в уроке',body:text,lesson_id:lessonChatId});
     } else if(me.role==='teacher'){
-      // Учитель → уведомление ученику по этому уроку
       const{data:les}=await sb.from('lessons').select('student_id').eq('id',lessonChatId).single();
-      if(les?.student_id) await sb.from('notifications').insert({recipient_id:les.student_id,type:'new_message',title:'Учитель написал в уроке',body:text,lesson_id:lessonChatId});
+      if(les?.student_id) notifs.push({recipient_id:les.student_id,type:'new_message',title:'Учитель написал в уроке',body:text,lesson_id:lessonChatId});
     }
+    if(notifs.length) await Promise.all(notifs.map(n=>sb.from('notifications').insert(n)));
+    return;
   }
-  // Уведомление от ученика в личном чате
-  if(activeChatId && me.role==='student'){
-    const tid=me.teacher_id;
-    if(tid) await sb.from('notifications').insert({recipient_id:tid,type:'new_message',title:me.name+' пишет',body:text});
-  }
-
-  // Обновляем last_message и отправляем уведомление
-  if(activeChatId){
-    const{data:chat}=await sb.from('chats').select('*').eq('id',activeChatId).single();
-    if(chat){
-      await sb.from('chats').update({last_message:text,last_message_at:new Date().toISOString()}).eq('id',activeChatId);
-      const isParentChat = chat.type === 'teacher_parent';
-      if(me.role==='teacher'){
-        if(isParentChat){
-          // Учитель → родителю: уведомляем обоих родителей
-          const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',chat.student_id).single();
-          const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
-          for(const pid of pids) await sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель пишет ('+stu.name+')',body:text});
-        } else {
-          // Учитель → ученику: уведомляем student_id + обоих родителей
-          await sb.from('notifications').insert({recipient_id:chat.student_id,type:'new_message',title:'Учитель пишет',body:text});
-          const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',chat.student_id).single();
-          const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
-          for(const pid of pids) await sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель написал '+stu.name,body:text});
-        }
-      } else if(me.role==='student'){
-        // Ученик → учителю
-        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:me.name+' пишет',body:text});
-      } else if(me.role==='parent'){
-        // Родитель → учителю
-        const{data:stu}=await sb.from('students').select('name').eq('id',chat.student_id).single();
-        await sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:'Родитель ('+( stu?.name||'')+') пишет',body:text});
-      }
+  if(!activeChatId) return;
+  const{data:chat}=await sb.from('chats').select('*').eq('id',activeChatId).single();
+  if(!chat) return;
+  // Обновляем last_message параллельно с уведомлениями
+  const updates=[sb.from('chats').update({last_message:text,last_message_at:new Date().toISOString()}).eq('id',activeChatId)];
+  if(me.role==='teacher'){
+    const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',chat.student_id).single();
+    const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
+    if(chat.type==='teacher_parent'){
+      pids.forEach(pid=>updates.push(sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель пишет ('+(stu?.name||'')+')',body:text})));
+    } else {
+      updates.push(sb.from('notifications').insert({recipient_id:chat.student_id,type:'new_message',title:'Учитель пишет',body:text}));
+      pids.forEach(pid=>updates.push(sb.from('notifications').insert({recipient_id:pid,type:'new_message',title:'Учитель написал '+(stu?.name||''),body:text})));
     }
+  } else if(me.role==='student'){
+    updates.push(sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:me.name+' пишет',body:text}));
+  } else if(me.role==='parent'){
+    const{data:stu}=await sb.from('students').select('name').eq('id',chat.student_id).single();
+    updates.push(sb.from('notifications').insert({recipient_id:chat.teacher_id,type:'new_message',title:'Родитель ('+(stu?.name||'')+') пишет',body:text}));
   }
+  await Promise.all(updates);
 }
 
 // ── Lesson CRUD ──
@@ -1268,7 +1261,7 @@ async function popStuSelect(selId) {
 async function openAddLesson() {
   editLessonId=null;
   document.getElementById('mlt').textContent='Новый урок';
-  ['li-title','li-zoom','li-notes','li-time'].forEach(id=>document.getElementById(id).value='');
+  ['li-title','li-zoom','li-notes','li-time'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('li-hw').value='';
   const _wrap=document.getElementById('li-hw-photo-wrap'); if(_wrap) _wrap.style.display='none';
   document.getElementById('li-date').value=new Date().toISOString().split('T')[0];
@@ -1279,8 +1272,8 @@ async function openAddLesson() {
   const p=document.getElementById('li-paid'); p.classList.remove('on'); p.dataset.lid=''; p.dataset.paid='0';
   const sb2=document.getElementById('li-stbtn'); sb2.textContent='▶ Начать урок'; sb2.dataset.status='planned'; sb2.dataset.lid='';
   document.getElementById('li-delbtn').style.display='none';
-  openM('m-lesson');
   await popStuSelect(null);
+  openM('m-lesson');
 }
 async function openLesson(id) {
   const{data:l}=await sb.from('lessons').select('id,title,date,status,paid,grade,homework,hw_done,hw_photo,notes,zoom_link,lesson_time,student_id').eq('id',id).single(); if(!l) return;
@@ -1303,8 +1296,8 @@ async function openLesson(id) {
   const sb2=document.getElementById('li-stbtn'); sb2.textContent=l.status==='active'?'🔴 Урок идёт — завершить':l.status==='done'?'✓ Урок завершён':'▶ Начать урок'; sb2.dataset.status=l.status; sb2.dataset.lid=id;
   document.getElementById('li-delbtn').style.display='block';
   document.getElementById('li-fprev').innerHTML=''; pendFile=null;
-  openM('m-lesson'); // открываем сразу — не ждём загрузки
-  await Promise.all([popStuSelect(l.student_id), loadLessonMats(id)]);
+  openM('m-lesson');
+  Promise.all([popStuSelect(l.student_id), loadLessonMats(id)]).catch(()=>{});
 }
 async function saveLesson() {
   const title=document.getElementById('li-title').value.trim();
@@ -1323,16 +1316,17 @@ async function saveLesson() {
     if(fd) await sb.from('materials').insert({lesson_id:lid,teacher_id:me.id,name:fd.name,file_url:fd.url,file_type:fd.type,file_size:fd.size});
     pendFile=null;
   }
+  // Уведомления — параллельно, не блокируем UI
+  const wasNew=!editLessonId;
   closeM('m-lesson'); toast('Урок сохранён ✓'); tSc('lessons',2);
-  // Уведомления только при создании нового урока
-  if(!editLessonId && stuId){
+  if(wasNew && stuId){
     const{data:stuRec}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',stuId).single();
     const notifIds=[stuId,...([stuRec?.parent_user_id,stuRec?.parent_user_id2].filter(Boolean))];
-    Promise.all(notifIds.map((rid,i)=>sb.from('notifications').insert({
+    await Promise.all(notifIds.map((rid,i)=>sb.from('notifications').insert({
       recipient_id:rid,type:'lesson_created',
       title:i===0?'Новый урок: '+title:'Новый урок у '+title,
       body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid
-    }))).catch(()=>{});
+    })));
   }
 }
 async function delLesson() {
@@ -1476,17 +1470,15 @@ async function savePayment() {
     lessons_count:count, amount:amount||null, note:note||null
   });
   if(error){toast('Ошибка: '+error.message);return;}
-  // Уведомляем родителя
-  const{data:stu}=await sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',_payState.stuId).single();
-  const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
-  const title=`💰 Оплата получена — ${_payState.stuName}`;
-  const body=`Пополнение: ${count} уроков${amount?' ('+amount+'₽)':''}${note?' · '+note:''}`;
-  for(const pid of pids){
-    await sb.from('notifications').insert({recipient_id:pid,type:'payment',title,body}).catch(()=>{});
-  }
-  if(pids.length){
+  // Уведомляем родителей параллельно
+  sb.from('students').select('parent_user_id,parent_user_id2,name').eq('id',_payState.stuId).single().then(({data:stu})=>{
+    const pids=[stu?.parent_user_id,stu?.parent_user_id2].filter(Boolean);
+    if(!pids.length) return;
+    const title=`💰 Оплата получена — ${_payState.stuName}`;
+    const body=`Пополнение: ${count} уроков${amount?' ('+amount+'₽)':''}${note?' · '+note:''}`;
+    Promise.all(pids.map(pid=>sb.from('notifications').insert({recipient_id:pid,type:'payment',title,body}))).catch(()=>{});
     fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:pids,title,body})}).catch(()=>{});
-  }
+  }).catch(()=>{});
   btn.disabled=false; btn.textContent='Сохранить';
   closeM('m-pay');
   // Перерисовываем список после закрытия модалки — через setTimeout чтобы не конфликтовать
