@@ -659,34 +659,56 @@ else if(n==='stats') tStats(c);
 else if(n==='chats') tChats(c);
 }
 async function tHome(el) {
-el.innerHTML=`<div class="page"><div class="stitle">Главная 👋</div><div class="ssub" style="color:var(--t2)">Загружаем данные...</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
-const [{count:lc},{count:sc},{data:rc},{data:ss}]=await Promise.all([
-sb.from('lessons').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
-sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
-sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false}).limit(5),
-sb.from('students').select('id,name').eq('teacher_id',me.id)
-]);
-el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">${lc||0}</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">${sc||0}</div><div class="sl">Учеников</div></div></div><div class="card" id="th-next" style="display:none"></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r"></div></div></div>`;
-const sm=Object.fromEntries((ss||[]).map(s=>[s.id,s.name]));
-const next=(rc||[]).find(l=>l.status==='planned'||!l.status||l.status==='active');
-const nb=document.getElementById('th-next');
-if(next&&nb){
-nb.style.display='block';
-nb.innerHTML=`<div class="clbl">📅 Ближайший урок</div>
-<div style="font-weight:700;font-size:16px;margin-bottom:4px">${next.title}</div>
-<div style="font-size:13px;color:var(--t2);margin-bottom:10px">${fd(next.date)}${next.student_id&&sm[next.student_id]?' · '+sm[next.student_id]:''}</div>
-<div style="display:flex;gap:8px">
-${next.status!=='done'?`<button class="btn bp bsm" onclick="openLesson('${next.id}')">Открыть →</button>`:''}
-${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" class="btn bs bsm">🎥 Zoom</a>`:''}
-</div>`;
-}
-const r=document.getElementById('th-r');
-if(!rc?.length){r.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;return;}
-r.innerHTML=rc.map(l=>`<div class="lc" onclick="openLesson('${l.id}')">
-<div class="lct"><div><div class="lcti">${l.title}${l.student_id&&sm[l.student_id]?` <span style="font-size:12px;color:var(--t2);font-weight:500">· ${sm[l.student_id]}</span>`:''}</div><div class="lcm">${fd(l.date)}</div></div>
-${l.grade?`<div class="grade g${l.grade}">${l.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
-<div class="lcf">${l.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}${l.homework?`<span class="bdg bo">📝 ДЗ</span>${l.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}</div>
-</div>`).join('');
+  if(!el) return;
+  
+  // Показываем скелетон
+  el.innerHTML=`<div class="page"><div class="stitle">Главная 👋</div><div class="ssub" style="color:var(--t2)">Загружаем данные...</div><div style="text-align:center;padding:40px 0"><div class="sp"></div></div></div>`;
+  
+  try {
+    const [{count:lc},{count:sc},{data:rc},{data:ss}]=await Promise.all([
+      sb.from('lessons').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
+      sb.from('students').select('*',{count:'exact',head:true}).eq('teacher_id',me.id),
+      sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false}).limit(5),
+      sb.from('students').select('id,name').eq('teacher_id',me.id)
+    ]);
+    
+    const sm=Object.fromEntries((ss||[]).map(s=>[s.id,s.name]));
+    const next=(rc||[]).find(l=>l.status==='planned'||!l.status||l.status==='active');
+    
+    // Проверяем существование элементов перед установкой
+    const thNext=document.getElementById('th-next');
+    const thR=document.getElementById('th-r');
+    
+    el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">${lc||0}</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">${sc||0}</div><div class="sl">Учеников</div></div></div><div class="card" id="th-next" style="display:${next?'block':'none'}"></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r"></div></div></div>`;
+    
+    if(next){
+      const nb=document.getElementById('th-next');
+      if(nb){
+        nb.innerHTML=`<div class="clbl">📅 Ближайший урок</div>
+        <div style="font-weight:700;font-size:16px;margin-bottom:4px">${next.title}</div>
+        <div style="font-size:13px;color:var(--t2);margin-bottom:10px">${fd(next.date)}${next.student_id&&sm[next.student_id]?' · '+sm[next.student_id]:''}</div>
+        <div style="display:flex;gap:8px">
+        ${next.status!=='done'?`<button class="btn bp bsm" onclick="openLesson('${next.id}')">Открыть →</button>`:''}
+        ${next.zoom_link?`<a href="${next.zoom_link}" target="_blank" class="btn bs bsm">🎥 Zoom</a>`:''}
+        </div>`;
+      }
+    }
+    
+    const r=document.getElementById('th-r');
+    if(r){
+      if(!rc?.length){r.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет</p></div>`;}
+      else {
+        r.innerHTML=rc.map(l=>`<div class="lc" onclick="openLesson('${l.id}')">
+        <div class="lct"><div><div class="lcti">${l.title}${l.student_id&&sm[l.student_id]?` <span style="font-size:12px;color:var(--t2);font-weight:500">· ${sm[l.student_id]}</span>`:''}</div><div class="lcm">${fd(l.date)}</div></div>
+        ${l.grade?`<div class="grade g${l.grade}">${l.grade}</div>`:'<span class="bdg bgr">Запланирован</span>'}</div>
+        <div class="lcf">${l.paid?'<span class="bdg bgg">✓ Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}${l.homework?`<span class="bdg bo">📝 ДЗ</span>${l.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}</div>
+        </div>`).join('');
+      }
+    }
+  } catch(e) {
+    console.error('tHome error:', e);
+    el.innerHTML=`<div class="page"><div class="stitle">Ошибка 😔</div><div class="empty"><p>Не удалось загрузить данные<br>Попробуйте обновить страницу</p></div></div>`;
+  }
 }
 async function tStudents(el) {
 el.innerHTML=`<div class="page"><div class="shdr"><div><div class="stitle">Ученики</div><div class="ssub">Управление</div></div></div><div id="ts-list">Загрузка...</div><div style="height:80px"></div></div>`;
@@ -733,24 +755,38 @@ ${left<=2&&bal.paid>0?'<span style="color:var(--r);font-size:10px">⚠️ Поп
 </div>`;}).join('');
 }
 async function tLessons(el) {
-el.innerHTML=`<div class="page"><div class="stitle">Уроки</div><div class="ssub">История и планирование</div><div id="tl-list">Загрузка...</div><div style="height:80px"></div></div>`;
-addFab(()=>openAddLesson());
-const[{data:ss},{data:ls}]=await Promise.all([
-sb.from('students').select('id,name').eq('teacher_id',me.id),
-sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false})
-]);
-const sm=Object.fromEntries((ss||[]).map(s=>[s.id,s.name]));
-const l=document.getElementById('tl-list');
-if(!ls?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет.<br>Нажми + чтобы добавить.</p></div>`;return;}
-l.innerHTML=ls.map(l_=>`<div class="lc" onclick="openLesson('${l_.id}')">
-<div class="lct"><div><div class="lcti">${l_.title}</div><div class="lcm">${fd(l_.date)}${l_.student_id&&sm[l_.student_id]?' · '+sm[l_.student_id]:''}</div></div>
-${l_.grade?`<div class="grade g${l_.grade}">${l_.grade}</div>`:''}</div>
-<div class="lcf">
-${l_.status==='active'?'<span class="bdg br">🔴 Идёт</span>':l_.status==='done'?'<span class="bdg bgg">✓ Завершён</span>':''}
-${l_.paid?'<span class="bdg bgg">Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
-${l_.homework?`<span class="bdg bo">📝 ДЗ</span>${l_.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}
-</div>
-</div>`).join('');
+  if(!el) return;
+  
+  el.innerHTML=`<div class="page"><div class="stitle">Уроки</div><div class="ssub">История и планирование</div><div id="tl-list">Загрузка...</div><div style="height:80px"></div></div>`;
+  addFab(()=>openAddLesson());
+  
+  try {
+    const[{data:ss},{data:ls}]=await Promise.all([
+      sb.from('students').select('id,name').eq('teacher_id',me.id),
+      sb.from('lessons').select('*').eq('teacher_id',me.id).order('date',{ascending:false})
+    ]);
+    
+    const sm=Object.fromEntries((ss||[]).map(s=>[s.id,s.name]));
+    const l=document.getElementById('tl-list');
+    
+    if(l){
+      if(!ls?.length){l.innerHTML=`<div class="empty"><div class="ei">📅</div><p>Уроков пока нет.<br>Нажми + чтобы добавить.</p></div>`;}
+      else {
+        l.innerHTML=ls.map(l_=>`<div class="lc" onclick="openLesson('${l_.id}')">
+        <div class="lct"><div><div class="lcti">${l_.title}</div><div class="lcm">${fd(l_.date)}${l_.student_id&&sm[l_.student_id]?' · '+sm[l_.student_id]:''}</div></div>
+        ${l_.grade?`<div class="grade g${l_.grade}">${l_.grade}</div>`:''}</div>
+        <div class="lcf">
+        ${l_.status==='active'?'<span class="bdg br">🔴 Идёт</span>':l_.status==='done'?'<span class="bdg bgg">✓ Завершён</span>':''}
+        ${l_.paid?'<span class="bdg bgg">Оплачен</span>':'<span class="bdg bgr">Не оплачен</span>'}
+        ${l_.homework?`<span class="bdg bo">📝 ДЗ</span>${l_.hw_done?'<span class="bdg bgg">✅ Сдано</span>':'<span class="bdg bgr">Не сдано</span>'}`:''}
+        </div>
+        </div>`).join('');
+      }
+    }
+  } catch(e) {
+    console.error('tLessons error:', e);
+    el.innerHTML=`<div class="page"><div class="stitle">Ошибка 😔</div><div class="empty"><p>Не удалось загрузить уроки</p></div></div>`;
+  }
 }
 let allW=[], wStuId=null, wStus=[];
 async function tWords(el) {
