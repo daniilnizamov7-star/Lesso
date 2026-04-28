@@ -1165,7 +1165,7 @@ async function markMsgsRead(chatId, lessonId) {
   const rid = me.role === 'student' ? me.student_id : me.id;
   if(!rid) return;
   // Получаем непрочитанные сообщения
-  let q = sb.from('chat_messages').select('id,read_by').not('read_by','cs',`{${rid}}`).neq('sender_id',rid);
+  let q = sb.from('chat_messages').select('id,read_by').filter('read_by', 'not.cs', `["${rid}"]`).neq('sender_id',rid);
   if(chatId) q = q.eq('chat_id', chatId);
   if(lessonId) q = q.eq('lesson_id', lessonId);
   const{data:msgs} = await q;
