@@ -10,6 +10,31 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <script>
+// Аварийный сброс застрявшего SW — запускается ДО всего
+(function() {
+  if (!('serviceWorker' in navigator)) return;
+  // Если страница грузится дольше 12 сек — убиваем все SW и перезагружаем
+  var _killTimer = setTimeout(function() {
+    navigator.serviceWorker.getRegistrations().then(function(regs) {
+      var kills = regs.map(function(r) { return r.unregister(); });
+      return Promise.all(kills);
+    }).then(function() {
+      // Очищаем все кэши
+      if ('caches' in window) {
+        caches.keys().then(function(keys) {
+          return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+        });
+      }
+      window.location.reload(true);
+    });
+  }, 12000);
+  // Если страница нормально загрузилась — отменяем таймер
+  window.addEventListener('DOMContentLoaded', function() {
+    clearTimeout(_killTimer);
+  });
+})();
+</script>
+<script>
 function makeIcon(size) {
 const c=document.createElement('canvas');c.width=size;c.height=size;
 const x=c.getContext('2d');
@@ -188,7 +213,14 @@ html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-
 </style>
 </head>
 <body>
-<div id="pg-load" class="loading"><div class="sp"></div><div style="font-size:14px;color:var(--t2);font-weight:600">Загрузка...</div></div>
+<div id="pg-load" class="loading">
+  <div class="sp"></div>
+  <div style="font-size:14px;color:var(--t2);font-weight:600">Загрузка...</div>
+  <div id="pg-load-reset" style="display:none;margin-top:24px;text-align:center">
+    <div style="font-size:13px;color:var(--t3);margin-bottom:12px">Загрузка занимает дольше обычного...</div>
+    <button onclick="hardReset()" style="padding:10px 20px;border-radius:10px;border:1.5px solid var(--b);background:var(--w);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--a);cursor:pointer">🔄 Обновить страницу</button>
+  </div>
+</div>
 <div id="pg-roles" style="display:none"></div>
 <div id="pg-auth" style="display:none"></div>
 <div id="pg-teachers" style="display:none"></div>
@@ -316,7 +348,7 @@ function backSvg() { return `<svg width="16" height="16" fill="none" stroke="cur
 (async () => {
 pg('pg-load');
 try {
-const initTimeout = new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')), 8000));
+const initTimeout = new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')), 5000));
 const initWork = async () => {
 let session=null;
 for(let i=0;i<3;i++){
@@ -2114,27 +2146,52 @@ chatChannel=sb.channel('ch-'+chat.id)
 function openPayInfo() {
   toast('💳 Оплата: 300₽/мес · Свяжитесь с учителем');
 }
+function hardReset() {
 if ('serviceWorker' in navigator) {
-navigator.serviceWorker.register('/sw.js').then(reg => {
-reg.update().catch(()=>{});
-reg.addEventListener('updatefound', () => {
-const sw = reg.installing;
-if (!sw) return;
-sw.addEventListener('statechange', () => {
-if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-sw.postMessage({ type: 'SKIP_WAITING' });
+navigator.serviceWorker.getRegistrations().then(regs => Promise.all(regs.map(r => r.unregister())));
 }
-});
-});
-}).catch(()=>{});
-let _swReloading = false;
-navigator.serviceWorker.addEventListener('controllerchange', () => {
-if (_swReloading) return;
-_swReloading = true;
-const t = document.getElementById('toast');
-if (t) { t.textContent = '🔄 Обновление...'; t.classList.add('show'); }
-setTimeout(() => window.location.reload(), 800);
-});
+if ('caches' in window) {
+caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))));
+}
+setTimeout(() => window.location.reload(true), 300);
+}
+// Показываем кнопку сброса через 5 секунд если ещё грузится
+setTimeout(() => {
+const rst = document.getElementById('pg-load-reset');
+const load = document.getElementById('pg-load');
+if (rst && load && load.style.display !== 'none') rst.style.display = 'block';
+}, 5000);
+if ('serviceWorker' in navigator) {
+  let _swReloading = false;
+
+  // controllerchange = новый SW активирован → перезагружаем страницу
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (_swReloading) return;
+    _swReloading = true;
+    window.location.reload();
+  });
+
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    // Проверяем обновление при каждом открытии
+    reg.update().catch(() => {});
+
+    // Новый SW найден — ждём пока установится, затем активируем
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      if (!newSW) return;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'installed') {
+          // Активируем немедленно (skipWaiting уже в SW, это на всякий случай)
+          newSW.postMessage({ type: 'SKIP_WAITING' });
+        }
+      });
+    });
+
+    // Если уже есть ожидающий SW (пользователь открыл вкладку когда SW ждал)
+    if (reg.waiting) {
+      reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+  }).catch(() => {});
 }
 </script>
 </body>
