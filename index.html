@@ -25,6 +25,7 @@ if(lnk){ const img=new Image();img.onerror=()=>{lnk.href=makeIcon(180);};img.src
 </script>
 <title>Lesso</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://yiqipulgofoschkccaxr.supabase.co" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f8f9fc;--w:#fff;--b:#e8eaf0;--t:#0f1520;--t2:#5a6478;--t3:#9aa0b0;--a:#2563eb;--al:#eff4ff;--ad:#1d4ed8;--g:#16a34a;--gl:#f0fdf4;--o:#ea580c;--ol:#fff7ed;--r:#dc2626;--rl:#fef2f2;--rd:16px;--rs:10px;--sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--shl:0 4px 24px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04)}
@@ -351,7 +352,138 @@ document.getElementById('pg-roles').innerHTML = `<div class="auth-pg">
 <button class="rcard" onclick="showAuth('parent')"><div class="ricon" style="background:#f0fdf4">👨‍‍👦</div><div><div class="rname">Родитель</div><div class="rdesc">Прогресс и контроль занятий</div></div>${chev()}</button>
 <button class="rcard" onclick="showTeachers()"><div class="ricon" style="background:#fff7ed">🧒</div><div><div class="rname">Ученик</div><div class="rdesc">Уроки, слова и карточки</div></div>${chev()}</button>
 </div>
+<div style="display:flex;gap:10px;margin-top:16px;width:100%;max-width:360px">
+<button onclick="showInstruction()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;border-radius:10px;border:1.5px solid var(--b);background:var(--w);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--t2);cursor:pointer">
+📖 Инструкция
+</button>
+<button onclick="showFeedbackForm()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 14px;border-radius:10px;border:1.5px solid var(--b);background:var(--w);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:700;color:var(--t2);cursor:pointer">
+💬 Отзыв
+</button>
+</div>
 </div>`;
+}
+function showInstruction() {
+const mo = document.createElement('div');
+mo.className = 'mo open'; mo.id = 'm-instruction';
+mo.innerHTML = \`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;max-height:85dvh;display:flex;flex-direction:column;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+<div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+<div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px">📖 Как пользоваться Lesso</div>
+<div style="overflow-y:auto;flex:1;margin-top:12px">
+
+<div style="background:var(--al);border-radius:12px;padding:14px;margin-bottom:10px">
+<div style="font-weight:800;font-size:14px;color:var(--a);margin-bottom:6px">👨‍🏫 Учитель</div>
+<div style="font-size:13px;line-height:1.6;color:var(--t)">
+1. Зарегистрируйтесь и придумайте свой код (например: DAN1)<br>
+2. Добавьте учеников — нажмите «+» на вкладке «Ученики»<br>
+3. Назначьте каждому ученику PIN из 4 цифр<br>
+4. Создавайте уроки, добавляйте домашнее задание<br>
+5. Отслеживайте прогресс в разделе «Аналитика»<br>
+6. Общайтесь с учениками и родителями в «Чаты»
+</div>
+</div>
+
+<div style="background:var(--gl);border-radius:12px;padding:14px;margin-bottom:10px">
+<div style="font-weight:800;font-size:14px;color:var(--g);margin-bottom:6px">👨‍👩‍👦 Родитель</div>
+<div style="font-size:13px;line-height:1.6;color:var(--t)">
+1. Зарегистрируйтесь в разделе «Родитель»<br>
+2. Нажмите «+» и введите код учителя + PIN ребёнка<br>
+3. Следите за уроками, домашними заданиями, прогрессом<br>
+4. Пишите учителю напрямую в чате<br>
+5. Подключайтесь к Zoom-урокам из главной страницы
+</div>
+</div>
+
+<div style="background:var(--ol);border-radius:12px;padding:14px;margin-bottom:10px">
+<div style="font-weight:800;font-size:14px;color:var(--o);margin-bottom:6px">🧒 Ученик</div>
+<div style="font-size:13px;line-height:1.6;color:var(--t)">
+1. Введите код учителя и свой PIN (спроси у учителя)<br>
+2. На главной — видишь ближайший урок и домашнее задание<br>
+3. Отмечай ДЗ как выполненное (можно прикрепить фото)<br>
+4. Тренируй слова в разделе «Карточки»<br>
+5. Пиши учителю в «Чаты»
+</div>
+</div>
+
+<div style="background:#f5f3ff;border-radius:12px;padding:14px;margin-bottom:16px">
+<div style="font-weight:800;font-size:14px;color:#7c3aed;margin-bottom:6px">💡 Советы</div>
+<div style="font-size:13px;line-height:1.6;color:var(--t)">
+• Установите приложение на телефон — нажмите «Добавить на главный экран» в браузере<br>
+• Push-уведомления работают после установки PWA<br>
+• Учитель может отправить напоминание о занятии прямо из приложения
+</div>
+</div>
+
+</div>
+<button class="btn bs" style="width:100%;margin-top:4px" onclick="document.getElementById('m-instruction')?.remove()">Понятно!</button>
+</div>\`;
+document.body.appendChild(mo);
+mo.addEventListener('click', e => { if(e.target===mo) mo.remove(); });
+}
+function showFeedbackForm() {
+const mo = document.createElement('div');
+mo.className = 'mo open'; mo.id = 'm-feedback';
+mo.innerHTML = \`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+<div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+<div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px">💬 Оставить отзыв</div>
+<div style="font-size:13px;color:var(--t2);margin-bottom:18px">Напишите нам — мы читаем каждый отзыв и улучшаем платформу</div>
+<div style="margin-bottom:12px">
+<div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Ваше имя (необязательно)</div>
+<input id="fb-name" class="fi" placeholder="Например: Мария или Учитель из Челябинска" style="width:100%">
+</div>
+<div style="margin-bottom:12px">
+<div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Вы</div>
+<select id="fb-role" class="fs" style="width:100%">
+<option value="teacher">Учитель</option>
+<option value="parent">Родитель</option>
+<option value="student">Ученик</option>
+<option value="other">Другое</option>
+</select>
+</div>
+<div style="margin-bottom:8px">
+<div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Оценка</div>
+<div style="display:flex;gap:8px" id="fb-stars">
+\${[1,2,3,4,5].map(n=>\`<button data-s="\${n}" onclick="setFbStar(\${n})" style="font-size:26px;background:none;border:none;cursor:pointer;padding:2px;opacity:.4;transition:opacity .15s">\${n<=3?'⭐':'⭐'}</button>\`).join('')}
+</div>
+</div>
+<div style="margin-bottom:14px">
+<div style="font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px">Ваш отзыв *</div>
+<textarea id="fb-text" class="fta" placeholder="Что понравилось? Что улучшить? Любой комментарий..." style="width:100%;min-height:100px"></textarea>
+</div>
+<div id="fb-err" class="err"></div>
+<button class="btn bp" style="width:100%;margin-bottom:8px" onclick="submitFeedback()">Отправить отзыв</button>
+<button class="btn bs" style="width:100%" onclick="document.getElementById('m-feedback')?.remove()">Отмена</button>
+</div>\`;
+document.body.appendChild(mo);
+mo.addEventListener('click', e => { if(e.target===mo) mo.remove(); });
+// Set default star = 5
+window._fbStar = 5;
+setTimeout(() => setFbStar(5), 50);
+}
+function setFbStar(n) {
+window._fbStar = n;
+document.querySelectorAll('#fb-stars button').forEach(b => {
+b.style.opacity = parseInt(b.dataset.s) <= n ? '1' : '.3';
+});
+}
+async function submitFeedback() {
+const btn = document.querySelector('#m-feedback .btn.bp');
+if (!btn || btn.disabled) return;
+const text = document.getElementById('fb-text')?.value.trim();
+const err = document.getElementById('fb-err');
+if (!text) { err.textContent = 'Напишите отзыв'; err.classList.add('show'); return; }
+btn.disabled = true; btn.textContent = 'Отправляем...';
+const name = document.getElementById('fb-name')?.value.trim() || 'Аноним';
+const role = document.getElementById('fb-role')?.value || 'other';
+const stars = window._fbStar || 5;
+const { error } = await sb.from('feedback').insert({ name, role, stars, text, status: 'new' });
+if (error) {
+err.textContent = 'Ошибка: ' + error.message;
+err.classList.add('show');
+btn.disabled = false; btn.textContent = 'Отправить отзыв';
+return;
+}
+document.getElementById('m-feedback')?.remove();
+toast('🙏 Спасибо за отзыв! Мы читаем каждый.');
 }
 let authRole = '', authMode = 'login';
 function showAuth(role) {
@@ -424,7 +556,7 @@ const displayName = authRole === 'teacher'
 await sb.from('profiles').upsert({ id: uid, role: authRole, name: displayName, teacher_code: teacherCode });
 } else {
 res = await sb.auth.signInWithPassword({ email: em, password: pw });
-if (res.error) { pg('pg-auth'); err.textContent = res.error.message.includes('Invalid') ? 'Неверный email или пароль' : res.error.message; err.classList.add('show'); document.getElementById('abtn').textContent = 'Войти'; return; }
+if (res.error) { pg('pg-auth'); err.textContent = res.error.message.includes('Invalid') ? 'Неверный email или пароль' : res.error.message; err.classList.add('show'); const _ab=document.getElementById('abtn'); if(_ab){_ab.textContent='Войти';_ab.disabled=false;} return; }
 uid = res.data.user?.id;
 if(!uid){pg('pg-auth');err.textContent='Подтвердите email для завершения регистрации';err.classList.add('show');abtn.disabled=false;abtn.textContent='Зарегистрироваться';return;}
 }
@@ -675,10 +807,6 @@ async function tHome(el) {
     const sm=Object.fromEntries((ss||[]).map(s=>[s.id,s.name]));
     const next=(rc||[]).find(l=>l.status==='planned'||!l.status||l.status==='active');
     
-    // Проверяем существование элементов перед установкой
-    const thNext=document.getElementById('th-next');
-    const thR=document.getElementById('th-r');
-    
     el.innerHTML=`<div class="page"><div class="stitle">Панель учителя 👋</div><div class="ssub">Код: <strong>${me.teacher_code||'—'}</strong></div><div class="srow"><div class="sbox blue"><div class="sv" id="th-l">${lc||0}</div><div class="sl">Уроков</div></div><div class="sbox green"><div class="sv" id="th-s">${sc||0}</div><div class="sl">Учеников</div></div></div><div class="card" id="th-next" style="display:${next?'block':'none'}"></div><div class="card"><div class="clbl">Последние уроки</div><div id="th-r"></div></div></div>`;
     
     if(next){
@@ -808,7 +936,7 @@ let q=sb.from('words').select('*').order('created_at',{ascending:false});
 if(sid) q=q.eq('student_record_id',sid); else q=q.is('student_record_id',null);
 const{data}=await q; allW=data||[]; renderW('all');
 }
-function filterW(btn) { document.querySelectorAll('#tw-list').length&&document.querySelectorAll('.frow .fc2').forEach(c=>c.dataset.f&&c.classList.remove('active')); btn.classList.add('active'); renderW(btn.dataset.f); }
+function filterW(btn) { document.querySelectorAll('.frow .fc2[data-f]').forEach(c=>c.classList.remove('active')); btn.classList.add('active'); renderW(btn.dataset.f); }
 function renderW(f) {
 const l=document.getElementById('tw-list'); if(!l) return;
 const d=f==='all'?allW:allW.filter(w=>w.level==f);
@@ -1059,13 +1187,19 @@ markMsgsRead(null, lessonChatId);
 async function markMsgsRead(chatId, lessonId) {
 const rid = me.role === 'student' ? me.student_id : me.id;
 if(!rid) return;
+// Используем RPC для batch-update, чтобы не делать N запросов
 let q = sb.from('chat_messages').select('id,read_by').not('read_by','cs',`{${rid}}`).neq('sender_id',rid);
 if(chatId) q = q.eq('chat_id', chatId);
 if(lessonId) q = q.eq('lesson_id', lessonId);
 const{data:msgs} = await q;
 if(!msgs?.length) { checkUnread(); return; }
-await Promise.all(msgs.map(m =>
+// Пакетно по 10 сообщений
+const chunks = [];
+for(let i=0;i<msgs.length;i+=10) chunks.push(msgs.slice(i,i+10));
+await Promise.all(chunks.map(chunk =>
+Promise.all(chunk.map(m =>
 sb.from('chat_messages').update({read_by:[...(m.read_by||[]),rid]}).eq('id',m.id)
+))
 ));
 checkUnread();
 }
@@ -1075,7 +1209,7 @@ if(!wrap) return;
 if(!data?.length){wrap.innerHTML=`<div style="text-align:center;color:var(--t3);font-size:13px;padding:20px">Напишите первое сообщение!</div>`;return;}
 const myId = me.role === 'student' ? me.student_id : me.id;
 wrap.innerHTML=data.map(m=>{
-const mine = m.sender_id === myId || (me.role==='student' && m.sender_role==='student' && m.sender_name===me.name);
+const mine = m.sender_id === myId;
 return `<div class="msg ${mine?'mine':'theirs'}">
 ${!mine?`<div class="msg-who">${m.sender_name}</div>`:''}
 <div class="msg-bbl">${esc(m.text)}</div>
@@ -1702,6 +1836,13 @@ ${chev()}
 </div>`).join('');
 checkUnread();
 }
+function openZoom(url) {
+if (!url) return;
+// Пробуем zoommtg:// для нативного приложения, иначе открываем в браузере
+const native = url.replace('https://','zoommtg://').replace('/j/','/join?action=join&confno=');
+try { window.location.href = native; } catch(e) {}
+setTimeout(() => { window.open(url, '_blank'); }, 1000);
+}
 function buildParent() {
 setNav([
 {fn:"pSc('home',0)",ico:`<svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12L12 3L21 12M5 10V20H9V15H15V20H19V10"/></svg>`,lbl:'Главная'},
@@ -1727,9 +1868,7 @@ sb.from('students').select('id').eq('parent_user_id2',me.id)
 const allIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
 const stuIds=allIds;
 if(!stuIds.length){
-const{data:stuNames}=await sb.from('students').select('name').in('id',stuIds);
-const childrenLabel=(stuNames||[]).map(s=>s.name).join(', ')||'ученика';
-el.innerHTML=`<div class="page"><div class="stitle">Прогресс: ${childrenLabel} 📊</div><div class="ssub">Обзор обучения</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
+el.innerHTML=`<div class="page"><div class="stitle">Главная 🏠</div><div class="ssub">Обучение детей</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
 const[{data:ls},{data:ws},{data:stuFull},{data:payments},{data:doneLs}]=await Promise.all([
 sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}),
 sb.from('words').select('level,student_record_id').in('student_record_id',stuIds),
@@ -1978,19 +2117,23 @@ function openPayInfo() {
 if ('serviceWorker' in navigator) {
 navigator.serviceWorker.register('/sw.js').then(reg => {
 reg.update().catch(()=>{});
-}).catch(()=>{});
-navigator.serviceWorker.addEventListener('message', e => {
-if (e.data?.type === 'SW_UPDATED') {
-const t = document.getElementById('toast');
-if (t) {
-t.textContent = '🔄 Установлено обновление...';
-t.classList.add('show');
-}
-setTimeout(() => window.location.reload(), 1500);
+reg.addEventListener('updatefound', () => {
+const sw = reg.installing;
+if (!sw) return;
+sw.addEventListener('statechange', () => {
+if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+sw.postMessage({ type: 'SKIP_WAITING' });
 }
 });
+});
+}).catch(()=>{});
+let _swReloading = false;
 navigator.serviceWorker.addEventListener('controllerchange', () => {
-window.location.reload();
+if (_swReloading) return;
+_swReloading = true;
+const t = document.getElementById('toast');
+if (t) { t.textContent = '🔄 Обновление...'; t.classList.add('show'); }
+setTimeout(() => window.location.reload(), 800);
 });
 }
 </script>
