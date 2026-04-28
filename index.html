@@ -10,28 +10,39 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <script>
-// Аварийный сброс застрявшего SW — запускается ДО всего
+// АВТООБНОВЛЕНИЕ: убиваем старый SW до загрузки всего остального
 (function() {
   if (!('serviceWorker' in navigator)) return;
-  // Если страница грузится дольше 12 сек — убиваем все SW и перезагружаем
-  var _killTimer = setTimeout(function() {
-    navigator.serviceWorker.getRegistrations().then(function(regs) {
-      var kills = regs.map(function(r) { return r.unregister(); });
-      return Promise.all(kills);
-    }).then(function() {
-      // Очищаем все кэши
-      if ('caches' in window) {
-        caches.keys().then(function(keys) {
-          return Promise.all(keys.map(function(k) { return caches.delete(k); }));
-        });
-      }
+  var GOOD_CACHE = 'lesso-v10'; // должно совпадать с CACHE_NAME в sw.js
+
+  function nukeAndReload() {
+    Promise.all([
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        return Promise.all(regs.map(function(r) { return r.unregister(); }));
+      }),
+      ('caches' in window) ? caches.keys().then(function(keys) {
+        return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+      }) : Promise.resolve()
+    ]).then(function() {
+      // hard reload — без кэша браузера
       window.location.reload(true);
     });
-  }, 12000);
-  // Если страница нормально загрузилась — отменяем таймер
-  window.addEventListener('DOMContentLoaded', function() {
-    clearTimeout(_killTimer);
-  });
+  }
+
+  // Сразу проверяем: есть ли старый кэш (не наша версия)?
+  if ('caches' in window) {
+    caches.keys().then(function(keys) {
+      var hasOldCache = keys.length > 0 && keys.every(function(k) { return k !== GOOD_CACHE; });
+      if (hasOldCache) {
+        // Старый кэш найден — убиваем без разговоров
+        nukeAndReload();
+      }
+    });
+  }
+
+  // Страховка: если через 10 сек ещё грузится — тоже убиваем
+  var _timer = setTimeout(nukeAndReload, 10000);
+  window.addEventListener('DOMContentLoaded', function() { clearTimeout(_timer); });
 })();
 </script>
 <script>
