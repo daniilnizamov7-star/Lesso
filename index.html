@@ -2140,7 +2140,30 @@ async function openParentChat(tid, stuId, stuName, tname) {
     .subscribe();
 }
 
-if('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(()=>{});
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    // Проверяем обновление при каждом запуске
+    reg.update().catch(()=>{});
+  }).catch(()=>{});
+
+  // Слушаем сообщение от SW об обновлении
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'SW_UPDATED') {
+      // Показываем toast и перезагружаем через 1.5 сек
+      const t = document.getElementById('toast');
+      if (t) {
+        t.textContent = '🔄 Установлено обновление...';
+        t.classList.add('show');
+      }
+      setTimeout(() => window.location.reload(), 1500);
+    }
+  });
+
+  // Если SW обновился пока приложение было открыто — тоже перезагружаем
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
+}
 </script>
 </body>
 </html>
