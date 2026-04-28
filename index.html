@@ -2064,9 +2064,40 @@ chatChannel=sb.channel('ch-'+chat.id)
 .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:`chat_id=eq.${chat.id}`},()=>loadChatMsgs())
 .subscribe();
 }
-// ИСПРАВЛЕНИЕ: Добавлена функция openPayInfo
-function openPayInfo() {
-  toast('💳 Оплата: 300₽/мес · Свяжитесь с учителем');
+function openPayInfo(){
+  const mo=document.createElement('div');mo.className='mo open';mo.id='m-pay';
+  mo.innerHTML=`<div style="background:var(--w);width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:20px;padding-bottom:calc(20px + env(safe-area-inset-bottom))">
+<div style="width:36px;height:4px;background:var(--b);border-radius:2px;margin:0 auto 16px"></div>
+<div style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;margin-bottom:4px">💳 Оплата сервиса</div>
+<div style="font-size:13px;color:var(--t2);margin-bottom:20px">Оплата переводом на карту</div>
+<div style="background:var(--al);border-radius:12px;padding:16px;margin-bottom:12px">
+  <div style="font-size:12px;font-weight:700;color:var(--a);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Тарифы</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div style="font-size:14px;font-weight:600">1 ребёнок</div>
+    <div style="font-size:18px;font-weight:900;color:var(--a)">300₽/мес</div>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div style="font-size:14px;font-weight:600">2 и более детей</div>
+    <div style="font-size:18px;font-weight:900;color:var(--a)">500₽/мес</div>
+  </div>
+</div>
+<div style="background:var(--f);border-radius:12px;padding:16px;margin-bottom:16px">
+  <div style="font-size:12px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Реквизиты для перевода</div>
+  <div style="margin-bottom:10px">
+    <div style="font-size:11px;color:var(--t3);margin-bottom:2px">Номер телефона (СБП / Тинькофф)</div>
+    <div style="font-size:18px;font-weight:800;letter-spacing:.5px">+7 991 174-51-13</div>
+  </div>
+  <div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:2px">Получатель</div>
+    <div style="font-size:14px;font-weight:700">Даниил Низамов</div>
+  </div>
+</div>
+<div style="font-size:12px;color:var(--t2);margin-bottom:16px;line-height:1.6">После оплаты напишите учителю в чате — баланс пополним в течение нескольких часов.</div>
+<button onclick="navigator.clipboard?.writeText('+79911745113').then(()=>toast('📋 Номер скопирован!'))" style="width:100%;padding:13px;border-radius:12px;border:1.5px solid var(--a);background:var(--al);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;color:var(--a);cursor:pointer;margin-bottom:8px">📋 Скопировать номер</button>
+<button class="btn bs" style="width:100%" onclick="document.getElementById('m-pay')?.remove()">Закрыть</button>
+</div>`;
+  document.body.appendChild(mo);
+  mo.addEventListener('click',e=>{if(e.target===mo)mo.remove();});
 }
 if ('serviceWorker' in navigator) {
   let _swUpdated = false;
