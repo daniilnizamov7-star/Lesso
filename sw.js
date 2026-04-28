@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lesso-v1';
+const CACHE_NAME = 'lesso-v2';
 const urlsToCache = [
   '/',
   '/index.html',
