@@ -315,21 +315,14 @@ function backSvg() { return `<svg width="16" height="16" fill="none" stroke="cur
 (async () => {
 pg('pg-load');
 try {
-  console.log('Init: getting session...');
-  const t0 = Date.now();
-  const { data, error } = await Promise.race([
-    sb.auth.getSession(),
-    new Promise((_,rej) => setTimeout(() => rej(new Error('timeout_15s')), 15000))
-  ]);
-  console.log('Init: session in', Date.now()-t0, 'ms', error||'ok');
+  // Без таймаута — ждём сколько нужно, Supabase Auth может быть медленным
+  const { data } = await sb.auth.getSession();
   const session = data?.session;
   if (session) {
-    const t1 = Date.now();
-    const { data: p, error: pe } = await Promise.race([
-      sb.from('profiles').select('id,role,name,teacher_code').eq('id',session.user.id).single(),
-      new Promise((_,rej) => setTimeout(() => rej(new Error('profile_timeout')), 10000))
-    ]);
-    console.log('Init: profile in', Date.now()-t1, 'ms', pe||'ok');
+    const { data: p } = await sb.from('profiles')
+      .select('id,role,name,teacher_code')
+      .eq('id', session.user.id)
+      .single();
     if (p) { me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code}; launchApp(); return; }
   }
   renderRoles();
