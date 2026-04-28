@@ -356,27 +356,42 @@ function backSvg() { return `<svg width="16" height="16" fill="none" stroke="cur
 (async () => {
   pg('pg-load');
   try {
-    // Таймаут 8 сек на инициализацию
-    const initTimeout = new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')), 8000));
+    // 1. Увеличен таймаут до 15 секунд
+    const initTimeout = new Promise((_,rej) => setTimeout(()=>rej(new Error('timeout')), 15000));
+    
     const initWork = async () => {
       let session=null;
+      // 3 попытки с паузой
       for(let i=0;i<3;i++){
         const{data}=await sb.auth.getSession();
         session=data?.session;
         if(session) break;
         if(i<2) await new Promise(r=>setTimeout(r,500));
       }
+      
       if(session){
+        console.log('🟢 Session found, fetching profile...');
         const{data:p}=await sb.from('profiles').select('id,role,name,teacher_code').eq('id',session.user.id).single();
-        if(p){me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code};launchApp();return;}
+        if(p){
+          console.log('✅ Profile loaded:', p.role);
+          me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code};
+          launchApp();
+          return;
+        } else {
+           console.warn('⚠️ Profile not found for session user');
+        }
+      } else {
+         console.log('🔴 No session');
       }
       renderRoles();
     };
     await Promise.race([initWork(), initTimeout]);
   } catch(e) {
-    // Таймаут или ошибка — показываем роли
-    console.warn('Init error:', e);
-    renderRoles();
+    console.warn('Init error/timeout:', e);
+    // Если таймаут — даём ещё 1 секунду, вдруг сеть "отвиснет"
+    setTimeout(()=>{
+        if(!me) renderRoles();
+    }, 1000);
   }
 })();
 
