@@ -380,6 +380,14 @@ function backSvg() { return `<svg width="16" height="16" fill="none" stroke="cur
   }
 })();
 
+// Автовход если сессия пришла после таймаута
+sb.auth.onAuthStateChange(async(event, session) => {
+  if(event==='SIGNED_IN' && !me && session) {
+    const{data:p}=await sb.from('profiles').select('id,role,name,teacher_code').eq('id',session.user.id).single();
+    if(p){ me={role:p.role,name:p.name,id:session.user.id,teacher_code:p.teacher_code}; launchApp(); }
+  }
+});
+
 // ── Roles ──
 function renderRoles() {
   pg('pg-roles');
@@ -561,8 +569,21 @@ function launchApp() {
   setTimeout(() => subscribeNotifs(), 300);
 }
 async function doLogout() {
-  if (me.role === 'teacher' || me.role === 'parent') await sb.auth.signOut();
-  me = null; selTeacherId = null;
+  try {
+    if (me.role === 'teacher' || me.role === 'parent') {
+      await Promise.race([sb.auth.signOut(), new Promise(r=>setTimeout(r,3000))]);
+    }
+  } catch(e){ console.warn('logout error',e); }
+  // Сбрасываем всё состояние приложения
+  me=null; selTeacherId=null; _cache.stus=null;
+  editLessonId=null; editStuId=null;
+  activeChatId=null; lessonChatId=null;
+  pendFile=null; allW=[]; rQ=[];
+  if(typeof _payState!=='undefined') _payState={stuId:null,stuName:'',price:0};
+  // Закрываем realtime каналы
+  try { await sb.removeAllChannels(); } catch(e){}
+  // Закрываем открытые модалки
+  document.querySelectorAll('.mo.open').forEach(m=>m.classList.remove('open'));
   renderRoles();
 }
 
@@ -706,6 +727,7 @@ function buildTeacher() {
 }
 function tSc(n,i) {
   actNav(i); document.getElementById('fab')?.remove();
+  editLessonId=null; editStuId=null; // сбрасываем при переключении вкладок
   const c=document.getElementById('ac');
   if(n==='home') tHome(c);
   else if(n==='students') tStudents(c);
@@ -1153,7 +1175,7 @@ function renderMsgs(data) {
     const mine = m.sender_id === myId || (me.role==='student' && m.sender_role==='student' && m.sender_name===me.name);
     return `<div class="msg ${mine?'mine':'theirs'}">
       ${!mine?`<div class="msg-who">${m.sender_name}</div>`:''}
-      <div class="msg-bbl">${m.text}</div>
+      <div class="msg-bbl">${esc(m.text)}</div>
       <div class="msg-time">${ft(m.created_at)}</div>
     </div>`;
   }).join('');
@@ -1168,20 +1190,26 @@ async function sendMsg() {
 
   // Показываем сообщение сразу (оптимистичный UI)
   const wrap=document.getElementById('chat-msgs');
+  let tempDiv=null;
   if(wrap){
-    const tempDiv=document.createElement('div');
+    tempDiv=document.createElement('div');
     tempDiv.className='msg mine';
     tempDiv.innerHTML=`<div class="msg-bbl">${text}</div><div class="msg-time">${ft(new Date().toISOString())}</div>`;
     wrap.appendChild(tempDiv);
     requestAnimationFrame(()=>{wrap.scrollTop=wrap.scrollHeight;});
   }
 
+  if(!activeChatId && !lessonChatId){toast('Чат не открыт');return;}
   const senderId = me.role==='student' ? me.student_id : me.id;
   const payload={sender_id:senderId, sender_role:me.role, sender_name:me.name, text};
   if(activeChatId) payload.chat_id=activeChatId;
   else if(lessonChatId) payload.lesson_id=lessonChatId;
   const{error}=await sb.from('chat_messages').insert(payload);
-  if(error){toast('Ошибка: '+error.message);return;}
+  if(error){
+    toast('Ошибка: '+error.message);
+    tempDiv?.remove(); // убираем оптимистичное сообщение при ошибке
+    return;
+  }
 
   // Все уведомления и обновление чата — в фон, не блокируем UI
   _sendNotifs(text).catch(()=>{});
@@ -1235,6 +1263,8 @@ function onFileSelect(input) {
   </div>`;
 }
 async function uploadFile(file, lid) {
+  const MAX_SIZE=20*1024*1024; // 20MB
+  if(file.size>MAX_SIZE){toast('Файл слишком большой (макс. 20MB)');return null;}
   const ext=file.name.split('.').pop();
   const path=`lessons/${lid}/${Date.now()}.${ext}`;
   const{error}=await sb.storage.from('lesso-files').upload(path,file,{upsert:true});
@@ -1270,13 +1300,18 @@ async function openAddLesson() {
   document.getElementById('li-fprev').innerHTML='';
   pendFile=null;
   const p=document.getElementById('li-paid'); p.classList.remove('on'); p.dataset.lid=''; p.dataset.paid='0';
-  const sb2=document.getElementById('li-stbtn'); sb2.textContent='▶ Начать урок'; sb2.dataset.status='planned'; sb2.dataset.lid='';
+  const stBtn=document.getElementById('li-stbtn'); stBtn.textContent='▶ Начать урок'; stBtn.dataset.status='planned'; stBtn.dataset.lid='';
   document.getElementById('li-delbtn').style.display='none';
   await popStuSelect(null);
   openM('m-lesson');
 }
 async function openLesson(id) {
-  const{data:l}=await sb.from('lessons').select('id,title,date,status,paid,grade,homework,hw_done,hw_photo,notes,zoom_link,lesson_time,student_id').eq('id',id).single(); if(!l) return;
+  let l, le;
+  try {
+    const res=await sb.from('lessons').select('id,title,date,status,paid,grade,homework,hw_done,hw_photo,notes,zoom_link,lesson_time,student_id').eq('id',id).single();
+    l=res.data; le=res.error;
+  } catch(e){ toast('Ошибка сети — попробуй ещё раз'); return; }
+  if(le||!l){toast('Не удалось загрузить урок'); return;}
   editLessonId=id;
   document.getElementById('mlt').textContent='Урок';
   document.getElementById('li-title').value=l.title;
@@ -1293,31 +1328,34 @@ async function openLesson(id) {
   document.getElementById('li-notes').value=l.notes||'';
   document.getElementById('li-grade').value=l.grade||'';
   const p=document.getElementById('li-paid'); p.classList.toggle('on',l.paid); p.dataset.lid=id; p.dataset.paid=l.paid?'1':'0';
-  const sb2=document.getElementById('li-stbtn'); sb2.textContent=l.status==='active'?'🔴 Урок идёт — завершить':l.status==='done'?'✓ Урок завершён':'▶ Начать урок'; sb2.dataset.status=l.status; sb2.dataset.lid=id;
+  const stBtn=document.getElementById('li-stbtn'); stBtn.textContent=l.status==='active'?'🔴 Урок идёт — завершить':l.status==='done'?'✓ Урок завершён':'▶ Начать урок'; stBtn.dataset.status=l.status; stBtn.dataset.lid=id;
   document.getElementById('li-delbtn').style.display='block';
   document.getElementById('li-fprev').innerHTML=''; pendFile=null;
   openM('m-lesson');
   Promise.all([popStuSelect(l.student_id), loadLessonMats(id)]).catch(()=>{});
 }
 async function saveLesson() {
+  const saveBtn=document.querySelector('#m-lesson .btn.bp');
+  if(saveBtn?.disabled) return;
+  if(saveBtn) {saveBtn.disabled=true; saveBtn.textContent='Сохраняем...';}
+  const _restore=()=>{if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Сохранить';}};
   const title=document.getElementById('li-title').value.trim();
   const date=document.getElementById('li-date').value;
-  if(!title||!date){toast('Заполни название и дату');return;}
+  if(!title||!date){toast('Заполни название и дату');_restore();return;}
   const stuId=document.getElementById('li-stu')?.value||null;
   const lesson_time=document.getElementById('li-time')?.value||null;
   const payload={title,date,lesson_time,teacher_id:me.id,student_id:stuId,zoom_link:document.getElementById('li-zoom').value.trim()||null,homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
+  const wasNew=!editLessonId; // фиксируем ДО любых await
   let error, lid=editLessonId;
   if(editLessonId){({error}=await sb.from('lessons').update(payload).eq('id',editLessonId));}
   else{const r=await sb.from('lessons').insert({...payload,status:'planned'}).select('id').single();error=r.error;lid=r.data?.id;}
-  if(error){toast('Ошибка: '+error.message);return;}
+  if(error){toast('Ошибка сохранения: '+error.message);_restore();return;}
   // Upload file
   if(pendFile&&lid){
     const fd=await uploadFile(pendFile,lid);
     if(fd) await sb.from('materials').insert({lesson_id:lid,teacher_id:me.id,name:fd.name,file_url:fd.url,file_type:fd.type,file_size:fd.size});
     pendFile=null;
   }
-  // Уведомления — параллельно, не блокируем UI
-  const wasNew=!editLessonId;
   closeM('m-lesson'); toast('Урок сохранён ✓'); tSc('lessons',2);
   if(wasNew && stuId){
     const{data:stuRec}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',stuId).single();
@@ -1429,7 +1467,7 @@ async function openPayment(stuId, stuName, price) {
   const amt = document.getElementById('mp-amount');
   cnt.oninput = () => { if(price && cnt.value) amt.value = parseInt(cnt.value)*price; };
   // Загружаем историю
-  await loadPayHistory(stuId);
+  try { await loadPayHistory(stuId); } catch(e){ console.warn('pay history error',e); }
   openM('m-pay');
 }
 
@@ -1464,6 +1502,7 @@ async function savePayment() {
   const count=parseInt(document.getElementById('mp-count').value);
   const amount=parseInt(document.getElementById('mp-amount').value)||0;
   const note=document.getElementById('mp-note').value.trim();
+  if(!_payState?.stuId){toast('Ошибка: ученик не выбран');btn.disabled=false;btn.textContent='Сохранить';return;}
   if(!count||count<1){toast('Укажите количество уроков');btn.disabled=false;btn.textContent='Сохранить';return;}
   const{error}=await sb.from('payments').insert({
     student_id:_payState.stuId, teacher_id:me.id,
