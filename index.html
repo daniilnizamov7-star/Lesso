@@ -228,6 +228,7 @@
   <div class="fg"><label class="fl">Ученик</label><select class="fs" id="li-stu"></select></div>
   <div class="fg"><label class="fl">Тема урока</label><input class="fi" id="li-title" placeholder="Past Simple, числа..."></div>
   <div class="fg"><label class="fl">Дата</label><input class="fi" type="date" id="li-date"></div>
+  <div class="fg"><label class="fl">Время урока</label><input class="fi" type="time" id="li-time" placeholder="10:00"></div>
   <div class="fg"><label class="fl">Ссылка Zoom</label><input class="fi" type="url" id="li-zoom" placeholder="https://zoom.us/j/..."></div>
   <div class="fg"><label class="fl">Домашнее задание</label><textarea class="fta" id="li-hw" placeholder="Выучить слова..."></textarea></div>
   <div id="li-hw-photo-wrap" style="display:none;margin-bottom:14px">
@@ -1258,7 +1259,7 @@ async function loadLessonMats(lid) {
   </div>`).join('');
 }
 async function popStuSelect(selId) {
-  const{data}=await sb.from('students').select('id,name').eq('teacher_id',me.id);
+  const data=await getStudents(me.id);
   const s=document.getElementById('li-stu'); if(!s) return;
   s.innerHTML=(data||[]).map(st=>`<option value="${st.id}"${st.id===selId?' selected':''}>${st.name}</option>`).join('')||'<option value="">Нет учеников</option>';
   // Word modal student select
@@ -1267,7 +1268,7 @@ async function popStuSelect(selId) {
 async function openAddLesson() {
   editLessonId=null;
   document.getElementById('mlt').textContent='Новый урок';
-  ['li-title','li-zoom','li-notes'].forEach(id=>document.getElementById(id).value='');
+  ['li-title','li-zoom','li-notes','li-time'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('li-hw').value='';
   const _wrap=document.getElementById('li-hw-photo-wrap'); if(_wrap) _wrap.style.display='none';
   document.getElementById('li-date').value=new Date().toISOString().split('T')[0];
@@ -1278,8 +1279,8 @@ async function openAddLesson() {
   const p=document.getElementById('li-paid'); p.classList.remove('on'); p.dataset.lid=''; p.dataset.paid='0';
   const sb2=document.getElementById('li-stbtn'); sb2.textContent='▶ Начать урок'; sb2.dataset.status='planned'; sb2.dataset.lid='';
   document.getElementById('li-delbtn').style.display='none';
-  await popStuSelect(null);
   openM('m-lesson');
+  await popStuSelect(null);
 }
 async function openLesson(id) {
   const{data:l}=await sb.from('lessons').select('id,title,date,status,paid,grade,homework,hw_done,hw_photo,notes,zoom_link,lesson_time,student_id').eq('id',id).single(); if(!l) return;
@@ -1288,6 +1289,7 @@ async function openLesson(id) {
   document.getElementById('li-title').value=l.title;
   document.getElementById('li-date').value=l.date;
   document.getElementById('li-zoom').value=l.zoom_link||'';
+  if(document.getElementById('li-time')) document.getElementById('li-time').value=l.lesson_time||'';
   document.getElementById('li-hw').value=l.homework||'';
   // hw photo
   const wrap=document.getElementById('li-hw-photo-wrap');
@@ -1301,15 +1303,16 @@ async function openLesson(id) {
   const sb2=document.getElementById('li-stbtn'); sb2.textContent=l.status==='active'?'🔴 Урок идёт — завершить':l.status==='done'?'✓ Урок завершён':'▶ Начать урок'; sb2.dataset.status=l.status; sb2.dataset.lid=id;
   document.getElementById('li-delbtn').style.display='block';
   document.getElementById('li-fprev').innerHTML=''; pendFile=null;
+  openM('m-lesson'); // открываем сразу — не ждём загрузки
   await Promise.all([popStuSelect(l.student_id), loadLessonMats(id)]);
-  openM('m-lesson');
 }
 async function saveLesson() {
   const title=document.getElementById('li-title').value.trim();
   const date=document.getElementById('li-date').value;
   if(!title||!date){toast('Заполни название и дату');return;}
   const stuId=document.getElementById('li-stu')?.value||null;
-  const payload={title,date,teacher_id:me.id,student_id:stuId,zoom_link:document.getElementById('li-zoom').value.trim()||null,homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
+  const lesson_time=document.getElementById('li-time')?.value||null;
+  const payload={title,date,lesson_time,teacher_id:me.id,student_id:stuId,zoom_link:document.getElementById('li-zoom').value.trim()||null,homework:document.getElementById('li-hw').value.trim()||null,notes:document.getElementById('li-notes').value.trim()||null,grade:document.getElementById('li-grade').value?parseInt(document.getElementById('li-grade').value):null};
   let error, lid=editLessonId;
   if(editLessonId){({error}=await sb.from('lessons').update(payload).eq('id',editLessonId));}
   else{const r=await sb.from('lessons').insert({...payload,status:'planned'}).select('id').single();error=r.error;lid=r.data?.id;}
@@ -1320,16 +1323,16 @@ async function saveLesson() {
     if(fd) await sb.from('materials').insert({lesson_id:lid,teacher_id:me.id,name:fd.name,file_url:fd.url,file_type:fd.type,file_size:fd.size});
     pendFile=null;
   }
-  // Уведомления — параллельно, не блокируем UI
   closeM('m-lesson'); toast('Урок сохранён ✓'); tSc('lessons',2);
-  if(stuId){
+  // Уведомления только при создании нового урока
+  if(!editLessonId && stuId){
     const{data:stuRec}=await sb.from('students').select('parent_user_id,parent_user_id2').eq('id',stuId).single();
     const notifIds=[stuId,...([stuRec?.parent_user_id,stuRec?.parent_user_id2].filter(Boolean))];
-    await Promise.all(notifIds.map((rid,i)=>sb.from('notifications').insert({
+    Promise.all(notifIds.map((rid,i)=>sb.from('notifications').insert({
       recipient_id:rid,type:'lesson_created',
       title:i===0?'Новый урок: '+title:'Новый урок у '+title,
       body:date+(payload.homework?'\nДЗ: '+payload.homework:''),lesson_id:lid
-    })));
+    }))).catch(()=>{});
   }
 }
 async function delLesson() {
