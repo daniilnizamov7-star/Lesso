@@ -486,7 +486,7 @@ async function doAddBalance(userId,currentBal){
   const newBal=currentBal+amt;
   const{error}=await sb.from('profiles').update({balance:newBal,suspended:false}).eq('id',userId);
   if(error){alert('Ошибка: '+error.message);if(btn){btn.disabled=false;btn.textContent='Пополнить';}return;}
-  await sb.from('notifications').insert({recipient_id:userId,type:'payment_activated',title:'✅ Баланс пополнен!',body:`Пополнение: ${amt}₽. Баланс: ${newBal}₽`}).catch(()=>{});
+  try { await sb.from('notifications').insert({recipient_id:userId,type:'payment_activated',title:'✅ Баланс пополнен!',body:`Пополнение: ${amt}₽. Баланс: ${newBal}₽`}); } catch(e) {}
   await fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:[userId],title:'✅ Баланс пополнен!',body:`+${amt}₽ · Баланс: ${newBal}₽`})}).catch(()=>{});
   closeModal();
   alert(`✅ Баланс пополнен. Новый баланс: ${newBal}₽`);
