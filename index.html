@@ -1338,9 +1338,15 @@ async function openAddLesson() {
 async function openLesson(id) {
   let l, le;
   try {
-    const res=await sb.from('lessons').select('id,title,date,status,paid,grade,homework,hw_done,hw_photo,notes,zoom_link,lesson_time,student_id').eq('id',id).single();
+    // Добавляем таймаут 5 секунд
+    const req=sb.from('lessons').select('id,title,date,status,paid,grade,homework,hw_done,hw_photo,notes,zoom_link,lesson_time,student_id').eq('id',id).single();
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),5000));
+    const res=await Promise.race([req,timeout]);
     l=res.data; le=res.error;
-  } catch(e){ toast('Ошибка сети — попробуй ещё раз'); return; }
+  } catch(e){
+    toast(e.message==='timeout'?'Сервер не отвечает — попробуй позже':'Ошибка сети');
+    return;
+  }
   if(le||!l){toast('Не удалось загрузить урок'); return;}
   editLessonId=id;
   document.getElementById('mlt').textContent='Урок';
