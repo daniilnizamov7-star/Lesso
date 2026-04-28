@@ -216,8 +216,8 @@ async function loadNotifDots(){
     ]);
     const pc=(pays||[]).length,fc=(fbs||[]).length;
     const pd=document.getElementById('pay-dot'),fd2=document.getElementById('fb-dot');
-    if(pd){pd.style.display=pc>0?'inline':'none';pd.textContent=pc;}
-    if(fd2){fd2.style.display=fc>0?'inline':'none';fd2.textContent=fc;}
+    if(pd){pd.style.display=pc>0?'inline-flex':'none';pd.textContent=pc;}
+    if(fd2){fd2.style.display=fc>0?'inline-flex':'none';fd2.textContent=fc;}
   }catch(e){}
 }
 
