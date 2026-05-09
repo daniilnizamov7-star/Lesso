@@ -8,6 +8,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lesso">
 <link rel="manifest" href="manifest.json">
+<!-- Open Graph -->
+<meta property="og:title" content="Lesso — приложение для репетиторов">
+<meta property="og:description" content="Уроки, домашки, словарь и чат с родителями — всё вместо WhatsApp и тетради. Бесплатно для учителей.">
+<meta property="og:image" content="https://lesso-three.vercel.app/og-image.png">
+<meta property="og:url" content="https://lesso-three.vercel.app">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_RU">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lesso — приложение для репетиторов">
+<meta name="twitter:description" content="Уроки, домашки, словарь и чат — вместо WhatsApp и тетради.">
+<meta name="twitter:image" content="https://lesso-three.vercel.app/og-image.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <script>
 function makeIcon(size) {
@@ -25,11 +36,12 @@ if(lnk){ const img=new Image();img.onerror=()=>{lnk.href=makeIcon(180);};img.src
 </script>
 <title>Lesso</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f8f9fc;--w:#fff;--b:#e8eaf0;--t:#0f1520;--t2:#5a6478;--t3:#9aa0b0;--a:#2563eb;--al:#eff4ff;--ad:#1d4ed8;--g:#16a34a;--gl:#f0fdf4;--o:#ea580c;--ol:#fff7ed;--r:#dc2626;--rl:#fef2f2;--rd:16px;--rs:10px;--sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--shl:0 4px 24px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04)}
+:root{--bg:#f8f9fc;--w:#fff;--f:#f8f9fc;--b:#e8eaf0;--t:#0f1520;--t2:#5a6478;--t3:#9aa0b0;--a:#2563eb;--al:#eff4ff;--ad:#1d4ed8;--g:#16a34a;--gl:#f0fdf4;--o:#ea580c;--ol:#fff7ed;--r:#dc2626;--rl:#fef2f2;--rd:16px;--rs:10px;--sh:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);--shl:0 4px 24px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-serif;color:var(--t);overflow-x:hidden}
+html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans','Segoe UI','Helvetica Neue',Arial,sans-serif;color:var(--t);overflow-x:hidden}
 .page{padding:20px 16px 100px;max-width:480px;margin:0 auto;animation:fu .2s ease}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .hdr{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--w);border-bottom:1px solid var(--b);padding:0 16px;height:56px;display:flex;align-items:center;justify-content:space-between}
@@ -184,6 +196,8 @@ html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-
 @keyframes spin{to{transform:rotate(360deg)}}
 #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--t);color:#fff;border-radius:20px;padding:10px 20px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;z-index:999}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.pay-bar{background:var(--bg);border-radius:20px;height:6px;overflow:hidden;margin-top:4px}
+.pay-fill{height:100%;border-radius:20px;transition:width .6s}
 </style>
 </head>
 <body>
@@ -259,14 +273,14 @@ html,body{height:100%;background:var(--bg);font-family:'Plus Jakarta Sans',sans-
 <div class="brow"><button class="btn bs" onclick="closeM('m-stu')">Отмена</button><button class="btn bp" onclick="saveStu()">Сохранить</button></div>
 <button class="btn bd" id="si-delbtn" style="display:none;margin-top:8px" onclick="delStu()">Удалить ученика</button>
 </div></div>
-<div class="mo" id="m-pay"><div class="modal">
+<div class="mo" id="m-pay-teacher"><div class="modal">
 <div class="mtitle">💰 Пополнение баланса</div>
 <div class="ssub" id="mp-name" style="margin-bottom:16px"></div>
 <div class="fg"><label class="fl">Количество уроков</label><input class="fi" id="mp-count" type="number" placeholder="10" min="1" max="100"></div>
 <div class="fg"><label class="fl">Сумма (₽)</label><input class="fi" id="mp-amount" type="number" placeholder="10000" min="0"></div>
 <div id="mp-price-hint" style="font-size:12px;color:var(--a);font-weight:600;margin-top:-8px;margin-bottom:12px;display:none"></div>
 <div class="fg"><label class="fl">Комментарий (необязательно)</label><input class="fi" id="mp-note" placeholder="Оплата за апрель"></div>
-<div class="brow"><button class="btn bs" onclick="closeM('m-pay')">Отмена</button><button class="btn bp" id="mp-save-btn" onclick="savePayment()">Сохранить</button></div>
+<div class="brow"><button class="btn bs" onclick="closeM('m-pay-teacher')">Отмена</button><button class="btn bp" id="mp-save-btn" onclick="savePayment()">Сохранить</button></div>
 <div id="mp-history" style="margin-top:16px"></div>
 </div></div>
 <div class="mo" id="m-chat"><div class="modal" style="height:88dvh;display:flex;flex-direction:column;padding-bottom:0">
@@ -333,7 +347,7 @@ function invalidateStudents(){_cache.stus=null;}
 let me = null;
 let editLessonId = null, editStuId = null;
 let activeChatId = null, chatChannel = null, lessonChatId = null;
-let wLevel = 0, pendingFile = null;
+let wLevel = 0, pendFile = null;
 let unreadCount = 0;
 function pg(id) {
 ['pg-load','pg-roles','pg-auth','pg-teachers','pg-pin','pg-app'].forEach(p => {
@@ -653,7 +667,7 @@ await Promise.race([sb.auth.signOut(), new Promise(r=>setTimeout(r,3000))]);
 me=null; selTeacherId=null; _cache.stus=null;
 editLessonId=null; editStuId=null;
 activeChatId=null; lessonChatId=null;
-pendingFile=null; wLevel=0; unreadCount=0;
+pendFile=null; wLevel=0; unreadCount=0;
 try { await sb.removeAllChannels(); } catch(e){}
 document.querySelectorAll('.mo.open').forEach(m=>m.classList.remove('open'));
 renderRoles();
@@ -1279,7 +1293,6 @@ updates.push(sb.from('notifications').insert({recipient_id:chat.teacher_id,type:
 }
 await Promise.all(updates);
 }
-let pendFile=null;
 function onFileSelect(input) {
 const f=input.files[0]; if(!f) return;
 pendFile=f;
@@ -1488,7 +1501,7 @@ const cnt = document.getElementById('mp-count');
 const amt = document.getElementById('mp-amount');
 cnt.oninput = () => { if(price && cnt.value) amt.value = parseInt(cnt.value)*price; };
 try { await loadPayHistory(stuId); } catch(e){ console.warn('pay history error',e); }
-openM('m-pay');
+openM('m-pay-teacher');
 }
 async function loadPayHistory(stuId) {
 const{data:pays}=await sb.from('payments').select('*').eq('student_id',stuId).order('created_at',{ascending:false}).limit(10);
@@ -1536,7 +1549,7 @@ Promise.all(pids.map(pid=>sb.from('notifications').insert({recipient_id:pid,type
 fetch(`${SU}/functions/v1/send-push`,{method:'POST',headers:{'Authorization':`Bearer ${SK}`,'Content-Type':'application/json'},body:JSON.stringify({user_ids:pids,title,body})}).catch(()=>{});
 }).catch(()=>{});
 btn.disabled=false; btn.textContent='Сохранить';
-closeM('m-pay');
+closeM('m-pay-teacher');
 setTimeout(async () => {
 tStudents(document.getElementById('ac'));
 const{data:allPays}=await sb.from('payments').select('lessons_count').eq('student_id',_payState.stuId);
@@ -1860,9 +1873,7 @@ sb.from('students').select('id').eq('parent_user_id2',me.id)
 const allIds=[...new Set([...(myStus1||[]).map(s=>s.id),...(myStus2||[]).map(s=>s.id)])];
 const stuIds=allIds;
 if(!stuIds.length){
-const{data:stuNames}=await sb.from('students').select('name').in('id',stuIds);
-const childrenLabel=(stuNames||[]).map(s=>s.name).join(', ')||'ученика';
-el.innerHTML=`<div class="page"><div class="stitle">Прогресс: ${childrenLabel} 📊</div><div class="ssub">Обзор обучения</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
+el.innerHTML=`<div class="page"><div class="stitle">Главная 🏠</div><div class="ssub">Привязанные дети</div><div class="empty"><div class="ei">👨‍👩‍👦</div><p>Нет привязанных учеников<br><span style="font-size:12px;color:var(--t2)">Нажми + чтобы добавить</span></p></div></div>`;return;}
 const[{data:ls},{data:ws},{data:stuFull},{data:payments},{data:doneLs}]=await Promise.all([
 sb.from('lessons').select('*').in('student_id',stuIds).order('date',{ascending:false}),
 sb.from('words').select('level,student_record_id').in('student_record_id',stuIds),
