@@ -1,10 +1,9 @@
-// Lesso SW v11 — сборка 2026-04-28
-// ВАЖНО: меняй дату при каждом деплое — браузер обнаружит изменение файла и обновит SW
-const CACHE = 'lesso-v11';
+// Lesso SW v12 — сборка 2026-05-11
+// ВАЖНО: меняй версию (v12→v13) при каждом деплое — браузер обнаружит изменение и обновит SW
+const CACHE = 'lesso-v12';
 
 self.addEventListener('install', () => {
-  // Сразу активируемся — не ждём закрытия старых вкладок
-  self.skipWaiting();
+  self.skipWaiting(); // Сразу активируемся
 });
 
 self.addEventListener('activate', event => {
@@ -13,14 +12,13 @@ self.addEventListener('activate', event => {
       .then(keys => Promise.all(
         keys.filter(k => k !== CACHE).map(k => caches.delete(k))
       ))
-      .then(() => self.clients.claim())
+      .then(() => self.clients.claim()) // Берём контроль над всеми вкладками
   );
 });
 
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Не кэшируем API и внешние сервисы
   if (
     url.hostname.includes('supabase.co') ||
     url.hostname.includes('firebase') ||
@@ -32,12 +30,12 @@ self.addEventListener('fetch', event => {
     url.pathname.includes('/storage/') ||
     url.pathname.includes('/functions/')
   ) {
-    return; // браузер сам делает запрос
+    return;
   }
 
   if (event.request.method !== 'GET') return;
 
-  // Network-first: берём свежее с сервера, при офлайне — кэш
+  // Network-first: свежее с сервера, при офлайне — кэш
   event.respondWith(
     fetch(event.request)
       .then(response => {
@@ -52,7 +50,6 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Принимаем команду SKIP_WAITING от страницы
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
